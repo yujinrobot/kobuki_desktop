@@ -1,0 +1,18 @@
+<stack>
+  <description brief="Kobuki simulator">
+    Software for simulating Kobuki.
+  </description>
+  <author>Maintained by Marcus Liebhardt</author>
+  <license>BSD</license>  
+  <review status="experimental" notes=""/>
+  <url>http://ros.org/wiki/kobuki_simulator</url>
+  <depend stack="gazebo"/>
+  <depend stack="diagnostics"/> 
+  <depend stack="robot_model"/> 
+  <depend stack="navigation"/> 
+  <depend stack="nodelet_core"/> 
+  <depend stack="turtlebot"/> 
+  <depend stack="ros_comm"/> 
+  <depend stack="common_msgs"/> 
+  <depend stack="geometry"/> 
+</stack>
