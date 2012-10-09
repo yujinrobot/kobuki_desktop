@@ -1,11 +1,15 @@
 <!-- copied from turtlebot_gazebo and modified-->
 <launch>
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find kobuki_description)/robots/kobuki_kinect.urdf.xacro'"/>
+  <arg name="kinect"/>
+  
+  <param if="$(arg kinect)" name="robot_description" command="$(find xacro)/xacro.py '$(find kobuki_description)/robots/kobukibot_kinect.urdf.xacro'"/>
+  <param unless="$(arg kinect)" name="robot_description" command="$(find xacro)/xacro.py '$(find kobuki_description)/robots/kobukibot_xtion.urdf.xacro'"/>
+  
   <node pkg="gazebo" type="spawn_model" name="spawn_kobuki_model" 
         args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model kobuki" respawn="false"/>
  
   <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" >
-    <rosparam command="load" file="$(find turtlebot_bringup)/config/diagnostics.yaml" />
+    <rosparam command="load" file="$(find kobuki_bringup)/resources/yaml/diagnostics.yaml" />
   </node>
   
   <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
