@@ -31,11 +31,14 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
+# The program to use to edit the cache.
+CMAKE_EDIT_COMMAND = /usr/bin/ccmake
+
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins
+CMAKE_SOURCE_DIR = /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build
+CMAKE_BINARY_DIR = /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build
 
 # Utility rule file for rospack_gensrv.
 
@@ -57,6 +60,6 @@ CMakeFiles/rospack_gensrv.dir/clean:
 .PHONY : CMakeFiles/rospack_gensrv.dir/clean
 
 CMakeFiles/rospack_gensrv.dir/depend:
-	cd /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build/CMakeFiles/rospack_gensrv.dir/DependInfo.cmake --color=$(COLOR)
+	cd /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build/CMakeFiles/rospack_gensrv.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/rospack_gensrv.dir/depend
 

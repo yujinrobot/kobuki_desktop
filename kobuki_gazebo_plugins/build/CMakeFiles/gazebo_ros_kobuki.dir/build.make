@@ -31,11 +31,14 @@ CMAKE_COMMAND = /usr/bin/cmake
 # The command to remove a file.
 RM = /usr/bin/cmake -E remove -f
 
+# The program to use to edit the cache.
+CMAKE_EDIT_COMMAND = /usr/bin/ccmake
+
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins
+CMAKE_SOURCE_DIR = /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build
+CMAKE_BINARY_DIR = /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/gazebo_ros_kobuki.dir/depend.make
@@ -54,6 +57,7 @@ CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/std_msgs/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/geometry_msgs/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/sensor_msgs/manifest.xml
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/trajectory_msgs/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo_msgs/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/roslib/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/bullet/manifest.xml
@@ -79,12 +83,12 @@ CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/protobuf/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/nav_msgs/manifest.xml
-CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/turtlebot/turtlebot_driver/manifest.xml
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/kobuki_workspace/turtlebot/turtlebot_driver/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/share/diagnostic_msgs/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/orocos_kdl/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/python_orocos_kdl/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/orocos_kinematics_dynamics/kdl/manifest.xml
-CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/turtlebot/turtlebot_node/manifest.xml
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/kobuki_workspace/turtlebot/turtlebot_node/manifest.xml
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo_msgs/msg_gen/generated
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo_msgs/srv_gen/generated
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/geometry/tf/msg_gen/generated
@@ -93,19 +97,19 @@ CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/dynamic_reconfigure/srv_gen/generated
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo/msg_gen/generated
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/simulator_gazebo/gazebo/srv_gen/generated
-CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/generated
-CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/turtlebot/turtlebot_node/srv_gen/generated
-	$(CMAKE_COMMAND) -E cmake_progress_report /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build/CMakeFiles $(CMAKE_PROGRESS_1)
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/generated
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/kobuki_workspace/turtlebot/turtlebot_node/srv_gen/generated
+	$(CMAKE_COMMAND) -E cmake_progress_report /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -o CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o -c /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -o CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o -c /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp
 
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -E /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp > CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -E /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp > CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.i
 
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -S /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp -o CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -pthread -DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -S /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp -o CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.s
 
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o.requires:
 .PHONY : CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o.requires
@@ -141,6 +145,6 @@ CMakeFiles/gazebo_ros_kobuki.dir/clean:
 .PHONY : CMakeFiles/gazebo_ros_kobuki.dir/clean
 
 CMakeFiles/gazebo_ros_kobuki.dir/depend:
-	cd /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/build/CMakeFiles/gazebo_ros_kobuki.dir/DependInfo.cmake --color=$(COLOR)
+	cd /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build /opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/build/CMakeFiles/gazebo_ros_kobuki.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/gazebo_ros_kobuki.dir/depend
 

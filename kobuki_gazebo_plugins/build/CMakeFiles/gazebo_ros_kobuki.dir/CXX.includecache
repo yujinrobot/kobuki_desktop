@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
+/opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
 string
 -
 boost/thread.hpp
@@ -30,7 +30,7 @@ sensor_msgs/JointState.h
 tf/transform_broadcaster.h
 -
 
-/opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp
+/opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/gazebo_ros_kobuki.cpp
 ros/time.h
 -
 nav_msgs/Odometry.h
@@ -54,7 +54,31 @@ gazebo/ControllerFactory.hh
 gazebo/XMLConfig.hh
 -
 ../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
-/opt/kobuki_workspace/kobuki/kobuki_gazebo_plugins/src/../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
+/opt/kobuki_workspace/kobuki_simulator/kobuki_gazebo_plugins/src/../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
+
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/TurtlebotSensorState.h
+string
+-
+vector
+-
+map
+-
+ostream
+-
+ros/serialization.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/serialization.h
+ros/builtin_message_traits.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/builtin_message_traits.h
+ros/message_operations.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/message_operations.h
+ros/time.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/time.h
+ros/macros.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/macros.h
+ros/assert.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/assert.h
+std_msgs/Header.h
+/opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/std_msgs/Header.h
 
 /opt/ros/fuerte/include/XmlRpcDecl.h
 ros/macros.h
@@ -1203,28 +1227,4 @@ ros/assert.h
 /opt/ros/fuerte/stacks/geometry/tf/msg_gen/cpp/include/tf/ros/assert.h
 geometry_msgs/TransformStamped.h
 /opt/ros/fuerte/stacks/geometry/tf/msg_gen/cpp/include/tf/geometry_msgs/TransformStamped.h
-
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/TurtlebotSensorState.h
-string
--
-vector
--
-map
--
-ostream
--
-ros/serialization.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/serialization.h
-ros/builtin_message_traits.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/builtin_message_traits.h
-ros/message_operations.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/message_operations.h
-ros/time.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/time.h
-ros/macros.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/macros.h
-ros/assert.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/ros/assert.h
-std_msgs/Header.h
-/opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/std_msgs/Header.h
 

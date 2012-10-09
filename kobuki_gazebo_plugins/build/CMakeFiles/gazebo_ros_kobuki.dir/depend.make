@@ -3,6 +3,7 @@
 
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: ../src/../include/kobuki_gazebo_plugins/gazebo_ros_kobuki.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: ../src/gazebo_ros_kobuki.cpp
+CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/kobuki_workspace/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/TurtlebotSensorState.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/include/XmlRpcDecl.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/include/XmlRpcValue.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/include/geometry_msgs/Point.h
@@ -94,5 +95,4 @@ CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/geometry/tf/include/tf/transform_broadcaster.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/geometry/tf/include/tf/transform_datatypes.h
 CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/geometry/tf/msg_gen/cpp/include/tf/tfMessage.h
-CMakeFiles/gazebo_ros_kobuki.dir/src/gazebo_ros_kobuki.o: /opt/ros/fuerte/stacks/turtlebot/turtlebot_node/msg_gen/cpp/include/turtlebot_node/TurtlebotSensorState.h
 
