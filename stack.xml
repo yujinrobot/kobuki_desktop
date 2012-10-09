@@ -6,7 +6,7 @@
   <license>BSD</license>  
   <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/kobuki_simulator</url>
-  <depend stack="gazebo"/>
+  <depend stack="simulator_gazebo"/>
   <depend stack="diagnostics"/> 
   <depend stack="robot_model"/> 
   <depend stack="navigation"/> 
