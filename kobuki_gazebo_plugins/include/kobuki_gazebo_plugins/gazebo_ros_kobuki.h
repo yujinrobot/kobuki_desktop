@@ -29,102 +29,102 @@
  * This work is based on the Gazebo ROS plugin for the iRobot Create by Nate Koenig.
  */
 
-#ifndef GAZEBO_GAZEBO_ROS_KOBUKI_H__
-#define GAZEBO_GAZEBO_ROS_KOBUKI_H__
+#ifndef GAZEBO_ROS_KOBUKI_H
+#define GAZEBO_ROS_KOBUKI_H
 
-#include <string>
-#include <boost/thread.hpp>
-//#include <boost/bind.hpp> // used for what?
+#include "physics/physics.h"
+#include "physics/PhysicsTypes.hh"
+#include "sensors/SensorTypes.hh"
+#include "transport/TransportTypes.hh"
+#include "common/Time.hh"
+#include "common/Plugin.hh"
+#include "common/Events.hh"
 
-#include <gazebo/Controller.hh>
-#include <gazebo/Model.hh>
-#include <gazebo/Geom.hh>
-#include <gazebo/Time.hh>
-#include <gazebo/RaySensor.hh>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/TwistWithCovariance.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 
-#include <ros/ros.h>
-//#include <geometry_msgs/TwistWithCovariance.h> // used for what?
-//#include <geometry_msgs/PoseWithCovariance.h> // used for what?
-#include <geometry_msgs/Twist.h>
-#include <sensor_msgs/JointState.h>
 #include <tf/transform_broadcaster.h>
-
+#include <ros/ros.h>
 
 namespace gazebo
 {
-class GazeboRosKobuki : public Controller
-{
-public:
-  GazeboRosKobuki(gazebo::Entity *parent);
-  virtual ~GazeboRosKobuki();
+  class GazeboRosKobuki : public ModelPlugin
+  {
+    public: 
+      GazeboRosKobuki();
+      virtual ~GazeboRosKobuki();
+          
+      virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf );
 
-  virtual void LoadChild(XMLConfigNode *node);
-  virtual void InitChild();
-  virtual void FiniChild();
-  virtual void UpdateChild();
+      virtual void UpdateChild();
+  
+    private:
 
-private:
+      void UpdateSensors();
+      void OnContact(const std::string &name, const physics::Contact &contact);
+      void OnCmdVel( const geometry_msgs::TwistConstPtr &msg);
 
-  void UpdateSensors();
-  void OnContact(const gazebo::Contact &contact);
-  void OnCmdVel(const geometry_msgs::TwistConstPtr &msg);
 
-  ros::NodeHandle *rosnode_;
-  //ros::Service operating_mode_srv_;
-  //ros::Service digital_output_srv_;
+      /// Parameters
+      std::string node_namespace_;
+      std::string left_wheel_joint_name_;
+      std::string right_wheel_joint_name_;
+      std::string base_geom_name_;
 
-  ros::Publisher sensor_state_pub_;
-  ros::Publisher odom_pub_;
-  ros::Publisher joint_state_pub_;
+      /// Separation between the wheels
+      float wheel_sep_;
 
-  ros::Subscriber cmd_vel_sub_;
+      /// Diameter of the wheels
+      float wheel_diam_;
 
-  ParamT<std::string> *node_namespaceP_;
-  ParamT<std::string> *left_wheel_joint_nameP_;
-  ParamT<std::string> *right_wheel_joint_nameP_;
-  ParamT<std::string> *front_castor_joint_nameP_;
-  ParamT<std::string> *rear_castor_joint_nameP_;
-  ParamT<std::string> *base_geom_nameP_;
+      ///Torque applied to the wheels
+      float torque_;
 
-  /// Separation between the wheels
-  ParamT<float> *wheel_sepP_;
 
-  /// Diameter of the wheels
-  ParamT<float> *wheel_diamP_;
+      ros::NodeHandle *rosnode_;
+      //ros::Service operating_mode_srv_;
+      //ros::Service digital_output_srv_;
+  
+      ros::Publisher sensor_state_pub_;
+      ros::Publisher odom_pub_;
+      ros::Publisher joint_state_pub_;
+  
+      ros::Subscriber cmd_vel_sub_;
 
-  ///Torque applied to the wheels
-  ParamT<float> *torqueP_;
+      physics::WorldPtr my_world_;
+      physics::ModelPtr my_parent_;
 
-  Model *my_parent_;
+      /// Speeds of the wheels
+      float *wheel_speed_;
 
-  /// Speeds of the wheels
-  float *wheel_speed_;
+      // Simulation time of the last update
+      common::Time prev_update_time_;
+      common::Time last_cmd_vel_time_;
 
-  // Simulation time of the last update
-  Time prev_update_time_;
-  Time last_cmd_vel_time_;
+      float odom_pose_[3];
+      float odom_vel_[3];
 
-  float odom_pose_[3];
-  float odom_vel_[3];
+      bool set_joints_[2];
+      physics::JointPtr joints_[2];
+      physics::CollisionPtr base_geom_;
 
-  bool set_joints_[4];
-  Joint *joints_[4];
-  Geom *base_geom_;
+      sensors::RaySensorPtr left_cliff_sensor_;
+      sensors::RaySensorPtr right_cliff_sensor_;
+      sensors::RaySensorPtr front_cliff_sensor_;
 
-  RaySensor *left_cliff_sensor_;
-  RaySensor *leftfront_cliff_sensor_;
-  RaySensor *rightfront_cliff_sensor_;
-  RaySensor *right_cliff_sensor_;
-  RaySensor *wall_sensor_;
+      tf::TransformBroadcaster transform_broadcaster_;
+      sensor_msgs::JointState js_;
 
-  tf::TransformBroadcaster transform_broadcaster_;
-  sensor_msgs::JointState js_;
+      turtlebot_node::TurtlebotSensorState sensor_state_;
 
-  turtlebot_node::TurtlebotSensorState sensor_state_;
+      void spin();
+      boost::thread *spinner_thread_;
 
-  void spin();
-  boost::thread *spinner_thread_;
-};
+      event::ConnectionPtr contact_event_;
+
+      // Pointer to the update event connection
+      event::ConnectionPtr updateConnection;
+  };
 }
-
-#endif /* GAZEBO_GAZEBO_ROS_KOBUKI_H__ */
+#endif
