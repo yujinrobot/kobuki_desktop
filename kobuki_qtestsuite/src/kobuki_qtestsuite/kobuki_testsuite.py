@@ -1,5 +1,4 @@
 import os
-from QtCore import Signal, Slot
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
@@ -7,6 +6,8 @@ import rospy
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
+from python_qt_binding.QtCore import Signal,Slot
+from python_qt_binding.QtGui import QFrame
 from rqt_py_common.extended_combo_box import ExtendedComboBox
 from geometry_msgs.msg import Twist
 

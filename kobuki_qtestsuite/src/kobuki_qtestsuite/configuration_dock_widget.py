@@ -1,13 +1,9 @@
-import os
-from QtCore import Signal, Slot
-from QtGui import QDockWidget
-import math
-
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 
-from python_qt_binding import loadUi
+from python_qt_binding.QtCore import Signal,Slot
+from python_qt_binding.QtGui import QDockWidget
 from rqt_py_common.extended_combo_box import ExtendedComboBox
 
 # Local resource imports
@@ -19,11 +15,6 @@ class ConfigurationDockWidget(QDockWidget):
     def __init__(self, parent=None):
         super(ConfigurationDockWidget, self).__init__(parent)
         
-        # get path to UI file which is a sibling of this file
-        # in this example the .ui file is in the same folder as this Python file
-        #ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ui', 'configuration_dock.ui')
-        # extend the widget with all attributes and children from UI file
-        #loadUi(ui_file, self, {'ExtendedComboBox': ExtendedComboBox})
         self._ui = Ui_configuration_dock_widget()
         #self._ui.setupUi(self)
 

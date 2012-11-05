@@ -1,15 +1,16 @@
 import os
-from QtCore import Signal, Slot
-from QtGui import QFrame
 import math
 
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
-import kobuki_testsuite
+from rospy import Rate
+#from kobuki_testsuite import bar
 #from kobuki_testsuite import TravelForward
 
 from python_qt_binding import loadUi
+from python_qt_binding.QtCore import Signal,Slot
+from python_qt_binding.QtGui import QFrame
 
 # Local resource imports
 import detail.common_rc
@@ -20,8 +21,7 @@ class ClimbingFrame(QFrame):
     def __init__(self, parent=None):
         super(ClimbingFrame, self).__init__(parent)
         self._ui = Ui_climbing_frame()
-        kobuki_testsuite.foo()
-        self._motion = kobuki_testsuite.TravelForward('/cmd_vel','/odom')
+        #self._motion = kobuki_testsuite.TravelForward('/cmd_vel','/odom')
 
 
     def setupUi(self):
@@ -31,7 +31,7 @@ class ClimbingFrame(QFrame):
 
     def shutdown(self):
         rospy.loginfo("Kobuki TestSuite: climbing test shutdown")
-        self._motion.shutdown()
+        #self._motion.shutdown()
         
     ##########################################################################
     # Motion Callbacks
