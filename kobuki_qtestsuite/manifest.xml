@@ -13,7 +13,7 @@
     <rqt_gui plugin="${prefix}/plugins/kobuki_testsuite.xml"/>
   </export>
   <depend package="rospy"/>
-  <depend package="rospy"/>
+  <depend package="kobuki_testsuite"/>
   <depend package="qt_gui_py_common"/>
   <depend package="rqt_gui"/>
   <depend package="rqt_gui_py"/>

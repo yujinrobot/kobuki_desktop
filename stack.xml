@@ -7,12 +7,6 @@
   <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/kobuki_simulator</url>
   <depend stack="simulator_gazebo"/>
-  <depend stack="diagnostics"/> 
   <depend stack="robot_model"/> 
-  <depend stack="navigation"/> 
-  <depend stack="nodelet_core"/> 
-  <depend stack="turtlebot"/> 
-  <depend stack="ros_comm"/> 
-  <depend stack="common_msgs"/> 
-  <depend stack="geometry"/> 
+  <depend stack="kobuki"/> 
 </stack>

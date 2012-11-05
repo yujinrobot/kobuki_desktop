@@ -8,12 +8,11 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QWidget
 from rqt_py_common.extended_combo_box import ExtendedComboBox
-
 from geometry_msgs.msg import Twist
 
 # Local resource imports
-import resources.common
-import resources.climbing
+import detail.common_rc
+import detail.climbing_rc
 from .kobuki_testsuite_widget import KobukiTestSuiteWidget
 from .configuration_dock_widget import ConfigurationDockWidget
 
