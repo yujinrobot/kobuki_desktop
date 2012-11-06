@@ -14,7 +14,7 @@ from geometry_msgs.msg import Twist
 # Local resource imports
 import detail.common_rc
 import detail.climbing_rc
-from .kobuki_testsuite_widget import KobukiTestSuiteWidget
+from .testsuite_widget import TestSuiteWidget
 from .configuration_dock_widget import ConfigurationDockWidget
 
 class KobukiTestSuite(Plugin):
@@ -25,7 +25,7 @@ class KobukiTestSuite(Plugin):
         self.setObjectName('Kobuki Test Suite')
 
         # create QWidget
-        self._widget = KobukiTestSuiteWidget()
+        self._widget = TestSuiteWidget()
         #self._widget = ConfigurationDockWidget()
 
         # add widget to the user interface

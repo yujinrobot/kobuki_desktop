@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>kobuki_testsuite_widget</class>
- <widget class="QWidget" name="kobuki_testsuite_widget">
+ <class>testsuite_widget</class>
+ <widget class="QWidget" name="testsuite_widget">
   <property name="geometry">
    <rect>
     <x>0</x>

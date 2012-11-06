@@ -1,5 +1,5 @@
 <library path="../src">
-  <class name="Kobuki Test Suite" type="kobuki_qtestsuite.kobuki_testsuite.KobukiTestSuite" base_class_type="rqt_gui_py::Plugin">
+  <class name="Kobuki Test Suite" type="kobuki_qtestsuite.testsuite.KobukiTestSuite" base_class_type="rqt_gui_py::Plugin">
     <description>
       Plugin for the kobuki testsuite.
     </description>

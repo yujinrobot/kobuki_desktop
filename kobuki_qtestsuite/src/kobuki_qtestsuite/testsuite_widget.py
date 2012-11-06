@@ -5,7 +5,6 @@ import rospy
 from python_qt_binding.QtCore import Signal,Slot
 from python_qt_binding.QtGui import QWidget
 from rqt_py_common.extended_combo_box import ExtendedComboBox
-from qt_gui_py_common.worker_thread import WorkerThread
 
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
@@ -13,17 +12,17 @@ from nav_msgs.msg import Odometry
 # Local resource imports
 import detail.common_rc
 import detail.climbing_rc
-from detail.kobuki_testsuite_ui import Ui_kobuki_testsuite_widget
+from detail.testsuite_ui import Ui_testsuite_widget
 from configuration_dock_widget import ConfigurationDockWidget
 from climbing_frame import ClimbingFrame
 from wandering_frame import WanderingFrame
 
-class KobukiTestSuiteWidget(QWidget):
+class TestSuiteWidget(QWidget):
 
     def __init__(self, parent=None):
-        super(KobukiTestSuiteWidget, self).__init__(parent)
+        super(TestSuiteWidget, self).__init__(parent)
         
-        self._ui = Ui_kobuki_testsuite_widget()
+        self._ui = Ui_testsuite_widget()
 
         self._run_thread = None
         self._current_pose = None
