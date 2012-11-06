@@ -31,7 +31,7 @@ class ClimbingFrame(QFrame):
 
     def shutdown(self):
         rospy.loginfo("Kobuki TestSuite: climbing test shutdown")
-        #self._motion.shutdown()
+        self._motion.shutdown()
         
     ##########################################################################
     # Motion Callbacks
