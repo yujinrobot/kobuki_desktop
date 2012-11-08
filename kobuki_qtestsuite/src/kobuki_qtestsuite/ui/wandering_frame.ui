@@ -88,12 +88,12 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>0.200000000000000</double>
+         <double>0.400000000000000</double>
         </property>
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="QDoubleSpinBox" name="distance_spinbox">
+       <widget class="QDoubleSpinBox" name="angular_speed_spinbox">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -101,23 +101,23 @@
          <string/>
         </property>
         <property name="suffix">
-         <string> m</string>
+         <string> rad/s</string>
         </property>
         <property name="maximum">
-         <double>2.000000000000000</double>
+         <double>3.140000000000000</double>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>1.000000000000000</double>
+         <double>1.800000000000000</double>
         </property>
        </widget>
       </item>
       <item row="0" column="4">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Distance</string>
+         <string>Angular Speed</string>
         </property>
        </widget>
       </item>

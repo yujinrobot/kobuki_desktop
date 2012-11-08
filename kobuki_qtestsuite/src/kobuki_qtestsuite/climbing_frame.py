@@ -38,10 +38,8 @@ class ClimbingFrame(QFrame):
     ##########################################################################
 
     def _run_finished(self):
-        print("Run Finished Callback")
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        print("Run Finished Done")
 
     ##########################################################################
     # Qt Callbacks

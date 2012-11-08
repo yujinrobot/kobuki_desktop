@@ -2,10 +2,20 @@
 
 <p>Puts the kobuki into a wandering mode - useful for checking sound levels as well as cliff/bump detection capabilities.</p>
 
-<h2>Running</h2>
+<h2>Bump Test</h2>
+
+Put it aground and start wandering. The bump sensor will reorient the robot in a random direction every time it is triggered.
+
+
+<h2>Cliff Test</h2>
+
+This is easier to test by picking up the robot, however cliff and wheel drop sensors will automatically disable the robot
+if the commanded speed is high, so make sure you set this to a low value.
 
 <ul>
-  <li>Set the parameters (speed, travel distance).</li>
-  <li>Start</li>
+  <li>Set linear speed to 0.1</li>
+  <li>Pick up the robot and flip it over</li>
+  <li>Click the start button</li>
+  <li>Wave your hand over the cliff sensors</li>
 </ul>
 
