@@ -38,9 +38,12 @@ class TestSuiteWidget(QWidget):
         self._current_pose = None
         self._starting_pose = None
         self._current_speed = 0.0
+        self._tabs = []
         
     def setupUi(self):
         self._ui.setupUi(self)
+        self._tabs = [self._ui.battery_profile_frame, self._ui.battery_profile_frame, self._ui.battery_profile_frame, self._ui.battery_profile_frame ] #self._ui.gyro_drift_frame, self._ui.payload_frame, self._ui.cliff_sensor_frame]
+        self._current_tab = self._tabs[self._ui.testsuite_tab_widget.currentIndex()]
         self._ui.configuration_dock.setupUi()
         self._ui.battery_profile_frame.setupUi()
         self._ui.climbing_frame.setupUi()
@@ -65,19 +68,9 @@ class TestSuiteWidget(QWidget):
     def on_odom_topic_combo_box_currentIndexChanged(self, topic_name):
         # Need to redo the subscriber here
         pass
-
-
-    def _soft_stop(self):
-        rate = rospy.Rate(10)
-        while self._current_speed > 0.0:
-            self._current_speed -= 0.01
-            cmd = Twist()
-            cmd.linear.x = self._current_speed
-            self.cmd_vel_publisher.publish(cmd)
-            rate.sleep()
-        self._current_speed = 0.00
-        cmd = Twist()
-        cmd.linear.x = 0.0
-        self.cmd_vel_publisher.publish(cmd)
-        
     
+    @Slot(int)
+    def on_testsuite_tab_widget_currentChanged(self, index):
+        self._current_tab.stop()
+        self._current_tab = self._tabs[self._ui.testsuite_tab_widget.currentIndex()]
+

@@ -130,9 +130,9 @@ class BatteryProfileFrame(QFrame):
         '''
           Hardcore stoppage - straight to zero.
         '''
-        self._stop()
+        self.stop()
         
-    def _stop(self):
+    def stop(self):
         self._motion.stop()
         self._motion_thread.wait()
         self._plot_widget.enable_timer(False)
@@ -149,4 +149,4 @@ class BatteryProfileFrame(QFrame):
 
     def robot_state_callback(self, data):
         if data.state == RobotStateEvent.OFFLINE:
-            self._stop()
+            self.stop()
