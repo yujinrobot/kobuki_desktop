@@ -21,7 +21,7 @@ import rospy
 from rqt_plot.mat_data_plot import MatDataPlot
 from qt_gui_py_common.worker_thread import WorkerThread
 from rqt_plot.plot_widget import PlotWidget
-#from kobuki_testsuite import SafeWandering
+from kobuki_testsuite import Rotate
 
 # Local resource imports
 import detail.common_rc
@@ -79,8 +79,8 @@ class BatteryProfileFrame(QFrame):
         super(BatteryProfileFrame, self).__init__(parent)
         self._battery_topic_name = "/mobile_base/sensors/core/battery"
         self._ui = Ui_battery_profile_frame()
-        #self._motion = SafeWandering('/cmd_vel','/odom', '/mobile_base/events/bumper', '/mobile_base/events/cliff')
-        #self._motion_thread = None
+        self._motion = Rotate('/cmd_vel')
+        self._motion_thread = None
 
     def setupUi(self):
         self._ui.setupUi(self)
@@ -92,11 +92,11 @@ class BatteryProfileFrame(QFrame):
         self._plot_widget.switch_data_plot_widget(BatteryProfileDataPlot(self._plot_widget))
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        #self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
+        self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
-        rospy.loginfo("Kobuki TestSuite: wandering test shutdown")
-        #self._motion.shutdown()
+        rospy.loginfo("Kobuki TestSuite: battery test shutdown")
+        self._motion.shutdown()
 
     ##########################################################################
     # Motion Callbacks
@@ -115,21 +115,20 @@ class BatteryProfileFrame(QFrame):
         self._plot_widget.add_topic(self._battery_topic_name)
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        #self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
-        #self._motion_thread.start()
+        self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
+        self._motion_thread.start()
 
     @Slot()
     def on_stop_button_clicked(self):
         '''
           Hardcore stoppage - straight to zero.
         '''
-        #self._motion.stop()
+        self._motion.stop()
+        self._motion_thread.wait()
         self._plot_widget.remove_topic(self._battery_topic_name)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
 
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
-        pass
-        # could use value, but easy to set like this
-        #self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
+        self._motion.init(self._ui.angular_speed_spinbox.value())
