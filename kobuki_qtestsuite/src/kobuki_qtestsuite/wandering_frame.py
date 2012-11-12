@@ -1,6 +1,15 @@
+#!/usr/bin/env python
+#       
+# License: BSD
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#
+##############################################################################
+# Imports
+##############################################################################
+
 import os
-from QtCore import Signal, Slot, pyqtSlot
-from QtGui import QFrame
+from python_qt_binding.QtCore import Signal, Slot, pyqtSlot
+from python_qt_binding.QtGui import QFrame
 import math
 
 import roslib
@@ -8,12 +17,9 @@ roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from kobuki_testsuite import SafeWandering
 
-from python_qt_binding import loadUi
-import QtCore
-
 # Local resource imports
 import detail.common_rc
-import detail.wandering_rc
+import detail.text_rc
 from detail.wandering_frame_ui import Ui_wandering_frame
 from qt_gui_py_common.worker_thread import WorkerThread
 

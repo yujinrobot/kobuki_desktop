@@ -180,7 +180,8 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/wandering.qrc"/>
+  <include location="../resources/text.qrc"/>
+  <include location="../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

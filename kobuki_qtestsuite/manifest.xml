@@ -18,6 +18,7 @@
   <depend package="rqt_gui"/>
   <depend package="rqt_gui_py"/>
   <depend package="rqt_py_common"/>
+  <depend package="rqt_plot"/>
   
   <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>

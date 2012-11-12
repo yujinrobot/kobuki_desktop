@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+#       
+# License: BSD
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#
+##############################################################################
+# Imports
+##############################################################################
+
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
@@ -14,6 +23,7 @@ import detail.common_rc
 import detail.climbing_rc
 from detail.testsuite_ui import Ui_testsuite_widget
 from configuration_dock_widget import ConfigurationDockWidget
+from battery_profile_frame import BatteryProfileFrame
 from climbing_frame import ClimbingFrame
 from wandering_frame import WanderingFrame
 
@@ -32,6 +42,7 @@ class TestSuiteWidget(QWidget):
     def setupUi(self):
         self._ui.setupUi(self)
         self._ui.configuration_dock.setupUi()
+        self._ui.battery_profile_frame.setupUi()
         self._ui.climbing_frame.setupUi()
         self._ui.wandering_frame.setupUi()
         #self.cmd_vel_publisher = rospy.Publisher(self._ui.configuration_dock.cmd_vel_topic_name(), Twist)

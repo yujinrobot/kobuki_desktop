@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+#       
+# License: BSD
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#
+##############################################################################
+# Imports
+##############################################################################
+
 import os
 import math
 
@@ -13,7 +22,7 @@ from python_qt_binding.QtGui import QFrame
 
 # Local resource imports
 import detail.common_rc
-import detail.climbing_rc
+import detail.text_rc
 from detail.climbing_frame_ui import Ui_climbing_frame
 from qt_gui_py_common.worker_thread import WorkerThread
 

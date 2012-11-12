@@ -180,7 +180,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/climbing.qrc"/>
+  <include location="../resources/text.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -23,6 +23,23 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="battery_profile_tab">
+      <attribute name="title">
+       <string>Battery Profile</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="BatteryProfileFrame" name="battery_profile_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="climbing_tab">
       <attribute name="title">
        <string>Climbing</string>
@@ -90,9 +107,16 @@
    <header>kobuki_qtestsuite.climbing_frame</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>BatteryProfileFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.battery_profile_frame</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="../resources/common.qrc"/>
+  <include location="../resources/text.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -20,32 +20,32 @@
       <property name="title">
        <string>Topics</string>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
           <string>Cmd Vel Topic</string>
          </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="1">
         <widget class="ExtendedComboBox" name="cmd_vel_topic_combo_box">
          <property name="editable">
           <bool>false</bool>
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="ExtendedComboBox" name="odom_topic_combo_box">
-         <property name="editable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
+       <item row="1" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>Odom Topic</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="ExtendedComboBox" name="odom_topic_combo_box">
+         <property name="editable">
+          <bool>false</bool>
          </property>
         </widget>
        </item>

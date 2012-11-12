@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+#       
+# License: BSD
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#
+##############################################################################
+# Imports
+##############################################################################
+
 import os
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')

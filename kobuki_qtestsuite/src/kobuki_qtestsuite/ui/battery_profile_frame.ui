@@ -33,7 +33,7 @@
      </property>
      <property name="source">
       <url>
-       <string>qrc:/text/wandering.html</string>
+       <string>qrc:/text/battery_profile.html</string>
       </url>
      </property>
      <property name="openLinks">
@@ -148,7 +148,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/wandering.qrc"/>
+  <include location="../resources/text.qrc"/>
  </resources>
  <connections/>
 </ui>
