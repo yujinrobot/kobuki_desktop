@@ -42,6 +42,11 @@ class ClimbingFrame(QFrame):
         rospy.loginfo("Kobuki TestSuite: climbing test shutdown")
         self._motion.shutdown()
         
+    def stop(self):
+        self._motion.stop()
+        self._ui.start_button.setEnabled(True)
+        self._ui.stop_button.setEnabled(False)
+
     ##########################################################################
     # Motion Callbacks
     ##########################################################################
@@ -63,9 +68,4 @@ class ClimbingFrame(QFrame):
 
     @Slot()
     def on_stop_button_clicked(self):
-        '''
-          Hardcore stoppage - straight to zero.
-        '''
-        self._motion.stop()
-        self._ui.start_button.setEnabled(True)
-        self._ui.stop_button.setEnabled(False)
+        self.stop()

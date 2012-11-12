@@ -134,7 +134,8 @@ class BatteryProfileFrame(QFrame):
         
     def stop(self):
         self._motion.stop()
-        self._motion_thread.wait()
+        if self._motion_thread:
+            self._motion_thread.wait()
         self._plot_widget.enable_timer(False)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)

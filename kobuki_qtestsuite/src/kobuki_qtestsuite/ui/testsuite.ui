@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>697</width>
-    <height>559</height>
+    <width>1021</width>
+    <height>562</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
    <item>
     <widget class="QTabWidget" name="testsuite_tab_widget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="battery_profile_tab">
       <attribute name="title">
@@ -30,6 +30,108 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="BatteryProfileFrame" name="battery_profile_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gyro_tab">
+      <attribute name="title">
+       <string>Gyro Drift</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="GyroDriftFrame" name="gyro_drift_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="payload_tab">
+      <attribute name="title">
+       <string>Payload</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="PayloadFrame" name="payload_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="cliff_sensor_tab">
+      <attribute name="title">
+       <string>Cliff</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="CliffSensorFrame" name="cliff_sensor_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="life_tab">
+      <attribute name="title">
+       <string>Life</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="LifeFrame" name="life_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="wandering_tab">
+      <attribute name="title">
+       <string>Wander</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="WanderingFrame" name="wandering_frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="bump_tab">
+      <attribute name="title">
+       <string>Bump</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="BumpFrame" name="bump_frame">
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -56,28 +158,6 @@
         </widget>
        </item>
       </layout>
-     </widget>
-     <widget class="QWidget" name="wandering_tab">
-      <attribute name="title">
-       <string>Wandering</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="WanderingFrame" name="wandering_frame">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="gyro_tab">
-      <attribute name="title">
-       <string>Gyro</string>
-      </attribute>
      </widget>
     </widget>
    </item>
@@ -111,6 +191,36 @@
    <class>BatteryProfileFrame</class>
    <extends>QFrame</extends>
    <header>kobuki_qtestsuite.battery_profile_frame</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GyroDriftFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.gyro_drift_frame</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BumpFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.bump_frame</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CliffSensorFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.cliff_sensor_frame</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PayloadFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.payload_frame</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LifeFrame</class>
+   <extends>QFrame</extends>
+   <header>kobuki_qtestsuite.life_frame</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

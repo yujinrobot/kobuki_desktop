@@ -8,42 +8,43 @@
 ##############################################################################
 
 import os
+import numpy
+import operator
 from python_qt_binding.QtCore import Signal, Slot, pyqtSlot
-from python_qt_binding.QtGui import QFrame
+from python_qt_binding.QtGui import QFrame, QVBoxLayout
 import math
 
 import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
-from kobuki_testsuite import SafeWandering
+from qt_gui_py_common.worker_thread import WorkerThread
 
 # Local resource imports
 import detail.common_rc
 import detail.text_rc
-from detail.wandering_frame_ui import Ui_wandering_frame
-from qt_gui_py_common.worker_thread import WorkerThread
+from detail.payload_frame_ui import Ui_payload_frame
 
-class WanderingFrame(QFrame):
+##############################################################################
+# Classes
+##############################################################################
+
+class PayloadFrame(QFrame):
     def __init__(self, parent=None):
-        super(WanderingFrame, self).__init__(parent)
-        self._ui = Ui_wandering_frame()
-        self._motion = SafeWandering('/cmd_vel','/odom', '/mobile_base/events/bumper', '/mobile_base/events/cliff')
+        super(PayloadFrame, self).__init__(parent)
+        self._ui = Ui_payload_frame()
+        #self._motion = Rotate('/cmd_vel')
+        #self.robot_state_subscriber = rospy.Subscriber("/mobile_base/events/robot_state", RobotStateEvent, self.robot_state_callback)
         self._motion_thread = None
 
     def setupUi(self):
         self._ui.setupUi(self)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
+        #self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
-        rospy.loginfo("Kobuki TestSuite: wandering test shutdown")
-        self._motion.shutdown()
-
-    def stop(self):
-        self._motion.stop()
-        self._ui.start_button.setEnabled(True)
-        self._ui.stop_button.setEnabled(False)
+        rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
+        #self._motion.shutdown()
 
     ##########################################################################
     # Motion Callbacks
@@ -60,19 +61,31 @@ class WanderingFrame(QFrame):
     def on_start_button_clicked(self):
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
-        self._motion_thread.start()
+        #self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
+        #self._motion_thread.start()
 
     @Slot()
     def on_stop_button_clicked(self):
         self.stop()
         
-    @pyqtSlot(float)
-    def on_speed_spinbox_valueChanged(self, value):
-        # could use value, but easy to set like this
-        self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
-
+    def stop(self):
+        #self._motion.stop()
+        if self._motion_thread:
+            self._motion_thread.wait()
+        self._ui.start_button.setEnabled(True)
+        self._ui.stop_button.setEnabled(False)
+        
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
-        # could use value, but easy to set like this
-        self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
+        pass
+        #self._motion.init(self._ui.angular_speed_spinbox.value())
+
+    ##########################################################################
+    # Ros Callbacks
+    ##########################################################################
+
+    #def robot_state_callback(self, data):
+    #    if data.state == RobotStateEvent.OFFLINE:
+    #        self.stop()
+
+#
