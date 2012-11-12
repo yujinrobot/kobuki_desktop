@@ -63,6 +63,20 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Robot State</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="ExtendedComboBox" name="robot_state_topic_combo_box">
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

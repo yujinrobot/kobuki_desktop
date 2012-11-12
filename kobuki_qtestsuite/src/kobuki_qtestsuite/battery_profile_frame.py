@@ -22,6 +22,7 @@ from rqt_plot.mat_data_plot import MatDataPlot
 from qt_gui_py_common.worker_thread import WorkerThread
 from rqt_plot.plot_widget import PlotWidget
 from kobuki_testsuite import Rotate
+from kobuki_comms.msg import RobotStateEvent
 
 # Local resource imports
 import detail.common_rc
@@ -80,6 +81,7 @@ class BatteryProfileFrame(QFrame):
         self._battery_topic_name = "/mobile_base/sensors/core/battery"
         self._ui = Ui_battery_profile_frame()
         self._motion = Rotate('/cmd_vel')
+        self.robot_state_subscriber = rospy.Subscriber("/mobile_base/events/robot_state", RobotStateEvent, self.robot_state_callback)
         self._motion_thread = None
 
     def setupUi(self):
@@ -112,6 +114,11 @@ class BatteryProfileFrame(QFrame):
     @Slot()
     def on_start_button_clicked(self):
         self._plot_widget._start_time = rospy.get_time()
+        self._plot_widget.enable_timer(True)
+        try:
+            self._plot_widget.remove_topic(self._battery_topic_name)
+        except KeyError:
+            pass
         self._plot_widget.add_topic(self._battery_topic_name)
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
@@ -123,12 +130,23 @@ class BatteryProfileFrame(QFrame):
         '''
           Hardcore stoppage - straight to zero.
         '''
+        self._stop()
+        
+    def _stop(self):
         self._motion.stop()
         self._motion_thread.wait()
-        self._plot_widget.remove_topic(self._battery_topic_name)
+        self._plot_widget.enable_timer(False)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-
+        
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
         self._motion.init(self._ui.angular_speed_spinbox.value())
+
+    ##########################################################################
+    # Ros Callbacks
+    ##########################################################################
+
+    def robot_state_callback(self, data):
+        if data.state == RobotStateEvent.OFFLINE:
+            self._stop()
