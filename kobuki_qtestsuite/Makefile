@@ -21,7 +21,6 @@ all:
 	pyuic4 -o ${DIR}/cliff_sensor_frame_ui.py ${UI_DIR}/cliff_sensor_frame.ui
 	pyuic4 -o ${DIR}/life_frame_ui.py ${UI_DIR}/life_frame.ui
 	pyuic4 -o ${DIR}/wandering_frame_ui.py ${UI_DIR}/wandering_frame.ui
-	pyuic4 -o ${DIR}/bump_frame_ui.py ${UI_DIR}/bump_frame.ui
 	pyuic4 -o ${DIR}/climbing_frame_ui.py ${UI_DIR}/climbing_frame.ui
 	
 clean:

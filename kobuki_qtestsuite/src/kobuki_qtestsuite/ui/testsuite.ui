@@ -20,6 +20,9 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <widget class="QTabWidget" name="testsuite_tab_widget">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -125,23 +128,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="bump_tab">
-      <attribute name="title">
-       <string>Bump</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_8">
-       <item>
-        <widget class="BumpFrame" name="bump_frame">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QWidget" name="climbing_tab">
       <attribute name="title">
        <string>Climbing</string>
@@ -197,12 +183,6 @@
    <class>GyroDriftFrame</class>
    <extends>QFrame</extends>
    <header>kobuki_qtestsuite.gyro_drift_frame</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>BumpFrame</class>
-   <extends>QFrame</extends>
-   <header>kobuki_qtestsuite.bump_frame</header>
    <container>1</container>
   </customwidget>
   <customwidget>
