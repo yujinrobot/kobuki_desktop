@@ -100,8 +100,6 @@ class LifeFrame(QFrame):
 
     @Slot()
     def update_progress_callback(self):
-        print "Update progress"
-        print("  self._state : %s"%self._state)
         if self._state == LifeFrame.STATE_RUN:
             new_value = self._ui.run_progress.value()+1
             if new_value == self._ui.run_progress.maximum():

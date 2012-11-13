@@ -128,23 +128,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="climbing_tab">
-      <attribute name="title">
-       <string>Climbing</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="ClimbingFrame" name="climbing_frame">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
    <item>
@@ -165,12 +148,6 @@
    <class>WanderingFrame</class>
    <extends>QFrame</extends>
    <header>kobuki_qtestsuite.wandering_frame</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ClimbingFrame</class>
-   <extends>QFrame</extends>
-   <header>kobuki_qtestsuite.climbing_frame</header>
    <container>1</container>
   </customwidget>
   <customwidget>
