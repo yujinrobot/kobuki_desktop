@@ -146,7 +146,6 @@ private:
   RobotList  evaluated;
 
   std::string out_file;  // csv output file path
-  std::string ftdi_path; // serial flashing program
 
   /*********************
   ** Publishers

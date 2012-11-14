@@ -779,7 +779,6 @@ bool QNode::init() {
   }
   ros::start(); // explicitly needed since our nodehandle is going out of scope.
   ros::NodeHandle nh;
-  nh.getParam("kobuki_factory_test/ftdi_kobuki_path",       ftdi_path);
   nh.getParam("kobuki_factory_test/test_result_output_file", out_file);
 
   // Subscribe to kobuki sensors and publish to its actuators
