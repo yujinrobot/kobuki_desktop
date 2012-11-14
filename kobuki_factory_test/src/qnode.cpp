@@ -18,9 +18,9 @@
 #include <ros/ros.h>
 
 #include <geometry_msgs/Twist.h>
-#include <kobuki_comms/Led.h>
-#include <kobuki_comms/Sound.h>
-#include <kobuki_comms/DigitalOutput.h>
+#include <kobuki_msgs/Led.h>
+#include <kobuki_msgs/Sound.h>
+#include <kobuki_msgs/DigitalOutput.h>
 
 #include "../include/kobuki_factory_test/qnode.hpp"
 #include "../include/kobuki_factory_test/test_imu.hpp"
@@ -80,7 +80,7 @@ QNode::~QNode() {
   wait();
 }
 
-void QNode::versionInfoCB(const kobuki_comms::VersionInfo::ConstPtr& msg) {
+void QNode::versionInfoCB(const kobuki_msgs::VersionInfo::ConstPtr& msg) {
   if ((under_test == NULL) || (under_test->device_ok[Robot::V_INFO] == true))
     return;
 
@@ -95,7 +95,7 @@ void QNode::versionInfoCB(const kobuki_comms::VersionInfo::ConstPtr& msg) {
       under_test->serial.c_str(), under_test->version_nb().c_str());
 }
 
-void QNode::sensorsCoreCB(const kobuki_comms::SensorState::ConstPtr& msg) {
+void QNode::sensorsCoreCB(const kobuki_msgs::SensorState::ConstPtr& msg) {
   if (under_test == NULL)
     return;
 
@@ -125,7 +125,7 @@ void QNode::sensorsCoreCB(const kobuki_comms::SensorState::ConstPtr& msg) {
   }
 }
 
-void QNode::dockBeaconCB(const kobuki_comms::DockInfraRed::ConstPtr& msg) {
+void QNode::dockBeaconCB(const kobuki_msgs::DockInfraRed::ConstPtr& msg) {
   if ((under_test == NULL) || (under_test->ir_dock_ok() == true))
     return;
 
@@ -161,32 +161,32 @@ void QNode::gyroscopeCB(const sensor_msgs::Imu::ConstPtr& msg) {
   under_test->imu_data[4] = tf::getYaw(msg->orientation);
 }
 
-void QNode::buttonEventCB(const kobuki_comms::ButtonEvent::ConstPtr& msg) {
+void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
   if (under_test == NULL)
     return;
 
   if (((current_step == TEST_LEDS) || (current_step == TEST_SOUNDS) ||
        (current_step == TEST_DIGITAL_IO_PORTS)) &&
-      (msg->state  == kobuki_comms::ButtonEvent::RELEASED)) {
+      (msg->state  == kobuki_msgs::ButtonEvent::RELEASED)) {
     // We are currently evaluating a device that requires tester feedback
     // he must press the left button if test is ok or the right otherwise
-    if ((msg->button == kobuki_comms::ButtonEvent::Button0) ||
-        (msg->button == kobuki_comms::ButtonEvent::Button2)) {
+    if ((msg->button == kobuki_msgs::ButtonEvent::Button0) ||
+        (msg->button == kobuki_msgs::ButtonEvent::Button2)) {
       if (current_step == TEST_LEDS) {
-        under_test->device_ok[Robot::LED_1] = msg->button == kobuki_comms::ButtonEvent::Button0;
-        under_test->device_ok[Robot::LED_2] = msg->button == kobuki_comms::ButtonEvent::Button0;
+        under_test->device_ok[Robot::LED_1] = msg->button == kobuki_msgs::ButtonEvent::Button0;
+        under_test->device_ok[Robot::LED_2] = msg->button == kobuki_msgs::ButtonEvent::Button0;
       }
       else if (current_step == TEST_SOUNDS) {
-        under_test->device_ok[Robot::SOUNDS] = msg->button == kobuki_comms::ButtonEvent::Button0;
+        under_test->device_ok[Robot::SOUNDS] = msg->button == kobuki_msgs::ButtonEvent::Button0;
       }
       else if (current_step == TEST_DIGITAL_IO_PORTS) {
-        under_test->device_ok[Robot::D_INPUT] = msg->button == kobuki_comms::ButtonEvent::Button0;
-        under_test->device_ok[Robot::D_OUTPUT] = msg->button == kobuki_comms::ButtonEvent::Button0;
+        under_test->device_ok[Robot::D_INPUT] = msg->button == kobuki_msgs::ButtonEvent::Button0;
+        under_test->device_ok[Robot::D_OUTPUT] = msg->button == kobuki_msgs::ButtonEvent::Button0;
       }
 
-      if (msg->button == kobuki_comms::ButtonEvent::Button0)
+      if (msg->button == kobuki_msgs::ButtonEvent::Button0)
         log(Info, "%s evaluation completed", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
-      else if (msg->button == kobuki_comms::ButtonEvent::Button2)
+      else if (msg->button == kobuki_msgs::ButtonEvent::Button2)
         log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");  // TODO  should we cancel eval?
 
       Q_EMIT requestMW(new QNodeRequest()); // hide user message
@@ -215,7 +215,7 @@ void QNode::buttonEventCB(const kobuki_comms::ButtonEvent::ConstPtr& msg) {
 
     log(Info, "Button %d %s, as expected", msg->button, msg->state?"pressed":"released");
 
-    if (msg->state == kobuki_comms::ButtonEvent::RELEASED)
+    if (msg->state == kobuki_msgs::ButtonEvent::RELEASED)
       under_test->device_ok[dev] = true;
 
     if (current_step == BUTTON_2_RELEASED)
@@ -227,7 +227,7 @@ void QNode::buttonEventCB(const kobuki_comms::ButtonEvent::ConstPtr& msg) {
     log(Warn, "Unexpected button event: %d %s", msg->button, msg->state?"pressed":"released");
 }
 
-void QNode::bumperEventCB(const kobuki_comms::BumperEvent::ConstPtr& msg) {
+void QNode::bumperEventCB(const kobuki_msgs::BumperEvent::ConstPtr& msg) {
   if ((under_test == NULL) || (under_test->bumpers_ok() == true))
     return;
 
@@ -245,7 +245,7 @@ void QNode::bumperEventCB(const kobuki_comms::BumperEvent::ConstPtr& msg) {
     log(Info, "Bumper %d %s, as expected", msg->bumper, msg->state?"pressed":"released");
     under_test->device_val[Robot::BUMPER_L + msg->bumper]++;
 
-    if (msg->state == kobuki_comms::BumperEvent::PRESSED) {
+    if (msg->state == kobuki_msgs::BumperEvent::PRESSED) {
       move(-TEST_BUMPERS_V, 0.0, 1.5);
       current_step++;
     }
@@ -261,18 +261,18 @@ void QNode::bumperEventCB(const kobuki_comms::BumperEvent::ConstPtr& msg) {
     log(Warn, "Unexpected bumper event: %d %s", msg->bumper, msg->state?"pressed":"released");
 }
 
-void QNode::wDropEventCB(const kobuki_comms::WheelDropEvent::ConstPtr& msg) {
+void QNode::wDropEventCB(const kobuki_msgs::WheelDropEvent::ConstPtr& msg) {
   if ((under_test == NULL) || (current_step != TEST_WHEEL_DROP_SENSORS))
     return;
 
   Robot::Device dev =
-      (msg->wheel == kobuki_comms::WheelDropEvent::LEFT)?Robot::W_DROP_L:Robot::W_DROP_R;
+      (msg->wheel == kobuki_msgs::WheelDropEvent::LEFT)?Robot::W_DROP_L:Robot::W_DROP_R;
   if (under_test->device_ok[dev] == true)
     return;
 
-  if (((msg->state == kobuki_comms::WheelDropEvent::DROPPED) &&
+  if (((msg->state == kobuki_msgs::WheelDropEvent::DROPPED) &&
        (under_test->device_val[dev] % 2 == 0)) ||
-      ((msg->state == kobuki_comms::WheelDropEvent::RAISED) &&
+      ((msg->state == kobuki_msgs::WheelDropEvent::RAISED) &&
        (under_test->device_val[dev] % 2 == 1))) {
     log(Info, "%s wheel %s, as expected", msg->wheel?"Right":"Left", msg->state?"dropped":"raised");
     under_test->device_val[dev]++;
@@ -290,19 +290,19 @@ void QNode::wDropEventCB(const kobuki_comms::WheelDropEvent::ConstPtr& msg) {
     log(Warn, "Unexpected wheel drop event: %d, %d", msg->wheel, msg->state);
 }
 
-void QNode::cliffEventCB(const kobuki_comms::CliffEvent::ConstPtr& msg) {
+void QNode::cliffEventCB(const kobuki_msgs::CliffEvent::ConstPtr& msg) {
   if ((under_test == NULL) || (current_step != TEST_CLIFF_SENSORS))
     return;
 
-  Robot::Device dev = (msg->sensor == kobuki_comms::CliffEvent::LEFT) ?Robot::CLIFF_L:
-                      (msg->sensor == kobuki_comms::CliffEvent::RIGHT)?Robot::CLIFF_R:
+  Robot::Device dev = (msg->sensor == kobuki_msgs::CliffEvent::LEFT) ?Robot::CLIFF_L:
+                      (msg->sensor == kobuki_msgs::CliffEvent::RIGHT)?Robot::CLIFF_R:
                                                                        Robot::CLIFF_C;
   if (under_test->device_ok[dev] == true)
     return;
 
-  if (((msg->state == kobuki_comms::CliffEvent::CLIFF) &&
+  if (((msg->state == kobuki_msgs::CliffEvent::CLIFF) &&
        (under_test->device_val[dev] % 2 == 0)) ||
-      ((msg->state == kobuki_comms::CliffEvent::FLOOR) &&
+      ((msg->state == kobuki_msgs::CliffEvent::FLOOR) &&
        (under_test->device_val[dev] % 2 == 1))) {
     log(Info, "%s cliff sensor reports %s, as expected",
          dev == Robot::CLIFF_R?"Right":dev == Robot::CLIFF_C?"Center":"Left",
@@ -323,16 +323,16 @@ void QNode::cliffEventCB(const kobuki_comms::CliffEvent::ConstPtr& msg) {
     log(Warn, "Unexpected cliff sensor event: %d, %d", msg->sensor, msg->state);
 }
 
-void QNode::powerEventCB(const kobuki_comms::PowerSystemEvent::ConstPtr& msg) {
+void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
   if ((under_test == NULL) || (under_test->pwr_src_ok() == true))
     return;
 
   if ((current_step != TEST_DC_ADAPTER) && (current_step != TEST_DOCKING_BASE)) {
     // It's not time to evaluate power sources; it can be just an irrelevant event but
     // also the tester can not be following the protocol or there's an error in the code
-    if ((msg->event != kobuki_comms::PowerSystemEvent::CHARGE_COMPLETED) &&
-        (msg->event != kobuki_comms::PowerSystemEvent::BATTERY_LOW)      &&
-        (msg->event != kobuki_comms::PowerSystemEvent::BATTERY_CRITICAL))
+    if ((msg->event != kobuki_msgs::PowerSystemEvent::CHARGE_COMPLETED) &&
+        (msg->event != kobuki_msgs::PowerSystemEvent::BATTERY_LOW)      &&
+        (msg->event != kobuki_msgs::PowerSystemEvent::BATTERY_CRITICAL))
       log(Warn, "Power event %d while current step is %d", msg->event, current_step);
 
     return;
@@ -342,13 +342,13 @@ void QNode::powerEventCB(const kobuki_comms::PowerSystemEvent::ConstPtr& msg) {
   if (under_test->device_ok[dev] == true)
     return;
 
-#define PTAE kobuki_comms::PowerSystemEvent::PLUGGED_TO_ADAPTER
-#define PTDE kobuki_comms::PowerSystemEvent::PLUGGED_TO_DOCKBASE
+#define PTAE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_ADAPTER
+#define PTDE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_DOCKBASE
 
   if (((((msg->event == PTAE) && (current_step == TEST_DC_ADAPTER)) ||
         ((msg->event == PTDE) && (current_step == TEST_DOCKING_BASE))) &&
         (under_test->device_val[dev] % 2 == 0)) ||
-      ((msg->event == kobuki_comms::PowerSystemEvent::UNPLUGGED) &&
+      ((msg->event == kobuki_msgs::PowerSystemEvent::UNPLUGGED) &&
        (under_test->device_val[dev] % 2 == 1))) {
     log(Info, "%s %s, as expected",
         (dev == Robot::PWR_JACK)?"Adapter":"Docking base", msg->event?"plugged":"unplugged");
@@ -365,7 +365,7 @@ void QNode::powerEventCB(const kobuki_comms::PowerSystemEvent::ConstPtr& msg) {
     log(Warn, "Unexpected power event: %d", msg->event);
 }
 
-void QNode::inputEventCB(const kobuki_comms::DigitalInputEvent::ConstPtr& msg) {
+void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
   if ((under_test == NULL) || (current_step != TEST_DIGITAL_IO_PORTS))
     return;
 
@@ -381,7 +381,7 @@ void QNode::inputEventCB(const kobuki_comms::DigitalInputEvent::ConstPtr& msg) {
   // evaluate input and output simultaneously, thanks to tester's confirmation/rejection
   for (unsigned int i = 0; i < msg->values.size(); i++) {
     if (msg->values[i] == false) {
-      kobuki_comms::DigitalOutput cmd;
+      kobuki_msgs::DigitalOutput cmd;
       cmd.values[i] = true;
       cmd.mask[i] = true;
       output_pub.publish(cmd);
@@ -389,7 +389,7 @@ void QNode::inputEventCB(const kobuki_comms::DigitalInputEvent::ConstPtr& msg) {
     }
   }
 
-  kobuki_comms::DigitalOutput cmd;
+  kobuki_msgs::DigitalOutput cmd;
   cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
   output_pub.publish(cmd);
 
@@ -439,8 +439,8 @@ void QNode::robotStatusCB(const diagnostic_msgs::DiagnosticStatus::ConstPtr& msg
   }
 }
 
-void QNode::robotEventCB(const kobuki_comms::RobotStateEvent::ConstPtr& msg) {
-  if (msg->state == kobuki_comms::RobotStateEvent::ONLINE) {
+void QNode::robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg) {
+  if (msg->state == kobuki_msgs::RobotStateEvent::ONLINE) {
     if (under_test != NULL) {
       log(Warn, "New robot connected while %s is still under evaluation; saving...",
            under_test->serial.c_str());
@@ -460,7 +460,7 @@ void QNode::robotEventCB(const kobuki_comms::RobotStateEvent::ConstPtr& msg) {
     v_info_sub.shutdown();
     v_info_sub = nh.subscribe("mobile_base/version_info", 1, &QNode::versionInfoCB, this);
   }
-  else if (msg->state == kobuki_comms::RobotStateEvent::OFFLINE) {
+  else if (msg->state == kobuki_msgs::RobotStateEvent::OFFLINE) {
     if (under_test != NULL) {
       if (under_test->all_ok() == false) {
         // Robot disconnected without finishing the evaluation; assume it failed to pass all tests
@@ -524,9 +524,9 @@ void QNode::testLeds(bool show_msg) {
               "Press left function button if so or right otherwise"));
   }
 
-  kobuki_comms::Led led;
+  kobuki_msgs::Led led;
 
-  for (uint8_t c = kobuki_comms::Led::GREEN; c <= kobuki_comms::Led::RED; c++) {
+  for (uint8_t c = kobuki_msgs::Led::GREEN; c <= kobuki_msgs::Led::RED; c++) {
     ros::Duration(0.5).sleep();
 
     led.value = c;
@@ -535,7 +535,7 @@ void QNode::testLeds(bool show_msg) {
 
     ros::Duration(0.5).sleep();
 
-    led.value = kobuki_comms::Led::BLACK;
+    led.value = kobuki_msgs::Led::BLACK;
     led_1_pub.publish(led);
     led_2_pub.publish(led);
   }
@@ -556,9 +556,9 @@ void QNode::testSounds(bool show_msg) {
 //  sounds = [Sound.ON, Sound.OFF, Sound.RECHARGE, Sound.BUTTON, Sound.ERROR, Sound.CLEANINGSTART, Sound.CLEANINGEND]
 //  texts = ["On", "Off", "Recharge", "Button", "Error", "CleaningStart", "CleaningEnd"]
 
-  kobuki_comms::Sound sound;
+  kobuki_msgs::Sound sound;
 
-  for (uint8_t s = kobuki_comms::Sound::ON; s <= kobuki_comms::Sound::CLEANINGEND; s++) {
+  for (uint8_t s = kobuki_msgs::Sound::ON; s <= kobuki_msgs::Sound::CLEANINGEND; s++) {
     ros::Duration(0.5).sleep();
 
     sound.value = s;
@@ -692,7 +692,7 @@ bool QNode::testAnalogIn(bool show_msg) {
        "The four LEDs below should get illuminated when completed"));
 
     // Ensure that all I/O test board's LEDs are off
-    kobuki_comms::DigitalOutput cmd;
+    kobuki_msgs::DigitalOutput cmd;
     cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
     output_pub.publish(cmd);
 
@@ -704,7 +704,7 @@ bool QNode::testAnalogIn(bool show_msg) {
 
     if ((under_test->device_val[Robot::A_INPUT] & 0xFFFF) == 0) {
       // Countdown finished; switch off LEDs
-      kobuki_comms::DigitalOutput cmd;
+      kobuki_msgs::DigitalOutput cmd;
       cmd.values[0] = cmd.values[3] = false;
       cmd.mask[0] = cmd.mask[3] = true;
       output_pub.publish(cmd);
@@ -720,7 +720,7 @@ bool QNode::testAnalogIn(bool show_msg) {
       under_test->device_val[Robot::A_INPUT] |= MIN_MASK;
       under_test->device_val[Robot::A_INPUT] |= int(frequency); // switch on for 1 second
 
-      kobuki_comms::DigitalOutput cmd;
+      kobuki_msgs::DigitalOutput cmd;
       cmd.values[0] = true;
       cmd.mask[0] = true;
       output_pub.publish(cmd);
@@ -730,7 +730,7 @@ bool QNode::testAnalogIn(bool show_msg) {
       under_test->device_val[Robot::A_INPUT] |= MAX_MASK;
       under_test->device_val[Robot::A_INPUT] |= int(frequency); // switch on for 1 second
 
-      kobuki_comms::DigitalOutput cmd;
+      kobuki_msgs::DigitalOutput cmd;
       cmd.values[3] = true;
       cmd.mask[3] = true;
       output_pub.publish(cmd);
@@ -797,11 +797,11 @@ bool QNode::init() {
   diags_sub   = nh.subscribe("diagnostics",                      10, &QNode::diagnosticsCB, this);
 
   cmd_vel_pub = nh.advertise <geometry_msgs::Twist>        ("cmd_vel", 1);
-  led_1_pub   = nh.advertise <kobuki_comms::Led>           ("mobile_base/commands/led1", 1);
-  led_2_pub   = nh.advertise <kobuki_comms::Led>           ("mobile_base/commands/led2", 1);
-  sound_pub   = nh.advertise <kobuki_comms::Sound>         ("mobile_base/commands/sound", 1);
-  output_pub  = nh.advertise <kobuki_comms::DigitalOutput> ("mobile_base/commands/digital_output", 1);
-  ext_pwr_pub = nh.advertise <kobuki_comms::DigitalOutput> ("mobile_base/commands/external_power", 1);
+  led_1_pub   = nh.advertise <kobuki_msgs::Led>           ("mobile_base/commands/led1", 1);
+  led_2_pub   = nh.advertise <kobuki_msgs::Led>           ("mobile_base/commands/led2", 1);
+  sound_pub   = nh.advertise <kobuki_msgs::Sound>         ("mobile_base/commands/sound", 1);
+  output_pub  = nh.advertise <kobuki_msgs::DigitalOutput> ("mobile_base/commands/digital_output", 1);
+  ext_pwr_pub = nh.advertise <kobuki_msgs::DigitalOutput> ("mobile_base/commands/external_power", 1);
 
   start();
 
@@ -952,7 +952,7 @@ void QNode::run() {
           under_test->device_val[Robot::D_INPUT] = 0;
 
           // Ensure that all I/O test board's LEDs are off
-          kobuki_comms::DigitalOutput cmd;
+          kobuki_msgs::DigitalOutput cmd;
           cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
           output_pub.publish(cmd);
         }
