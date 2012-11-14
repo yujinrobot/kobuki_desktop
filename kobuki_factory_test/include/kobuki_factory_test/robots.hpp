@@ -149,7 +149,7 @@ public:
 
   std::string& setSerial(const std::vector<uint32>& udid, char separator = '-') {
     char str[64];
-    snprintf(str, 64, "%d%c%d%c%d", udid[0], separator, udid[1], separator, udid[2]);
+    snprintf(str, 64, "%u%c%u%c%u", udid[0], separator, udid[1], separator, udid[2]);
 
     u_dev_id = udid;
     serial = str;
