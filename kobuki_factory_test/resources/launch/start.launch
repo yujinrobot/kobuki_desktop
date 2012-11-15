@@ -8,5 +8,16 @@
     <param name="camera_device_index"     value="0"/>
     <param name="camera_calibration_file" value="$(find kobuki_factory_test)/resources/camera_calibration.xml"/>
     <param name="test_result_output_file" value="/home/jorge/test_result.csv"/>
+
+    <!-- Testing configuration parameters -->    
+		<param name="motor_max_current"    value="20"/>
+		<param name="cliff_sensor_tests"   value="2"/>
+		<param name="wheel_drop_tests"     value="2"/>
+		<param name="power_plug_tests"     value="2"/>
+		<param name="min_power_charged"    value="2"/>
+		<param name="measure_charge_time"  value="10.0"/>
+		<param name="gyro_camera_max_diff" value="0.01"/>
+		<param name="ainput_min_threshold" value="0"/>
+		<param name="ainput_max_threshold" value="4095"/>
   </node>
 </launch>

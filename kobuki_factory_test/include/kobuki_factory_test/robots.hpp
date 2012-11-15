@@ -33,7 +33,7 @@ namespace kobuki_factory_test {
 
 #define AI_MIN  0
 #define AI_MAX  1
-#define AI_PRE  2
+#define AI_VAL  2
 #define AI_INC  3
 
 typedef signed short         int16;
@@ -122,7 +122,7 @@ public:
       analog_in[i][AI_MIN] = std::numeric_limits<int16>::max();
       analog_in[i][AI_MAX] = std::numeric_limits<int16>::min();
 
-      analog_in[i][AI_PRE] = -1;
+      analog_in[i][AI_VAL] = -1;
       analog_in[i][AI_INC] =  0;
     }
   };
@@ -179,13 +179,13 @@ public:
 
     if (os.tellp() == 0) {
       // Empty file; write header
-//      os << ",SN,DCJ,MOP,DST,VER,FW,HW,DOCK,BRU,S-Brush,,VAC,PSD,,,FIR,,,DIR,,,Forward,,Backward,,PE,,HALL,DOCK,CHR,G-Test,RESULT";
-      os << "SN,VER,,,PWR,,,,PSD,,,,BUMP,,,,IR-DOCK,,,,W-DROP,,,MOTORS,,,IMU,,BUTTON,,,LEDS,SNDS,D-IN,D-OUT,A-IN,,,,,,,,,RESULT\n";
-      os << ",HW,FW,SW,,JACK,DOCK,CHR,,L,C,R,,L,C,R,,L,C,R,,L,R,,L,R,,difference,F0,F1,F2,,,,,,MIN,MAX,MIN,MAX,MIN,MAX,MIN,MAX,\n";
+      os << "SN,VER,,,PWR,,,,,PSD,,,,BUMP,,,,IR-DOCK,,,,W-DROP,,,MOTORS,,,IMU,,BUTTON,,,LEDS,SNDS,D-IN,D-OUT,A-IN,,,,,,,,,RESULT\n";
+      os << ",HW,FW,SW,,JACK,DOCK,V0,CHR,,L,C,R,,L,C,R,,L,C,R,,L,R,,L,R,,difference,F0,F1,F2,,,,,,MIN,MAX,MIN,MAX,MIN,MAX,MIN,MAX,\n";
     }
 
     os << serial << "," << version_nb(',') << ","
-       << pwr_src_ok()  << "," << device_val[PWR_DOCK]  << "," << device_val[PWR_JACK]  << "," << device_val[CHARGING]  << ","
+       << pwr_src_ok()  << "," << device_val[PWR_JACK]  << "," << device_val[PWR_DOCK]  << ","
+       << (device_val[CHARGING] >> 16) << "," << (device_val[CHARGING] & 0xFF) << ","
        << cliffs_ok()   << "," << device_val[CLIFF_L]   << "," << device_val[CLIFF_C]   << "," << device_val[CLIFF_R]   << ","
        << buttons_ok()  << "," << device_val[BUMPER_L]  << "," << device_val[BUMPER_C]  << "," << device_val[BUMPER_R]  << ","
        << ir_dock_ok()  << "," << device_val[IR_DOCK_L] << "," << device_val[IR_DOCK_C] << "," << device_val[IR_DOCK_R] << ","
@@ -197,21 +197,7 @@ public:
        << device_ok[D_INPUT]   << "," << device_ok[D_OUTPUT]  << "," << device_ok[A_INPUT]   << ","
        << analog_in[0][AI_MIN] << "," << analog_in[0][AI_MAX] << "," << analog_in[1][AI_MIN] << "," << analog_in[1][AI_MAX] << ","
        << analog_in[2][AI_MIN] << "," << analog_in[2][AI_MAX] << "," << analog_in[3][AI_MIN] << "," << analog_in[3][AI_MAX] << ","
-
        << all_ok() << std::endl;
-//
-//    if (!all_ok())
-//      os << serial << "," << device_ok[V_INFO] << "," << device_ok[V_INFO] << "," << device_ok[V_INFO] << ","
-//         << device_ok[PWR_DOCK]  << "," << device_ok[PWR_JACK]  << "," << device_ok[CHARGING]  << ","
-//         << device_ok[CLIFF_L]   << "," << device_ok[CLIFF_C]   << "," << device_ok[CLIFF_R]   << ","
-//         << device_ok[BUMPER_L]  << "," << device_ok[BUMPER_C]  << "," << device_ok[BUMPER_R]  << ","
-//         << device_ok[IR_DOCK_L] << "," << device_ok[IR_DOCK_C] << "," << device_ok[IR_DOCK_R] << ","
-//         << device_ok[W_DROP_L]  << "," << device_ok[W_DROP_R]  << ","
-//         << device_ok[MOTOR_L]   << "," << device_ok[MOTOR_R]   << ","
-//         << device_ok[IMU_DEV]   << "," << imu_data[1] - imu_data[3] << ","
-//         << device_ok[BUTTON_0]  << "," << device_ok[BUTTON_1] << "," << device_ok[BUTTON_2] << ","
-//         << device_ok[LED_1]     << "," << device_ok[LED_2]    << "," << device_ok[SOUNDS]   << ","
-//         << all_ok() << std::endl;
 
     os.close();
     return true;
