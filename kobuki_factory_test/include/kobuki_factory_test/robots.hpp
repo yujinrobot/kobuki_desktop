@@ -33,7 +33,7 @@ namespace kobuki_factory_test {
 
 #define AI_MIN  0
 #define AI_MAX  1
-#define AI_PRE  2
+#define AI_VAL  2
 #define AI_INC  3
 
 typedef signed short         int16;
@@ -122,7 +122,7 @@ public:
       analog_in[i][AI_MIN] = std::numeric_limits<int16>::max();
       analog_in[i][AI_MAX] = std::numeric_limits<int16>::min();
 
-      analog_in[i][AI_PRE] = -1;
+      analog_in[i][AI_VAL] = -1;
       analog_in[i][AI_INC] =  0;
     }
   };

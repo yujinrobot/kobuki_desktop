@@ -143,8 +143,9 @@ void QNode::sensorsCoreCB(const kobuki_msgs::SensorState::ConstPtr& msg) {
 
   if (current_step == TEST_ANALOG_INPUT_PORTS) {
     for (unsigned int i = 0; i < msg->analog_input.size(); i++) {
-      under_test->analog_in[i][AI_INC] = msg->analog_input[i] - under_test->analog_in[i][AI_PRE];
-      under_test->analog_in[i][AI_PRE] = msg->analog_input[i];
+      if (under_test->analog_in[i][AI_VAL] != -1)
+        under_test->analog_in[i][AI_INC] = msg->analog_input[i] - under_test->analog_in[i][AI_VAL];
+      under_test->analog_in[i][AI_VAL] = msg->analog_input[i];
 
       under_test->analog_in[i][AI_MIN] =
           std::min(under_test->analog_in[i][AI_MIN], (int16)msg->analog_input[i]);
@@ -421,7 +422,7 @@ void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
   cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
   output_pub.publish(cmd);
 
-  if (under_test->device_val[Robot::D_INPUT] == 0b00001111) {  //(int)msg->values.size()) {
+  if (under_test->device_val[Robot::D_INPUT] == 0b00001111) {
     // All I/O tested; request tester confirmation
     showUserMsg(Info, "Digital I/O test",
               "Press left function button if LEDs blinked as expected or right otherwise");
@@ -700,6 +701,9 @@ bool QNode::measureCharge(bool first_call) {
 }
 
 bool QNode::testAnalogIn(bool first_call) {
+  static unsigned int active = std::numeric_limits<unsigned int>::max();
+  static kobuki_msgs::DigitalOutput last_do_cmd;
+
   if (first_call == true) {
     // This should be executed only once
     showUserMsg(Info, "Test analogue input",
@@ -707,9 +711,11 @@ bool QNode::testAnalogIn(bool first_call) {
        "The four LEDs below should get illuminated when completed");
 
     // Ensure that all I/O test board's LEDs are off
-    kobuki_msgs::DigitalOutput cmd;
-    cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
-    output_pub.publish(cmd);
+    for (unsigned int i = 0; i < last_do_cmd.values.size(); i++) {
+      last_do_cmd.values[i] = false;
+      last_do_cmd.mask[i]   = true;
+    }
+    output_pub.publish(last_do_cmd);
 
     under_test->device_val[Robot::A_INPUT] = 0;
   }
@@ -719,10 +725,10 @@ bool QNode::testAnalogIn(bool first_call) {
 
     if ((under_test->device_val[Robot::A_INPUT] & 0xFFFF) == 0) {
       // Countdown finished; switch off LEDs
-      kobuki_msgs::DigitalOutput cmd;
-      cmd.values[0] = cmd.values[3] = false;
-      cmd.mask[0] = cmd.mask[3] = true;
-      output_pub.publish(cmd);
+      for (unsigned int i = 0; i < last_do_cmd.values.size(); i++)
+        last_do_cmd.values[i] = false;
+
+      output_pub.publish(last_do_cmd);
     }
   }
 
@@ -733,22 +739,38 @@ bool QNode::testAnalogIn(bool first_call) {
     if ((! (under_test->device_val[Robot::A_INPUT] & MIN_MASK)) &&
         (under_test->analog_in[i][AI_MIN] <= A_INPUT_MIN_THRESHOLD)) {
       under_test->device_val[Robot::A_INPUT] |= MIN_MASK;
-      under_test->device_val[Robot::A_INPUT] |= int(frequency); // switch on for 1 second
-
-      kobuki_msgs::DigitalOutput cmd;
-      cmd.values[0] = true;
-      cmd.mask[0] = true;
-      output_pub.publish(cmd);
     }
     if ((! (under_test->device_val[Robot::A_INPUT] & MAX_MASK)) &&
         (under_test->analog_in[i][AI_MAX] >= A_INPUT_MAX_THRESHOLD)) {
       under_test->device_val[Robot::A_INPUT] |= MAX_MASK;
-      under_test->device_val[Robot::A_INPUT] |= int(frequency); // switch on for 1 second
+    }
 
-      kobuki_msgs::DigitalOutput cmd;
-      cmd.values[3] = true;
-      cmd.mask[3] = true;
-      output_pub.publish(cmd);
+    if (abs(under_test->analog_in[i][AI_INC]) > 60) {
+      if (active != i) {
+        active = i;
+        // Active input changed; switch off LEDs (strange behavior on tester)
+        for (unsigned int i = 0; i < last_do_cmd.values.size(); i++)
+          last_do_cmd.values[i] = false;
+      }
+    }
+
+    if (i == active) {
+      if ((under_test->device_val[Robot::A_INPUT] & MIN_MASK) &&
+          (under_test->device_val[Robot::A_INPUT] & MAX_MASK)) {
+        under_test->device_val[Robot::A_INPUT] |= int(frequency); // switch on for 1 second
+        active = -1;
+      }
+
+      int led = (int)rint((4.0*(A_INPUT_MAX_THRESHOLD - under_test->analog_in[i][AI_VAL]))/(double)A_INPUT_MAX_THRESHOLD);
+
+      if ((led == 1) || (led == 2))
+        last_do_cmd.values[led] = true;
+      if (under_test->device_val[Robot::A_INPUT] & MIN_MASK)
+        last_do_cmd.values[3] = true;
+      if (under_test->device_val[Robot::A_INPUT] & MAX_MASK)
+        last_do_cmd.values[0] = true;
+
+      output_pub.publish(last_do_cmd);
     }
   }
 
