@@ -32,6 +32,7 @@ from detail.cliff_sensor_frame_ui import Ui_cliff_sensor_frame
 class CliffSensorFrame(QFrame):
     STATE_FORWARD = "forward"
     STATE_BACKWARD = "backward"
+    STATE_STOPPED = "stopped"
         
     def __init__(self, parent=None):
         super(CliffSensorFrame, self).__init__(parent)
@@ -40,6 +41,7 @@ class CliffSensorFrame(QFrame):
         self._motion_thread = None
         self._distance = 1.2
         self._state = CliffSensorFrame.STATE_FORWARD
+        self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
         
 
     def setupUi(self):
@@ -49,15 +51,39 @@ class CliffSensorFrame(QFrame):
         self._motion.init(self._ui.speed_spinbox.value(), self._distance)
 
     def shutdown(self):
-        rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
+        '''
+          Used to terminate the plugin
+        '''
+        rospy.loginfo("Kobuki TestSuite: cliff sensor shutdown")
         self._motion.shutdown()
+
+    ##########################################################################
+    # Widget Management
+    ##########################################################################
+        
+    def hibernate(self):
+        '''
+          This gets called when the frame goes out of focus (tab switch). 
+          Disable everything to avoid running N tabs in parallel when in
+          reality we are only running one.
+        '''
+        pass
+    
+    def restore(self):
+        '''
+          Restore the frame after a hibernate.
+        '''
+        pass
+
 
     ##########################################################################
     # Motion Callbacks
     ##########################################################################
 
     def _run_finished(self):
-        if self._state == CliffSensorFrame.STATE_FORWARD:
+        if self._state == CliffSensorFrame.STATE_STOPPED:
+            return
+        elif self._state == CliffSensorFrame.STATE_FORWARD:
             self._state = CliffSensorFrame.STATE_BACKWARD
             self._motion.init(-self._motion.speed, 0.2)
             self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
@@ -81,6 +107,7 @@ class CliffSensorFrame(QFrame):
 
     @Slot()
     def on_stop_button_clicked(self):
+        self._state = CliffSensorFrame.STATE_STOPPED
         self.stop()
         
     def stop(self):
