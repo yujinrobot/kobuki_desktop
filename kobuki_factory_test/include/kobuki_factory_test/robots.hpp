@@ -241,6 +241,15 @@ public:
       delete *it;
     }
   }
+
+  Robot* get(std::string& serial) {
+    for (std::list<Robot*>::iterator it = begin(); it != end(); it++) {
+      if (serial.compare((*it)->serial) == 0)
+        return *it;
+    }
+
+    return NULL;
+  }
 };
 
 // Define a postfix increment operator for Robot::Device
