@@ -16,7 +16,7 @@ import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from kobuki_testsuite import SafeWandering
-from kobuki_comms.msg import BumperEvent
+from kobuki_msgs.msg import BumperEvent
 
 # Local resource imports
 import detail.common_rc
