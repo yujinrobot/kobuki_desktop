@@ -39,6 +39,7 @@ class GyroDriftFrame(QFrame):
         self._laser_scan_angle_topic_name = '/laser_scan_angle'
         self._gyro_scan_angle_topic_name = '/gyro_scan_angle'
         self._error_scan_angle_topic_name = '/error_scan_angle'
+        self._cmd_vel_topic_name = '/cmd_vel'
         self._motion = DriftEstimation(self._laser_scan_angle_topic_name, self._gyro_scan_angle_topic_name, self._error_scan_angle_topic_name, '/cmd_vel','/mobile_base/sensors/imu_data')
         self._scan_to_angle = ScanToAngle('/scan',self._laser_scan_angle_topic_name)
         self._motion_thread = None
@@ -47,20 +48,21 @@ class GyroDriftFrame(QFrame):
         self._ui.setupUi(self)
         self._plot_layout = QVBoxLayout(self._ui.scan_angle_group_box)
         self._plot_widget = PlotWidget()
-        self._plot_widget.setWindowTitle("Gyro vs Laser")
+        self._plot_widget.setWindowTitle("Error")
         self._plot_layout.addWidget(self._plot_widget)
         self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
-        #self._plot_widget.switch_data_plot_widget(MatDataPlot(self._plot_widget))
         self._plot_widget.data_plot.dynamic_range = True
+        self._plot_widget_live = PlotWidget()
+        self._plot_widget_live.setWindowTitle("Live Graphs")
+        self._plot_layout.addWidget(self._plot_widget_live)
+        self._plot_widget_live.switch_data_plot_widget(MatDataPlot(self._plot_widget_live))
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
         self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
         rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
-        print "  motion shutdown"
         self._motion.shutdown()
-        print "  scan_to_angle"
         self._scan_to_angle.shutdown()
 
     ##########################################################################
@@ -84,13 +86,15 @@ class GyroDriftFrame(QFrame):
         self._plot_widget._start_time = rospy.get_time()
         self._plot_widget.enable_timer(True)
         try:
-            #self._plot_widget.remove_topic(self._laser_scan_angle_topic_name+'/scan_angle')
-            #self._plot_widget.remove_topic(self._gyro_scan_angle_topic_name+'/scan_angle')
             self._plot_widget.remove_topic(self._error_scan_angle_topic_name+'/scan_angle')
+            self._plot_widget_live.remove_topic(self._laser_scan_angle_topic_name+'/scan_angle')
+            self._plot_widget_live.remove_topic(self._gyro_scan_angle_topic_name+'/scan_angle')
+            self._plot_widget_live.remove_topic(self._cmd_vel_topic_name+'/angular/z')
         except KeyError:
             pass
-        #self._plot_widget.add_topic(self._laser_scan_angle_topic_name+'/scan_angle')
-        #self._plot_widget.add_topic(self._gyro_scan_angle_topic_name+'/scan_angle')
+        self._plot_widget_live.add_topic(self._cmd_vel_topic_name+'/angular/z')
+        self._plot_widget_live.add_topic(self._laser_scan_angle_topic_name+'/scan_angle')
+        self._plot_widget_live.add_topic(self._gyro_scan_angle_topic_name+'/scan_angle')
         self._plot_widget.add_topic(self._error_scan_angle_topic_name+'/scan_angle')
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
