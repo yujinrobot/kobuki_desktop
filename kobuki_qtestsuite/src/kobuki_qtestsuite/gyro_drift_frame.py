@@ -44,7 +44,6 @@ class GyroDriftFrame(QFrame):
         self._motion = None
         self._scan_to_angle = None
         self._motion_thread = None
-        self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 
     def setupUi(self):
         self._ui.setupUi(self)
@@ -66,13 +65,16 @@ class GyroDriftFrame(QFrame):
           Used to terminate the plugin
         '''
         rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
-        self.hibernate()
+        self._stop()
 
     ##########################################################################
     # Widget Management
     ##########################################################################
         
     def _pause_plots(self):
+        '''
+         Pause plots, more importantly, pause greedy plot rendering
+        '''
         self._plot_widget.enable_timer(False)
         self._plot_widget_live.enable_timer(False)
 
@@ -129,12 +131,14 @@ class GyroDriftFrame(QFrame):
         if self._scan_to_angle:
             self._scan_to_angle.shutdown()
             self._scan_to_angle = None
-        self._motion.stop()
+        if self._motion:
+            self._motion.stop()
         if self._motion_thread:
             self._motion_thread.wait()
             self._motion_thread = None
-        self._motion.shutdown()
-        self._motion = None
+        if self._motion:
+            self._motion.shutdown()
+            self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
         
