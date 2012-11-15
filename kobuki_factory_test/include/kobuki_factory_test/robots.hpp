@@ -111,6 +111,7 @@ public:
     device_ok(DEVICES_COUNT, false),
     device_val(DEVICES_COUNT, std::numeric_limits<int64>::max()),
     imu_data(5), // test 1, diff 1, test 2, diff 2, current value
+    psd_data(3), // left, center, right
     analog_in(4, vint16(4)) { // 4 x min/max/prev/inc voltages for analog ports
 
     for (unsigned int i = 0; i < DEVICES_COUNT; i++) {
@@ -179,14 +180,14 @@ public:
 
     if (os.tellp() == 0) {
       // Empty file; write header
-//      os << ",SN,DCJ,MOP,DST,VER,FW,HW,DOCK,BRU,S-Brush,,VAC,PSD,,,FIR,,,DIR,,,Forward,,Backward,,PE,,HALL,DOCK,CHR,G-Test,RESULT";
-      os << "SN,VER,,,PWR,,,,PSD,,,,BUMP,,,,IR-DOCK,,,,W-DROP,,,MOTORS,,,IMU,,BUTTON,,,LEDS,SNDS,D-IN,D-OUT,A-IN,,,,,,,,,RESULT\n";
-      os << ",HW,FW,SW,,JACK,DOCK,CHR,,L,C,R,,L,C,R,,L,C,R,,L,R,,L,R,,difference,F0,F1,F2,,,,,,MIN,MAX,MIN,MAX,MIN,MAX,MIN,MAX,\n";
+      os << "SN,VER,,,PWR,,,,,PSD,,,,BUMP,,,,IR-DOCK,,,,W-DROP,,,MOTORS,,,IMU,,BUTTON,,,LEDS,SNDS,D-IN,D-OUT,A-IN,,,,,,,,,RESULT\n";
+      os << ",HW,FW,SW,,JACK,DOCK,V0,CHR,,L,C,R,,L,C,R,,L,C,R,,L,R,,L,R,,difference,F0,F1,F2,,,,,,MIN,MAX,MIN,MAX,MIN,MAX,MIN,MAX,\n";
     }
 
     os << serial << "," << version_nb(',') << ","
-       << pwr_src_ok()  << "," << device_val[PWR_DOCK]  << "," << device_val[PWR_JACK]  << "," << device_val[CHARGING]  << ","
-       << cliffs_ok()   << "," << device_val[CLIFF_L]   << "," << device_val[CLIFF_C]   << "," << device_val[CLIFF_R]   << ","
+       << pwr_src_ok()  << "," << device_val[PWR_JACK]  << "," << device_val[PWR_DOCK]  << ","
+       << (device_val[CHARGING] >> 16) << "," << (device_val[CHARGING] & 0xFF) << ","
+       << cliffs_ok()   << "," << psd_data[0]           << "," << psd_data[1]           << "," << psd_data[2]           << ","
        << buttons_ok()  << "," << device_val[BUMPER_L]  << "," << device_val[BUMPER_C]  << "," << device_val[BUMPER_R]  << ","
        << ir_dock_ok()  << "," << device_val[IR_DOCK_L] << "," << device_val[IR_DOCK_C] << "," << device_val[IR_DOCK_R] << ","
        << w_drop_ok()   << "," << device_val[W_DROP_L]  << "," << device_val[W_DROP_R]  << ","
@@ -197,21 +198,7 @@ public:
        << device_ok[D_INPUT]   << "," << device_ok[D_OUTPUT]  << "," << device_ok[A_INPUT]   << ","
        << analog_in[0][AI_MIN] << "," << analog_in[0][AI_MAX] << "," << analog_in[1][AI_MIN] << "," << analog_in[1][AI_MAX] << ","
        << analog_in[2][AI_MIN] << "," << analog_in[2][AI_MAX] << "," << analog_in[3][AI_MIN] << "," << analog_in[3][AI_MAX] << ","
-
        << all_ok() << std::endl;
-//
-//    if (!all_ok())
-//      os << serial << "," << device_ok[V_INFO] << "," << device_ok[V_INFO] << "," << device_ok[V_INFO] << ","
-//         << device_ok[PWR_DOCK]  << "," << device_ok[PWR_JACK]  << "," << device_ok[CHARGING]  << ","
-//         << device_ok[CLIFF_L]   << "," << device_ok[CLIFF_C]   << "," << device_ok[CLIFF_R]   << ","
-//         << device_ok[BUMPER_L]  << "," << device_ok[BUMPER_C]  << "," << device_ok[BUMPER_R]  << ","
-//         << device_ok[IR_DOCK_L] << "," << device_ok[IR_DOCK_C] << "," << device_ok[IR_DOCK_R] << ","
-//         << device_ok[W_DROP_L]  << "," << device_ok[W_DROP_R]  << ","
-//         << device_ok[MOTOR_L]   << "," << device_ok[MOTOR_R]   << ","
-//         << device_ok[IMU_DEV]   << "," << imu_data[1] - imu_data[3] << ","
-//         << device_ok[BUTTON_0]  << "," << device_ok[BUTTON_1] << "," << device_ok[BUTTON_2] << ","
-//         << device_ok[LED_1]     << "," << device_ok[LED_2]    << "," << device_ok[SOUNDS]   << ","
-//         << all_ok() << std::endl;
 
     os.close();
     return true;
@@ -229,6 +216,7 @@ public:
 
   // Some special data that doesn't fit on device_val
   std::vector<double> imu_data;
+  std::vector<uint16> psd_data;
   std::vector<vint16> analog_in;
   std::vector<uint32> u_dev_id;
 };
