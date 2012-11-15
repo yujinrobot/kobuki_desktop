@@ -69,7 +69,8 @@ QNode::QNode(int argc, char** argv ) :
   init_argc(argc),
   init_argv(argv),
   frequency(20.0),
-  under_test(NULL)
+  under_test(NULL),
+  answer_req(false)
   {}
 
 QNode::~QNode() {
@@ -193,9 +194,10 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
   if (under_test == NULL)
     return;
 
-  if (((current_step == TEST_LEDS) || (current_step == TEST_SOUNDS) ||
+  if (((current_step == TEST_LEDS)   ||
+       (current_step == TEST_SOUNDS) ||
        (current_step == TEST_DIGITAL_IO_PORTS)) &&
-      (msg->state  == kobuki_msgs::ButtonEvent::RELEASED)) {
+      (answer_req == true) && (msg->state  == kobuki_msgs::ButtonEvent::RELEASED)) {
     // We are currently evaluating a device that requires tester feedback
     // he must press the left button if test is ok or the right otherwise
     if ((msg->button == kobuki_msgs::ButtonEvent::Button0) ||
@@ -217,6 +219,7 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
       else if (msg->button == kobuki_msgs::ButtonEvent::Button2)
         log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
 
+      answer_req = false;  // disable user input to avoid "accumulating" answers
       hideUserMsg();
       current_step++;
     }
@@ -230,7 +233,7 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
 
   if ((current_step < BUTTON_0_PRESSED) || (current_step > BUTTON_2_RELEASED)) {
     // It's not time to evaluate buttons; assume it's an accidental hit
-    log(Debug, "Button %d accidental hit; ignoring", msg->button);
+    log(Debug, "Button %d %s; ignoring", msg->button, msg->state?"pressed":"released");
     return;
   }
 
@@ -427,6 +430,7 @@ void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
     // All I/O tested; request tester confirmation
     showUserMsg(Info, "Digital I/O test",
               "Press left function button if LEDs blinked as expected or right otherwise");
+    answer_req = true;
   }
 }
 
@@ -540,6 +544,8 @@ void QNode::move(double v, double w, double t, bool blocking) {
 }
 
 void QNode::testLeds(bool first_call) {
+  answer_req = ! first_call;  // require user input after the first iteration
+
   const char* COLOR[] = { "GREEN", "ORANGE", "RED" };
 
   kobuki_msgs::Led led;
@@ -565,6 +571,8 @@ void QNode::testLeds(bool first_call) {
 }
 
 void QNode::testSounds(bool first_call) {
+  answer_req = ! first_call;  // require user input after the first iteration
+
   const char* SOUND[] =
       { "ON", "OFF", "RECHARGE", "BUTTON", "ERROR", "CLEANING START", "CLEANING END" };
 

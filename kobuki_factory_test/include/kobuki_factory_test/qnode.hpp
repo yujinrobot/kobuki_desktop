@@ -139,14 +139,16 @@ private:
   char**   init_argv;
 
   double   frequency;
-  bool     timer_active;
+
   ros::Timer timer;
+  bool     timer_active;
   EvalStep current_step;
 
   Robot *   under_test;
   RobotList  evaluated;
 
-  std::string out_file;  // csv output file path
+  bool      answer_req;   // user input required
+  std::string out_file;   // csv output file path
 
   /*********************
   ** Publishers
