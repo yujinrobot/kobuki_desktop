@@ -215,7 +215,7 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
       if (msg->button == kobuki_msgs::ButtonEvent::Button0)
         log(Info, "%s evaluation completed", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
       else if (msg->button == kobuki_msgs::ButtonEvent::Button2)
-        log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");  // TODO  should we cancel eval?
+        log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
 
       hideUserMsg();
       current_step++;
@@ -478,7 +478,7 @@ void QNode::robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg) {
     }
 
     // Go to the beginning of the test process and create a new robot object
-    current_step = INITIALIZATION;
+    current_step = TEST_LEDS;//TODO INITIALIZATION;
     under_test = new Robot(evaluated.size());
 
     // Resubscribe to version_info to get robot version number (it's a latched topic)
@@ -539,55 +539,53 @@ void QNode::move(double v, double w, double t, bool blocking) {
   }
 }
 
-void QNode::testLeds(bool show_msg) {
-  if (show_msg == true) {
-    // This should be executed only once
-    showUserMsg(Info, "LEDs test",
-              "You should see both LEDs blinking in green, orange and red alternatively\n" \
-              "Press left function button if so or right otherwise");
-  }
+void QNode::testLeds(bool first_call) {
+  const char* COLOR[] = { "GREEN", "ORANGE", "RED" };
 
   kobuki_msgs::Led led;
 
-  for (uint8_t c = kobuki_msgs::Led::GREEN; c <= kobuki_msgs::Led::RED; c++) {
-    ros::Duration(0.5).sleep();
-
+  for (uint8_t c = kobuki_msgs::Led::GREEN; c <= kobuki_msgs::Led::RED &&
+                                            current_step == TEST_LEDS; c++) {
+    showUserMsg(Info, "LEDs test",
+               "You should see both LEDs blinking in green, orange and red alternatively\n%s%s",
+                first_call?"":"Press left function button if so or right otherwise\n",
+                COLOR[c - kobuki_msgs::Led::GREEN]);
     led.value = c;
     led_1_pub.publish(led);
     led_2_pub.publish(led);
 
-    ros::Duration(0.5).sleep();
+    nbSleep(1.0);
 
     led.value = kobuki_msgs::Led::BLACK;
     led_1_pub.publish(led);
     led_2_pub.publish(led);
+
+    nbSleep(0.5);
   }
 }
 
-void QNode::testSounds(bool show_msg) {
-  if (show_msg == true) {
-    // This should be executed only once
-    showUserMsg(Info, "Sounds test",
-              "You should hear sounds for 'On', 'Off', 'Recharge', 'Button', " \
-              "'Error', 'Cleaning Start' and 'Cleaning End' continuously\n"    \
-              "Press left function button if so or right otherwise");
-  }
-
-//  sounds = [Sound.ON, Sound.OFF, Sound.RECHARGE, Sound.BUTTON, Sound.ERROR, Sound.CLEANINGSTART, Sound.CLEANINGEND]
-//  texts = ["On", "Off", "Recharge", "Button", "Error", "CleaningStart", "CleaningEnd"]
+void QNode::testSounds(bool first_call) {
+  const char* SOUND[] =
+      { "ON", "OFF", "RECHARGE", "BUTTON", "ERROR", "CLEANING START", "CLEANING END" };
 
   kobuki_msgs::Sound sound;
 
-  for (uint8_t s = kobuki_msgs::Sound::ON; s <= kobuki_msgs::Sound::CLEANINGEND; s++) {
-    ros::Duration(0.5).sleep();
-
+  for (uint8_t s = kobuki_msgs::Sound::ON; s <= kobuki_msgs::Sound::CLEANINGEND &&
+                                           current_step == TEST_SOUNDS; s++) {
+    showUserMsg(Info, "Sounds test",
+              "You should hear sounds for 'On', 'Off', 'Recharge', 'Button', " \
+              "'Error', 'Cleaning Start' and 'Cleaning End' continuously\n%s%s",
+              first_call?"":"Press left function button if so or right otherwise\n",
+              SOUND[s - kobuki_msgs::Sound::ON]);
     sound.value = s;
     sound_pub.publish(sound);
+
+    nbSleep(1.2);
   }
 }
 
-bool QNode::testIMU(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::testIMU(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
     showUserMsg(Info, "Gyroscope test",
                 "Place the robot with the check board right below the camera");
@@ -658,8 +656,8 @@ bool QNode::testIMU(bool show_msg) {
   return true;
 }
 
-bool QNode::measureCharge(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::measureCharge(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
     showUserMsg(Info, "Charge measurement", "Plug the adaptor to the robot and wait %d seconds",
                 (int)ceil(MEASURE_CHARGE_TIME));
@@ -698,8 +696,8 @@ bool QNode::measureCharge(bool show_msg) {
   return true;
 }
 
-bool QNode::testAnalogIn(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::testAnalogIn(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
     showUserMsg(Info, "Test analogue input",
        "Turn analogue input screws clockwise and counterclockwise until reaching the limits\n" \
@@ -763,7 +761,7 @@ bool QNode::testAnalogIn(bool show_msg) {
   return false;
 }
 
-void QNode::evalMotorsCurrent(bool show_msg) {
+void QNode::evalMotorsCurrent(bool first_call) {
   under_test->device_ok[Robot::MOTOR_L] =
     under_test->device_val[Robot::MOTOR_L] <= MOTOR_MAX_CURRENT;
   under_test->device_ok[Robot::MOTOR_R] =

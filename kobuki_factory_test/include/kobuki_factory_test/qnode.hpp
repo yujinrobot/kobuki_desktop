@@ -199,12 +199,12 @@ private:
   /*********************
   ** Other methods
   **********************/
-  bool testIMU(bool show_msg);
-  void testLeds(bool show_msg);
-  void testSounds(bool show_msg);
-  bool testAnalogIn(bool show_msg);
-  bool measureCharge(bool show_msg);
-  void evalMotorsCurrent(bool show_msg);
+  bool testIMU(bool first_call);
+  void testLeds(bool first_call);
+  void testSounds(bool first_call);
+  bool testAnalogIn(bool first_call);
+  bool measureCharge(bool first_call);
+  void evalMotorsCurrent(bool first_call);
   void move(double v, double w, double t = 0.0, bool blocking = false);
   bool saveResults();
 
