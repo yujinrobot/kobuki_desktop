@@ -78,6 +78,7 @@ public:
 
   enum EvalStep {
     INITIALIZATION,
+    GET_SERIAL_NUMBER,
     TEST_DC_ADAPTER,
     TEST_DOCKING_BASE,
     BUTTON_0_PRESSED,
@@ -138,14 +139,16 @@ private:
   char**   init_argv;
 
   double   frequency;
-  bool     timer_active;
+
   ros::Timer timer;
+  bool     timer_active;
   EvalStep current_step;
 
   Robot *   under_test;
   RobotList  evaluated;
 
-  std::string out_file;  // csv output file path
+  bool      answer_req;   // user input required
+  std::string out_file;   // csv output file path
 
   /*********************
   ** Publishers
@@ -198,14 +201,29 @@ private:
   /*********************
   ** Other methods
   **********************/
-  bool testIMU(bool show_msg);
-  void testLeds(bool show_msg);
-  void testSounds(bool show_msg);
-  bool testAnalogIn(bool show_msg);
-  bool measureCharge(bool show_msg);
-  void evalMotorsCurrent(bool show_msg);
+  bool testIMU(bool first_call);
+  void testLeds(bool first_call);
+  void testSounds(bool first_call);
+  bool testAnalogIn(bool first_call);
+  bool measureCharge(bool first_call);
+  void evalMotorsCurrent(bool first_call);
   void move(double v, double w, double t = 0.0, bool blocking = false);
   bool saveResults();
+
+  void showUserMsg(LogLevel level, const std::string& title, const std::string& format, ...) {
+    va_list arguments;
+    va_start(arguments, format);
+
+    char text[256];
+    vsnprintf(text, 256, format.c_str(), arguments);
+
+    Q_EMIT requestMW(new QNodeRequest(title, text));
+    log(level, "%s: %s", title.c_str(), text);
+  }
+
+  void hideUserMsg() {
+    Q_EMIT requestMW(new QNodeRequest());
+  }
 
   void nbSleep(double t) {
     // Non-blocking (but naively imprecise) sleep

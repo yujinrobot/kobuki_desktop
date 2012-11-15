@@ -69,7 +69,8 @@ QNode::QNode(int argc, char** argv ) :
   init_argc(argc),
   init_argv(argv),
   frequency(20.0),
-  under_test(NULL)
+  under_test(NULL),
+  answer_req(false)
   {}
 
 QNode::~QNode() {
@@ -81,10 +82,38 @@ QNode::~QNode() {
 }
 
 void QNode::versionInfoCB(const kobuki_msgs::VersionInfo::ConstPtr& msg) {
-  if ((under_test == NULL) || (under_test->device_ok[Robot::V_INFO] == true))
+  if (under_test == NULL)
     return;
 
-  under_test->setSerial(msg->udid);
+  // Check if we already have version info for the current robot
+  if (under_test->device_ok[Robot::V_INFO] == true) {
+    if (std::equal(msg->udid.begin(), msg->udid.end(), under_test->u_dev_id.begin()) == true) {
+      // This is ok but... a bit weird; why should robot resend the version info?
+      log(Debug, "Version info received more that once for %s", under_test->serial.c_str());
+      return;
+    }
+    else {
+      // This could happen if the driver takes long time to republish the version info after a new
+      // robot comes online; but is weird; we should avoid this possibility in the driver itself
+      std::string old_sn = under_test->serial;
+      under_test->setSerial(msg->udid);
+      log(Warn, "Overwriting version info: old SN: %s / new SN: %s",
+          old_sn.c_str(), under_test->serial.c_str());
+    }
+  }
+  else
+    under_test->setSerial(msg->udid);
+
+  // Check if this robot has been previously evaluated; we don't allow reevaluation
+  // TODO/WARN: ONLY IN CURRENT SESION; WE DON'T RELOAD RESULT FILES
+  if (evaluated.get(under_test->serial) != NULL) {
+    showUserMsg(Error, "Known robot",
+                "Robot %s has been previously evaluated. Proceed with a new robot",
+                under_test->serial.c_str());
+    delete under_test;
+    under_test = NULL;
+    return;
+  }
 
   under_test->device_val[Robot::V_INFO] |= msg->firmware; under_test->device_val[Robot::V_INFO] <<= 16;
   under_test->device_val[Robot::V_INFO] |= msg->hardware; under_test->device_val[Robot::V_INFO] <<= 32;
@@ -165,9 +194,10 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
   if (under_test == NULL)
     return;
 
-  if (((current_step == TEST_LEDS) || (current_step == TEST_SOUNDS) ||
+  if (((current_step == TEST_LEDS)   ||
+       (current_step == TEST_SOUNDS) ||
        (current_step == TEST_DIGITAL_IO_PORTS)) &&
-      (msg->state  == kobuki_msgs::ButtonEvent::RELEASED)) {
+      (answer_req == true) && (msg->state  == kobuki_msgs::ButtonEvent::RELEASED)) {
     // We are currently evaluating a device that requires tester feedback
     // he must press the left button if test is ok or the right otherwise
     if ((msg->button == kobuki_msgs::ButtonEvent::Button0) ||
@@ -187,9 +217,10 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
       if (msg->button == kobuki_msgs::ButtonEvent::Button0)
         log(Info, "%s evaluation completed", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
       else if (msg->button == kobuki_msgs::ButtonEvent::Button2)
-        log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");  // TODO  should we cancel eval?
+        log(Warn, "%s didn't pass the test", (current_step == TEST_LEDS)?"LEDs":(current_step == TEST_SOUNDS)?"Sounds":"Digital I/O");
 
-      Q_EMIT requestMW(new QNodeRequest()); // hide user message
+      answer_req = false;  // disable user input to avoid "accumulating" answers
+      hideUserMsg();
       current_step++;
     }
 
@@ -202,7 +233,7 @@ void QNode::buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg) {
 
   if ((current_step < BUTTON_0_PRESSED) || (current_step > BUTTON_2_RELEASED)) {
     // It's not time to evaluate buttons; assume it's an accidental hit
-    log(Debug, "Button %d accidental hit; ignoring", msg->button);
+    log(Debug, "Button %d %s; ignoring", msg->button, msg->state?"pressed":"released");
     return;
   }
 
@@ -251,7 +282,7 @@ void QNode::bumperEventCB(const kobuki_msgs::BumperEvent::ConstPtr& msg) {
     }
     else {
       under_test->device_ok[Robot::BUMPER_L + msg->bumper] = true;
-      Q_EMIT requestMW(new QNodeRequest());
+      hideUserMsg();
     }
 
     if (current_step == LEFT_BUMPER_RELEASED)
@@ -345,6 +376,9 @@ void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
 #define PTAE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_ADAPTER
 #define PTDE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_DOCKBASE
 
+  // A bit tricky if... but not that much; gets true if:
+  // the robot is plugged to currently evaluated power source and we expect so (device_val is even)
+  // or the robot is unplugged (we don't know from which device) and we expect so (odd device_val)
   if (((((msg->event == PTAE) && (current_step == TEST_DC_ADAPTER)) ||
         ((msg->event == PTDE) && (current_step == TEST_DOCKING_BASE))) &&
         (under_test->device_val[dev] % 2 == 0)) ||
@@ -366,24 +400,18 @@ void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
 }
 
 void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
-  if ((under_test == NULL) || (current_step != TEST_DIGITAL_IO_PORTS))
+  if ((under_test == NULL) || (current_step != TEST_DIGITAL_IO_PORTS) ||
+      (under_test->device_ok[Robot::D_INPUT] == true))
     return;
 
-  if ((under_test->device_val[Robot::D_INPUT] < 0) ||
-      (under_test->device_val[Robot::D_INPUT] >= (int)msg->values.size())) {
-    // This should not happen; if so, the tester pressed DI buttons more than four times,
-    // or there's an error in the code
-    log(Warn, "Unexpected digital input value: %d", under_test->device_val[Robot::D_INPUT]);
-    return;
-  }
-
-  // We switch on/off I/O test board's LEDs together with the digital input events, so we
-  // evaluate input and output simultaneously, thanks to tester's confirmation/rejection
+  // Set the bit corresponding to pressed DI button; ask user when the 4-bit mask gets completed
+  // We switch on/off I/O test board's LEDs together with the digital input events, so we evaluate
+  // input and output simultaneously, thanks to tester's confirmation/rejection
   for (unsigned int i = 0; i < msg->values.size(); i++) {
     if (msg->values[i] == false) {
+      under_test->device_val[Robot::D_INPUT] |= (int)pow(2, i);
       kobuki_msgs::DigitalOutput cmd;
-      cmd.values[i] = true;
-      cmd.mask[i] = true;
+      cmd.values[i] = cmd.mask[i] = true;
       output_pub.publish(cmd);
       return;
     }
@@ -393,13 +421,11 @@ void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
   cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
   output_pub.publish(cmd);
 
-  under_test->device_val[Robot::D_INPUT]++;
-
-  if (under_test->device_val[Robot::D_INPUT] == (int)msg->values.size()) {
+  if (under_test->device_val[Robot::D_INPUT] == 0b00001111) {  //(int)msg->values.size()) {
     // All I/O tested; request tester confirmation
-    log(Info, "Press left function button if LEDs blinked as expected or right otherwise");
-    Q_EMIT requestMW(new QNodeRequest("Digital I/O test",
-              "Press left function button if LEDs blinked as expected or right otherwise"));
+    showUserMsg(Info, "Digital I/O test",
+              "Press left function button if LEDs blinked as expected or right otherwise");
+    answer_req = true;
   }
 }
 
@@ -450,9 +476,8 @@ void QNode::robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg) {
       log(Info, "New robot connected");
     }
 
-    // Create a new robot object
-    current_step = INITIALIZATION;
-
+    // Go to the beginning of the test process and create a new robot object
+    current_step = TEST_DIGITAL_IO_PORTS;//TODO INITIALIZATION;
     under_test = new Robot(evaluated.size());
 
     // Resubscribe to version_info to get robot version number (it's a latched topic)
@@ -513,65 +538,60 @@ void QNode::move(double v, double w, double t, bool blocking) {
   }
 }
 
-void QNode::testLeds(bool show_msg) {
-  if (show_msg == true) {
-    // This should be executed only once
-    log(Info, "You should see both LEDs blinking in green, orange and red alternatively");
-    log(Info, "Press left function button if so or right otherwise");
+void QNode::testLeds(bool first_call) {
+  answer_req = ! first_call;  // require user input after the first iteration
 
-    Q_EMIT requestMW(new QNodeRequest("LEDs test",
-              "You should see both LEDs blinking in green, orange and red alternatively\n" \
-              "Press left function button if so or right otherwise"));
-  }
+  const char* COLOR[] = { "GREEN", "ORANGE", "RED" };
 
   kobuki_msgs::Led led;
 
-  for (uint8_t c = kobuki_msgs::Led::GREEN; c <= kobuki_msgs::Led::RED; c++) {
-    ros::Duration(0.5).sleep();
-
+  for (uint8_t c = kobuki_msgs::Led::GREEN; c <= kobuki_msgs::Led::RED &&
+                                            current_step == TEST_LEDS; c++) {
+    showUserMsg(Info, "LEDs test",
+               "You should see both LEDs blinking in green, orange and red alternatively\n%s%s",
+                first_call?"":"Press left function button if so or right otherwise\n",
+                COLOR[c - kobuki_msgs::Led::GREEN]);
     led.value = c;
     led_1_pub.publish(led);
     led_2_pub.publish(led);
 
-    ros::Duration(0.5).sleep();
+    nbSleep(1.0);
 
     led.value = kobuki_msgs::Led::BLACK;
     led_1_pub.publish(led);
     led_2_pub.publish(led);
+
+    nbSleep(0.5);
   }
 }
 
-void QNode::testSounds(bool show_msg) {
-  if (show_msg == true) {
-    // This should be executed only once
-    log(Info, "You should hear all robot sounds continuously");
-    log(Info, "Press left function button if so or right otherwise");
+void QNode::testSounds(bool first_call) {
+  answer_req = ! first_call;  // require user input after the first iteration
 
-    Q_EMIT requestMW(new QNodeRequest("Sounds test",
-              "You should hear sounds for 'On', 'Off', 'Recharge', 'Button', " \
-              "'Error', 'Cleaning Start' and 'Cleaning End' continuously\n"    \
-              "Press left function button if so or right otherwise"));
-  }
-
-//  sounds = [Sound.ON, Sound.OFF, Sound.RECHARGE, Sound.BUTTON, Sound.ERROR, Sound.CLEANINGSTART, Sound.CLEANINGEND]
-//  texts = ["On", "Off", "Recharge", "Button", "Error", "CleaningStart", "CleaningEnd"]
+  const char* SOUND[] =
+      { "ON", "OFF", "RECHARGE", "BUTTON", "ERROR", "CLEANING START", "CLEANING END" };
 
   kobuki_msgs::Sound sound;
 
-  for (uint8_t s = kobuki_msgs::Sound::ON; s <= kobuki_msgs::Sound::CLEANINGEND; s++) {
-    ros::Duration(0.5).sleep();
-
+  for (uint8_t s = kobuki_msgs::Sound::ON; s <= kobuki_msgs::Sound::CLEANINGEND &&
+                                           current_step == TEST_SOUNDS; s++) {
+    showUserMsg(Info, "Sounds test",
+              "You should hear sounds for 'On', 'Off', 'Recharge', 'Button', " \
+              "'Error', 'Cleaning Start' and 'Cleaning End' continuously\n%s%s",
+              first_call?"":"Press left function button if so or right otherwise\n",
+              SOUND[s - kobuki_msgs::Sound::ON]);
     sound.value = s;
     sound_pub.publish(sound);
+
+    nbSleep(1.2);
   }
 }
 
-bool QNode::testIMU(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::testIMU(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
-    log(Info, "Gyroscope testing: place the robot with the check board right below the camera");
-    Q_EMIT requestMW(new QNodeRequest("Gyroscope testing",
-                                 "Place the robot with the check board right below the camera"));
+    showUserMsg(Info, "Gyroscope test",
+                "Place the robot with the check board right below the camera");
   }
 
   std::string path;
@@ -583,7 +603,7 @@ bool QNode::testIMU(bool show_msg) {
   TestIMU imuTester;
   if (imuTester.init(path, dev) == false) {
     log(Error, "Gyroscope test initialization failed; aborting test");
-    Q_EMIT requestMW(new QNodeRequest());
+    hideUserMsg();
     return false;
   }
 
@@ -595,17 +615,17 @@ bool QNode::testIMU(bool show_msg) {
       nbSleep(0.2);
       vo_yaw[i] = - imuTester.getYaw();  // We invert, as the camera is looking AT the robot
       if (isnan(vo_yaw[i]) == false) {
-        Q_EMIT requestMW(new QNodeRequest());
+        hideUserMsg();
         break;
       }
 
-      Q_EMIT requestMW(new QNodeRequest("Gyroscope test",
-           "Cannot recognize the check board; please place the robot right below the camera"));
+      showUserMsg(Warn, "Gyroscope test",
+           "Cannot recognize the check board; please place the robot right below the camera");
     }
 
     if (isnan(vo_yaw[i]) == true) {
       log(Error, "Cannot recognize the check board after 80 attempts; gyroscope test aborted");
-      Q_EMIT requestMW(new QNodeRequest());
+      hideUserMsg();
       return false;
     }
 
@@ -635,25 +655,22 @@ bool QNode::testIMU(bool show_msg) {
     log(Warn, "Gyroscope testing failed: diff 1 = %.3f / diff 2 = %.3f",
         under_test->imu_data[1], under_test->imu_data[3]);
 
-  Q_EMIT requestMW(new QNodeRequest());
+  hideUserMsg();
   return true;
 }
 
-bool QNode::measureCharge(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::measureCharge(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
-    log(Info, "Charge measurement: plug the adaptor to the robot and wait %d seconds",
-        (int)ceil(MEASURE_CHARGE_TIME));
-    Q_EMIT requestMW(new QNodeRequest("Charge measurement",
-                                  "Plug the adaptor to the robot and wait %d seconds",
-        (int)ceil(MEASURE_CHARGE_TIME)));
+    showUserMsg(Info, "Charge measurement", "Plug the adaptor to the robot and wait %d seconds",
+                (int)ceil(MEASURE_CHARGE_TIME));
   }
 
   // Wait until charging starts (and a bit more) to take first measure...
   for (int i = 0; i < 40*frequency && under_test->device_val[Robot::CHARGING] == 0; i++)
     nbSleep(1.0/frequency);
 
-  Q_EMIT requestMW(new QNodeRequest());
+  hideUserMsg();
 
   if (under_test->device_val[Robot::CHARGING] == 0) {
     log(Error, "Adaptor not plugged after 40 seconds; aborting charge measurement");
@@ -682,14 +699,12 @@ bool QNode::measureCharge(bool show_msg) {
   return true;
 }
 
-bool QNode::testAnalogIn(bool show_msg) {
-  if (show_msg == true) {
+bool QNode::testAnalogIn(bool first_call) {
+  if (first_call == true) {
     // This should be executed only once
-    log(Info, "Test analog input: " \
-       "turn analogue input screws clockwise and counterclockwise until reaching the limits");
-    Q_EMIT requestMW(new QNodeRequest("Test analogue input",
+    showUserMsg(Info, "Test analogue input",
        "Turn analogue input screws clockwise and counterclockwise until reaching the limits\n" \
-       "The four LEDs below should get illuminated when completed"));
+       "The four LEDs below should get illuminated when completed");
 
     // Ensure that all I/O test board's LEDs are off
     kobuki_msgs::DigitalOutput cmd;
@@ -741,7 +756,7 @@ bool QNode::testAnalogIn(bool show_msg) {
     // Min/max verified for all ports and last countdown finished
     log(Info, "Analogue input evaluation completed");
     under_test->device_ok[Robot::A_INPUT] = true;
-    Q_EMIT requestMW(new QNodeRequest());
+    hideUserMsg();
     current_step++;
     return true;
   }
@@ -749,7 +764,7 @@ bool QNode::testAnalogIn(bool show_msg) {
   return false;
 }
 
-void QNode::evalMotorsCurrent(bool show_msg) {
+void QNode::evalMotorsCurrent(bool first_call) {
   under_test->device_ok[Robot::MOTOR_L] =
     under_test->device_val[Robot::MOTOR_L] <= MOTOR_MAX_CURRENT;
   under_test->device_ok[Robot::MOTOR_R] =
@@ -845,25 +860,28 @@ void QNode::run() {
       case INITIALIZATION:
         current_step++;
         break;
+      case GET_SERIAL_NUMBER:
+        if (under_test->device_ok[Robot::V_INFO] == true)
+          current_step++;
+        else if (count%int(frequency*2) == 0)
+          log(Debug, "Waiting for serial number...");
+        break;
       case TEST_DC_ADAPTER:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("DC adapter plug test",
-                    "Plug and unplug adapter to robot %d times", POWER_PLUG_TESTS));
-          log(Info, "Plug and unplug adapter to robot %d times", POWER_PLUG_TESTS);
+          showUserMsg(Info, "DC adapter plug test", "Plug and unplug adapter to robot %d time(s)",
+                      POWER_PLUG_TESTS);
         }
         break;
       case TEST_DOCKING_BASE:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Docking base plug test",
-                    "Plug and unplug robot to docking base %d times", POWER_PLUG_TESTS));
-          log(Info, "Plug and unplug robot to docking base %d times", POWER_PLUG_TESTS);
+          showUserMsg(Info, "Docking base plug test", "Plug and unplug robot to its base %d time(s)",
+                      POWER_PLUG_TESTS);
         }
         break;
       case BUTTON_0_PRESSED:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Function buttons test",
-                    "Press the three function buttons sequentially from left to right"));
-          log(Info, "Press the three function buttons sequentially from left to right");
+          showUserMsg(Info, "Function buttons test",
+                      "Press the three function buttons sequentially from left to right");
         }
         break;
       case TEST_LEDS:
@@ -874,23 +892,20 @@ void QNode::run() {
         break;
       case TEST_CLIFF_SENSORS:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Cliff sensors test",
-                    "Raise and lower robot %d times to test cliff sensors", CLIFF_SENSOR_TESTS));
-          log(Info, "Raise and lower robot %d times to test cliff sensors", CLIFF_SENSOR_TESTS);
+          showUserMsg(Info, "Cliff sensors test",
+                      "Raise and lower robot %d time(s) to test cliff sensors", CLIFF_SENSOR_TESTS);
         }
         break;
       case TEST_WHEEL_DROP_SENSORS:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Wheel drop sensors test",
-                    "Raise and lower robot %d times to test wheel drop sensors", WHEEL_DROP_TESTS));
-          log(Info, "Raise and lower robot %d times to test wheel drop sensors", WHEEL_DROP_TESTS);
+          showUserMsg(Info, "Wheel drop sensors test",
+                      "Raise and lower robot %d time(s) to test wheel drop sensors", WHEEL_DROP_TESTS);
         }
         break;
       case CENTER_BUMPER_PRESSED:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Bumper sensors test",
-                    "Place the robot facing a wall; after a while, the robot will move forward"));
-          log(Info, "Place the robot facing a wall");
+          showUserMsg(Info, "Bumper sensors test", "Place the robot facing a wall; " \
+                            "after a while, the robot will move forward");
 
           // After a while, launch the robot to bump frontally
           ros::Duration(1.5).sleep();
@@ -911,26 +926,26 @@ void QNode::run() {
         break;
       case PREPARE_MOTORS_TEST:
         if (step_changed == true) {
-          Q_EMIT requestMW(new QNodeRequest("Motors current test",
-                    "Now the robot will move forward, backward and spin to evaluate motors"));
-          log(Info, "Now the robot will move forward, backward and spin to evaluate motors");
+          showUserMsg(Info, "Motors current test", "Now the robot will move forward...");
         }
         move(0.0, -TEST_BUMPERS_W, (M_PI/4.0)/TEST_BUMPERS_W);  // -45 deg (parallel to wall)
         break;
       case TEST_MOTORS_FORWARD:
         move(+TEST_MOTORS_V, 0.0, TEST_MOTORS_D/TEST_MOTORS_V);
-        Q_EMIT requestMW(new QNodeRequest());
         break;
       case TEST_MOTORS_BACKWARD:
         move(-TEST_MOTORS_V, 0.0, TEST_MOTORS_D/TEST_MOTORS_V);
+        showUserMsg(Info, "Motors current test", "Now the robot will move backward...");
         break;
       case TEST_MOTORS_CLOCKWISE:
         move(0.0, -TEST_MOTORS_W, TEST_MOTORS_A/TEST_MOTORS_W);
+        showUserMsg(Info, "Motors current test", "...and spin to evaluate motors");
         break;
       case TEST_MOTORS_COUNTERCW:
         move(0.0, +TEST_MOTORS_W, TEST_MOTORS_A/TEST_MOTORS_W);
         break;
       case EVAL_MOTORS_CURRENT:
+        hideUserMsg();
         evalMotorsCurrent(step_changed);
         current_step++;
         break;
@@ -944,11 +959,9 @@ void QNode::run() {
         break;        // to spinOnce will overwrite the measured value!
       case TEST_DIGITAL_IO_PORTS:
         if (step_changed) {
-          Q_EMIT requestMW(new QNodeRequest("Digital I/O test",
+          showUserMsg(Info, "Digital I/O test",
                     "Press the four digital input buttons sequentially, from DI-1 to DI-4\n" \
-                    "The digital output LED below should switch on and off as the result"));
-          log(Info, "Press the four digital input buttons sequentially, from DI-1 to DI-4");
-          log(Info, "The digital output LED below should switch on and off as the result");
+                    "The digital output LED below should switch on and off as the result");
           under_test->device_val[Robot::D_INPUT] = 0;
 
           // Ensure that all I/O test board's LEDs are off
@@ -961,7 +974,8 @@ void QNode::run() {
         testAnalogIn(step_changed);
         break;
       case EVALUATION_COMPLETED:
-        log(Info, "Evaluation completed. Overall result: %s", under_test->all_ok()?"PASS":"FAILED");
+        showUserMsg(Info, "Evaluation result", "Evaluation completed. Overall result: %s",
+                    under_test->all_ok()?"PASS":"FAILED");
         saveResults();
         current_step = INITIALIZATION;
         break;
