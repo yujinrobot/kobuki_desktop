@@ -73,6 +73,7 @@ class TestSuiteWidget(QWidget):
     
     @Slot(int)
     def on_testsuite_tab_widget_currentChanged(self, index):
-        self._current_tab.stop()
+        self._current_tab.hibernate()
         self._current_tab = self._tabs[self._ui.testsuite_tab_widget.currentIndex()]
+        self._current_tab.restore()
 

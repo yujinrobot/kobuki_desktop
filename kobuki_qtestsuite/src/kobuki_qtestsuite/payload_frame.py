@@ -35,6 +35,7 @@ class PayloadFrame(QFrame):
         #self._motion = Rotate('/cmd_vel')
         #self.robot_state_subscriber = rospy.Subscriber("/mobile_base/events/robot_state", RobotStateEvent, self.robot_state_callback)
         self._motion_thread = None
+        self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 
     def setupUi(self):
         self._ui.setupUi(self)
@@ -43,8 +44,29 @@ class PayloadFrame(QFrame):
         #self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
-        rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
+        '''
+          Used to terminate the plugin
+        '''
+        rospy.loginfo("Kobuki TestSuite: payload frame shutdown")
         #self._motion.shutdown()
+
+    ##########################################################################
+    # Widget Management
+    ##########################################################################
+        
+    def hibernate(self):
+        '''
+          This gets called when the frame goes out of focus (tab switch). 
+          Disable everything to avoid running N tabs in parallel when in
+          reality we are only running one.
+        '''
+        pass
+    
+    def restore(self):
+        '''
+          Restore the frame after a hibernate.
+        '''
+        pass
 
     ##########################################################################
     # Motion Callbacks

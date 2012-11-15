@@ -40,9 +40,11 @@ class GyroDriftFrame(QFrame):
         self._gyro_scan_angle_topic_name = '/gyro_scan_angle'
         self._error_scan_angle_topic_name = '/error_scan_angle'
         self._cmd_vel_topic_name = '/cmd_vel'
-        self._motion = DriftEstimation(self._laser_scan_angle_topic_name, self._gyro_scan_angle_topic_name, self._error_scan_angle_topic_name, '/cmd_vel','/mobile_base/sensors/imu_data')
-        self._scan_to_angle = ScanToAngle('/scan',self._laser_scan_angle_topic_name)
+        self._gyro_topic_name = '/mobile_base/sensors/imu_data'
+        self._motion = None
+        self._scan_to_angle = None
         self._motion_thread = None
+        self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 
     def setupUi(self):
         self._ui.setupUi(self)
@@ -50,36 +52,65 @@ class GyroDriftFrame(QFrame):
         self._plot_widget = PlotWidget()
         self._plot_widget.setWindowTitle("Error")
         self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
-        self._plot_widget.data_plot.dynamic_range = True
         self._plot_widget_live = PlotWidget()
         self._plot_widget_live.setWindowTitle("Live Graphs")
         self._plot_layout.addWidget(self._plot_widget_live)
-        self._plot_widget_live.switch_data_plot_widget(MatDataPlot(self._plot_widget_live))
+        self.load_plots()
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
+        '''
+          Used to terminate the plugin
+        '''
         rospy.loginfo("Kobuki TestSuite: gyro drift shutdown")
-        self._motion.shutdown()
-        self._scan_to_angle.shutdown()
+        self.hibernate()
 
     ##########################################################################
-    # Motion Callbacks
+    # Widget Management
     ##########################################################################
-
-    def _run_finished(self):
-        self._ui.start_button.setEnabled(True)
-        self._ui.stop_button.setEnabled(False)
+        
+    def load_plots(self):
+        print "load plots"
+        if self._plot_widget:
+            self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
+            self._plot_widget.data_plot.dynamic_range = True
+        if self._plot_widget_live:
+            self._plot_widget_live.switch_data_plot_widget(MatDataPlot(self._plot_widget_live))
+        
+    def hibernate(self):
+        '''
+          This gets called when the frame goes out of focus (tab switch). 
+          Disable everything to avoid running N tabs in parallel when in
+          reality we are only running one.
+        '''
+        print "hibernate"
+        if self._motion:
+            self._motion.shutdown()
+            self._motion = None
+        if self._plot_widget and self._plot_widget.data_plot:
+            self._plot_widget.data_plot = None
+        if self._plot_widget_live and self._plot_widget_live.data_plot:
+            self._plot_widget.data_plot = None
+    
+    def restore(self):
+        '''
+          Restore the frame after a hibernate.
+        '''
+        self._motion = DriftEstimation(self._laser_scan_angle_topic_name, self._gyro_scan_angle_topic_name, self._error_scan_angle_topic_name, self._cmd_vel_topic_name,self._gyro_topic_name)
+        self._motion.init(self._ui.angular_speed_spinbox.value())
+        self.load_plots()
+        self._scan_to_angle = ScanToAngle('/scan',self._laser_scan_angle_topic_name)
         
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
     @Slot()
     def on_start_button_clicked(self):
-        self._scan_to_angle.start()
-        self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
+        if not self._scan_to_angle:
+            self._scan_to_angle.start()
+        rospy.sleep(0.5)
+        self._motion_thread = WorkerThread(self._motion.execute, None)
         self._motion_thread.start()
         rospy.sleep(0.1)
         self._plot_widget.data_plot.reset()
@@ -104,8 +135,10 @@ class GyroDriftFrame(QFrame):
         self.stop()
         
     def stop(self):
+        if self._scan_to_angle:
+            self._scan_to_angle.shutdown()
+            self._scan_to_angle = None
         self._motion.stop()
-        self._scan_to_angle.stop()
         if self._motion_thread:
             self._motion_thread.wait()
         self._ui.start_button.setEnabled(True)
