@@ -4,9 +4,7 @@
     <file>text/gyro_drift.html</file>
     <file>text/life.html</file>
     <file>text/payload.html</file>
-    <file>text/bump.html</file>
     <file>text/battery_profile.html</file>
-    <file>text/climbing.html</file>
     <file>text/wandering.html</file>
   </qresource>
 </RCC>

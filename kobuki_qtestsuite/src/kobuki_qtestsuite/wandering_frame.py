@@ -16,6 +16,7 @@ import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from kobuki_testsuite import SafeWandering
+from kobuki_comms.msg import BumperEvent
 
 # Local resource imports
 import detail.common_rc
@@ -23,10 +24,15 @@ import detail.text_rc
 from detail.wandering_frame_ui import Ui_wandering_frame
 from qt_gui_py_common.worker_thread import WorkerThread
 
+##############################################################################
+# Classes
+##############################################################################
+
 class WanderingFrame(QFrame):
     def __init__(self, parent=None):
         super(WanderingFrame, self).__init__(parent)
         self._ui = Ui_wandering_frame()
+        self.bump_subscriber = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, self.bumper_event_callback)
         self._motion = SafeWandering('/cmd_vel','/odom', '/mobile_base/events/bumper', '/mobile_base/events/cliff')
         self._motion_thread = None
 
@@ -39,6 +45,7 @@ class WanderingFrame(QFrame):
     def shutdown(self):
         rospy.loginfo("Kobuki TestSuite: wandering test shutdown")
         self._motion.shutdown()
+        self.bump_subscriber.unregister()
 
     def stop(self):
         self._motion.stop()
@@ -76,3 +83,16 @@ class WanderingFrame(QFrame):
     def on_angular_speed_spinbox_valueChanged(self, value):
         # could use value, but easy to set like this
         self._motion.init(self._ui.speed_spinbox.value(), -0.1, self._ui.angular_speed_spinbox.value())
+
+    ##########################################################################
+    # Ros Callbacks
+    ##########################################################################
+    def bumper_event_callback(self, msg):
+        if msg.state == BumperEvent.PRESSED:
+            if msg.bumper == BumperEvent.LEFT:
+                self._ui.left_bump_counter_lcd.display(self._ui.left_bump_counter_lcd.intValue()+1)
+            elif msg.bumper == BumperEvent.RIGHT:
+                self._ui.right_bump_counter_lcd.display(self._ui.right_bump_counter_lcd.intValue()+1)
+            else:
+                self._ui.centre_bump_counter_lcd.display(self._ui.centre_bump_counter_lcd.intValue()+1)
+        

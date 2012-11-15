@@ -22,7 +22,6 @@ from geometry_msgs.msg import Twist
 
 # Local resource imports
 import detail.common_rc
-import detail.climbing_rc
 from .testsuite_widget import TestSuiteWidget
 from .configuration_dock_widget import ConfigurationDockWidget
 
