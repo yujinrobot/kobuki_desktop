@@ -36,10 +36,14 @@ namespace kobuki_factory_test {
 #define AI_PRE  2
 #define AI_INC  3
 
-typedef long long int       int64;
-typedef signed short        int16;
-typedef unsigned short      uint16;
-typedef std::vector<int16>  vint16;
+typedef signed short         int16;
+typedef signed int           int32;
+typedef signed long long     int64;
+typedef unsigned short       uint16;
+typedef unsigned int         uint32;
+typedef unsigned long long   uint64;
+
+typedef std::vector<int16>   vint16;
 
 /*****************************************************************************
 ** Helper functions
@@ -143,6 +147,16 @@ public:
   bool cliffs_ok()  { return device_ok[CLIFF_L]   && device_ok[CLIFF_C]   && device_ok[CLIFF_R];  };
   bool pwr_src_ok() { return device_ok[PWR_JACK]  && device_ok[PWR_DOCK]  && device_ok[CHARGING]; };
 
+  std::string& setSerial(const std::vector<uint32>& udid, char separator = '-') {
+    char str[64];
+    snprintf(str, 64, "%d%c%d%c%d", udid[0], separator, udid[1], separator, udid[2]);
+
+    u_dev_id = udid;
+    serial = str;
+
+    return serial;
+  }
+
   std::string version_nb(char separator = '/') {
     // Version number is stored as 0xhhhhffffssssssss
     //  - first 16 bits for hardware
@@ -216,6 +230,7 @@ public:
   // Some special data that doesn't fit on device_val
   std::vector<double> imu_data;
   std::vector<vint16> analog_in;
+  std::vector<uint32> u_dev_id;
 };
 
 class RobotList : public std::list<Robot*> {

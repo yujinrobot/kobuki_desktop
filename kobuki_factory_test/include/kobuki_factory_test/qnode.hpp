@@ -25,16 +25,16 @@
 #include <QStringListModel>
 
 #include <sensor_msgs/Imu.h>
-#include <kobuki_comms/SensorState.h>
-#include <kobuki_comms/VersionInfo.h>
-#include <kobuki_comms/DockInfraRed.h>
-#include <kobuki_comms/ButtonEvent.h>
-#include <kobuki_comms/BumperEvent.h>
-#include <kobuki_comms/WheelDropEvent.h>
-#include <kobuki_comms/CliffEvent.h>
-#include <kobuki_comms/PowerSystemEvent.h>
-#include <kobuki_comms/DigitalInputEvent.h>
-#include <kobuki_comms/RobotStateEvent.h>
+#include <kobuki_msgs/SensorState.h>
+#include <kobuki_msgs/VersionInfo.h>
+#include <kobuki_msgs/DockInfraRed.h>
+#include <kobuki_msgs/ButtonEvent.h>
+#include <kobuki_msgs/BumperEvent.h>
+#include <kobuki_msgs/WheelDropEvent.h>
+#include <kobuki_msgs/CliffEvent.h>
+#include <kobuki_msgs/PowerSystemEvent.h>
+#include <kobuki_msgs/DigitalInputEvent.h>
+#include <kobuki_msgs/RobotStateEvent.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
 
@@ -78,7 +78,6 @@ public:
 
   enum EvalStep {
     INITIALIZATION,
-    FLASH_SERIAL_NUMBER,
     TEST_DC_ADAPTER,
     TEST_DOCKING_BASE,
     BUTTON_0_PRESSED,
@@ -147,7 +146,6 @@ private:
   RobotList  evaluated;
 
   std::string out_file;  // csv output file path
-  std::string ftdi_path; // serial flashing program
 
   /*********************
   ** Publishers
@@ -182,17 +180,17 @@ private:
   /*********************
   ** Callbacks
   **********************/
-  void versionInfoCB(const kobuki_comms::VersionInfo::ConstPtr& msg);
-  void sensorsCoreCB(const kobuki_comms::SensorState::ConstPtr& msg);
-  void dockBeaconCB(const kobuki_comms::DockInfraRed::ConstPtr& msg);
+  void versionInfoCB(const kobuki_msgs::VersionInfo::ConstPtr& msg);
+  void sensorsCoreCB(const kobuki_msgs::SensorState::ConstPtr& msg);
+  void dockBeaconCB(const kobuki_msgs::DockInfraRed::ConstPtr& msg);
   void gyroscopeCB(const sensor_msgs::Imu::ConstPtr& msg);
-  void buttonEventCB(const kobuki_comms::ButtonEvent::ConstPtr& msg);
-  void bumperEventCB(const kobuki_comms::BumperEvent::ConstPtr& msg);
-  void wDropEventCB(const kobuki_comms::WheelDropEvent::ConstPtr& msg);
-  void cliffEventCB(const kobuki_comms::CliffEvent::ConstPtr& msg);
-  void powerEventCB(const kobuki_comms::PowerSystemEvent::ConstPtr& msg);
-  void inputEventCB(const kobuki_comms::DigitalInputEvent::ConstPtr& msg);
-  void robotEventCB(const kobuki_comms::RobotStateEvent::ConstPtr& msg);
+  void buttonEventCB(const kobuki_msgs::ButtonEvent::ConstPtr& msg);
+  void bumperEventCB(const kobuki_msgs::BumperEvent::ConstPtr& msg);
+  void wDropEventCB(const kobuki_msgs::WheelDropEvent::ConstPtr& msg);
+  void cliffEventCB(const kobuki_msgs::CliffEvent::ConstPtr& msg);
+  void powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg);
+  void inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg);
+  void robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg);
   void timerEventCB(const ros::TimerEvent& event);
   void robotStatusCB(const diagnostic_msgs::DiagnosticStatus::ConstPtr& msg);
   void diagnosticsCB(const diagnostic_msgs::DiagnosticArray::ConstPtr& msg);
@@ -200,14 +198,12 @@ private:
   /*********************
   ** Other methods
   **********************/
-  bool flashSN(bool show_msg);
   bool testIMU(bool show_msg);
   void testLeds(bool show_msg);
   void testSounds(bool show_msg);
   bool testAnalogIn(bool show_msg);
   bool measureCharge(bool show_msg);
   void evalMotorsCurrent(bool show_msg);
-  bool sysCmd(std::string cmd, std::string& out);
   void move(double v, double w, double t = 0.0, bool blocking = false);
   bool saveResults();
 
@@ -219,9 +215,6 @@ private:
     }
     ros::Duration(t*frequency - int(t*frequency)).sleep();
   }
-
-  bool exists(std::string& file) { std::ifstream fs(file.c_str()); return fs; }
-  bool exists(const char*  file) { std::ifstream fs(file);         return fs; }
 };
 
 }  // namespace kobuki_factory_test

@@ -18,7 +18,7 @@ import rospy
 from qt_gui_py_common.worker_thread import WorkerThread
 from rqt_plot.plot_widget import PlotWidget
 from kobuki_testsuite import Rotate
-from kobuki_comms.msg import RobotStateEvent
+from kobuki_msgs.msg import RobotStateEvent
 
 # Local resource imports
 import detail.common_rc

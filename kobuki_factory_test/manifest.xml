@@ -8,7 +8,7 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/kobuki_factory_test</url>
-  <depend package="kobuki_comms"/>
+  <depend package="kobuki_msgs"/>
   <depend package="kobuki_node"/>
   <depend package="sensor_msgs"/>
   <depend package="qt_build"/>
