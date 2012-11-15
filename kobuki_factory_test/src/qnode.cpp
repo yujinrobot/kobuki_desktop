@@ -376,6 +376,9 @@ void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
 #define PTAE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_ADAPTER
 #define PTDE kobuki_msgs::PowerSystemEvent::PLUGGED_TO_DOCKBASE
 
+  // A bit tricky if... but not that much; gets true if:
+  // the robot is plugged to currently evaluated power source and we expect so (device_val is even)
+  // or the robot is unplugged (we don't know from which device) and we expect so (odd device_val)
   if (((((msg->event == PTAE) && (current_step == TEST_DC_ADAPTER)) ||
         ((msg->event == PTDE) && (current_step == TEST_DOCKING_BASE))) &&
         (under_test->device_val[dev] % 2 == 0)) ||
@@ -397,24 +400,18 @@ void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
 }
 
 void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
-  if ((under_test == NULL) || (current_step != TEST_DIGITAL_IO_PORTS))
+  if ((under_test == NULL) || (current_step != TEST_DIGITAL_IO_PORTS) ||
+      (under_test->device_ok[Robot::D_INPUT] == true))
     return;
 
-  if ((under_test->device_val[Robot::D_INPUT] < 0) ||
-      (under_test->device_val[Robot::D_INPUT] >= (int)msg->values.size())) {
-    // This should not happen; if so, the tester pressed DI buttons more than four times,
-    // or there's an error in the code
-    log(Warn, "Unexpected digital input value: %d", under_test->device_val[Robot::D_INPUT]);
-    return;
-  }
-
-  // We switch on/off I/O test board's LEDs together with the digital input events, so we
-  // evaluate input and output simultaneously, thanks to tester's confirmation/rejection
+  // Set the bit corresponding to pressed DI button; ask user when the 4-bit mask gets completed
+  // We switch on/off I/O test board's LEDs together with the digital input events, so we evaluate
+  // input and output simultaneously, thanks to tester's confirmation/rejection
   for (unsigned int i = 0; i < msg->values.size(); i++) {
     if (msg->values[i] == false) {
+      under_test->device_val[Robot::D_INPUT] |= (int)pow(2, i);
       kobuki_msgs::DigitalOutput cmd;
-      cmd.values[i] = true;
-      cmd.mask[i] = true;
+      cmd.values[i] = cmd.mask[i] = true;
       output_pub.publish(cmd);
       return;
     }
@@ -424,9 +421,7 @@ void QNode::inputEventCB(const kobuki_msgs::DigitalInputEvent::ConstPtr& msg) {
   cmd.mask[0] = cmd.mask[1] = cmd.mask[2] = cmd.mask[3] = true;
   output_pub.publish(cmd);
 
-  under_test->device_val[Robot::D_INPUT]++;
-
-  if (under_test->device_val[Robot::D_INPUT] == (int)msg->values.size()) {
+  if (under_test->device_val[Robot::D_INPUT] == 0b00001111) {  //(int)msg->values.size()) {
     // All I/O tested; request tester confirmation
     showUserMsg(Info, "Digital I/O test",
               "Press left function button if LEDs blinked as expected or right otherwise");
@@ -482,7 +477,7 @@ void QNode::robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg) {
     }
 
     // Go to the beginning of the test process and create a new robot object
-    current_step = TEST_LEDS;//TODO INITIALIZATION;
+    current_step = TEST_DIGITAL_IO_PORTS;//TODO INITIALIZATION;
     under_test = new Robot(evaluated.size());
 
     // Resubscribe to version_info to get robot version number (it's a latched topic)
