@@ -132,7 +132,8 @@ class BatteryProfileFrame(QFrame):
         
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
-        self._motion.init(self._ui.angular_speed_spinbox.value())
+        if self._motion:
+            self._motion.init(self._ui.angular_speed_spinbox.value())
 
     ##########################################################################
     # Ros Callbacks

@@ -18,6 +18,7 @@ import roslib
 roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from qt_gui_py_common.worker_thread import WorkerThread
+from kobuki_testsuite import Square
 
 # Local resource imports
 import detail.common_rc
@@ -32,10 +33,8 @@ class PayloadFrame(QFrame):
     def __init__(self, parent=None):
         super(PayloadFrame, self).__init__(parent)
         self._ui = Ui_payload_frame()
-        #self._motion = Rotate('/cmd_vel')
-        #self.robot_state_subscriber = rospy.Subscriber("/mobile_base/events/robot_state", RobotStateEvent, self.robot_state_callback)
+        self._motion = None
         self._motion_thread = None
-        self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 
     def setupUi(self):
         self._ui.setupUi(self)
@@ -48,7 +47,7 @@ class PayloadFrame(QFrame):
           Used to terminate the plugin
         '''
         rospy.loginfo("Kobuki TestSuite: payload frame shutdown")
-        #self._motion.shutdown()
+        self._stop()
 
     ##########################################################################
     # Widget Management
@@ -60,7 +59,7 @@ class PayloadFrame(QFrame):
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
-        pass
+        self._stop()
     
     def restore(self):
         '''
@@ -73,6 +72,8 @@ class PayloadFrame(QFrame):
     ##########################################################################
 
     def _run_finished(self):
+        self._motion_thread = None
+        self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
         
@@ -83,24 +84,35 @@ class PayloadFrame(QFrame):
     def on_start_button_clicked(self):
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        #self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
-        #self._motion_thread.start()
+        self._motion = Square('/cmd_vel', '/odom')
+        self._motion.init(self._ui.speed_spinbox.value(), self._ui.distance_spinbox.value())
+        self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
+        self._motion_thread.start()
 
     @Slot()
     def on_stop_button_clicked(self):
-        self.stop()
+        self._stop()
         
-    def stop(self):
-        #self._motion.stop()
+    def _stop(self):
+        if self._motion:
+            self._motion.stop()
         if self._motion_thread:
             self._motion_thread.wait()
+            self._motion_thread = None
+        if self._motion:
+            self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
         
     @pyqtSlot(float)
-    def on_angular_speed_spinbox_valueChanged(self, value):
-        pass
-        #self._motion.init(self._ui.angular_speed_spinbox.value())
+    def on_speed_spinbox_valueChanged(self, value):
+        if self._motion:
+            self._motion.init(self._ui.speed_spinbox.value(), self._ui.distance_spinbox.value())
+
+    @pyqtSlot(float)
+    def on_distance_spinbox_valueChanged(self, value):
+        if self._motion:
+            self._motion.init(self._ui.speed_spinbox.value(), self._ui.distance_spinbox.value())
 
     ##########################################################################
     # Ros Callbacks

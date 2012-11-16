@@ -70,7 +70,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="0" column="2" rowspan="2">
        <widget class="QDoubleSpinBox" name="speed_spinbox">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -92,8 +92,8 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QDoubleSpinBox" name="angular_speed_spinbox">
+      <item row="0" column="3" colspan="2">
+       <widget class="QDoubleSpinBox" name="distance_spinbox">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
@@ -101,27 +101,30 @@
          <string/>
         </property>
         <property name="suffix">
-         <string> rad/s</string>
+         <string>m</string>
         </property>
         <property name="maximum">
-         <double>3.140000000000000</double>
+         <double>2.000000000000000</double>
         </property>
         <property name="singleStep">
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>1.800000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Angular Speed</string>
+         <double>1.000000000000000</double>
         </property>
        </widget>
       </item>
       <item row="0" column="5">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Side Length</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -134,7 +137,14 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="1" column="3" rowspan="2">
+       <widget class="QPushButton" name="stop_button">
+        <property name="text">
+         <string>Stop</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <spacer name="horizontalSpacer_6">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -147,21 +157,14 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="2">
+      <item row="2" column="2">
        <widget class="QPushButton" name="start_button">
         <property name="text">
          <string>Start</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QPushButton" name="stop_button">
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="4" colspan="2">
+      <item row="2" column="4" colspan="3">
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
