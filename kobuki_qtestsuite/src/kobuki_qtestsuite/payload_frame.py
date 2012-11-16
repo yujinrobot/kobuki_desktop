@@ -32,6 +32,7 @@ from detail.payload_frame_ui import Ui_payload_frame
 class PayloadFrame(QFrame):
     def __init__(self, parent=None):
         super(PayloadFrame, self).__init__(parent)
+        self._gyro_topic_name = '/mobile_base/sensors/imu_data'
         self._ui = Ui_payload_frame()
         self._motion = None
         self._motion_thread = None
@@ -40,7 +41,6 @@ class PayloadFrame(QFrame):
         self._ui.setupUi(self)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        #self._motion.init(self._ui.angular_speed_spinbox.value())
 
     def shutdown(self):
         '''
@@ -84,7 +84,7 @@ class PayloadFrame(QFrame):
     def on_start_button_clicked(self):
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        self._motion = Square('/cmd_vel', '/odom')
+        self._motion = Square('/cmd_vel', '/odom', self._gyro_topic_name)
         self._motion.init(self._ui.speed_spinbox.value(), self._ui.distance_spinbox.value())
         self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
         self._motion_thread.start()
