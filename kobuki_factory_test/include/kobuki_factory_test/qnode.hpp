@@ -52,16 +52,8 @@ namespace kobuki_factory_test {
 
 class QNodeRequest : public QEvent {
 public:
-QNodeRequest(const std::string& title = "", const std::string& format = "", ...)
-    : QEvent(QEvent::User), title(title.c_str()), text(format.c_str()) {
-  va_list arguments;
-  va_start(arguments, format);
-
-  char str[256];
-  vsnprintf(str, 256, format.c_str(), arguments);
-
-  text = (const char*)str;
-};
+QNodeRequest(const std::string& title = "", const std::string& text = "")
+    : QEvent(QEvent::User), title(title.c_str()), text(text.c_str()) { };
 
 QString title;
 QString text;
@@ -86,29 +78,29 @@ public:
     BUTTON_1_PRESSED,
     BUTTON_1_RELEASED,
     BUTTON_2_PRESSED,
-    BUTTON_2_RELEASED,   // 10
+    BUTTON_2_RELEASED,
+    MEASURE_CHARGE_AND_PSD,  // 10
+    MEASURE_GYRO_ERROR,
+    TEST_DIGITAL_IO_PORTS,
+    TEST_ANALOG_INPUT_PORTS,
     TEST_LEDS,
     TEST_SOUNDS,
     TEST_CLIFF_SENSORS,
-    TEST_WHEEL_DROP_SENSORS,  // 14
+    TEST_WHEEL_DROP_SENSORS,
     CENTER_BUMPER_PRESSED,
     CENTER_BUMPER_RELEASED,
-    POINT_RIGHT_BUMPER,
+    POINT_RIGHT_BUMPER,      // 20
     RIGHT_BUMPER_PRESSED,
     RIGHT_BUMPER_RELEASED,
-    POINT_LEFT_BUMPER,    // 20
-    LEFT_BUMPER_PRESSED,  // 21
+    POINT_LEFT_BUMPER,
+    LEFT_BUMPER_PRESSED,
     LEFT_BUMPER_RELEASED,
-    PREPARE_MOTORS_TEST,   // 23
-    TEST_MOTORS_FORWARD,   // 24
+    PREPARE_MOTORS_TEST,
+    TEST_MOTORS_FORWARD,
     TEST_MOTORS_BACKWARD,
     TEST_MOTORS_CLOCKWISE,
-    TEST_MOTORS_COUNTERCW,
+    TEST_MOTORS_COUNTERCW,   // 30
     EVAL_MOTORS_CURRENT,
-    MEASURE_GYRO_ERROR,
-    MEASURE_CHARGING,
-    TEST_DIGITAL_IO_PORTS,
-    TEST_ANALOG_INPUT_PORTS,
     EVALUATION_COMPLETED,
 
     EVALUATION_STEPS_COUNT
@@ -147,8 +139,21 @@ private:
   Robot *   under_test;
   RobotList  evaluated;
 
-  bool      answer_req;   // user input required
-  std::string out_file;   // csv output file path
+  bool      answer_req;      // user input required
+  std::string out_file;      // csv output file path
+
+  /*********************
+  ** Testing parameters
+  **********************/
+  int    motor_max_current;
+  int    cliff_sensor_tests;
+  int    wheel_drop_tests;
+  int    power_plug_tests;
+  int    min_power_charged;     // tenths of volt
+  double measure_charge_time;   // seconds
+  double gyro_camera_max_diff;  // radians
+  int    ainput_min_threshold;  // analog input minimum threshold, in millivolts
+  int    ainput_max_threshold;  // analog input maximum threshold, in millivolts
 
   /*********************
   ** Publishers

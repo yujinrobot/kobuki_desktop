@@ -44,16 +44,6 @@ namespace kobuki_factory_test {
 #define TEST_GYRO_W     (M_PI/3.0)
 #define TEST_GYRO_A     (2.0*M_PI)  // 360 deg, clockwise + counter cw.
 
-#define MOTOR_MAX_CURRENT         24
-#define CLIFF_SENSOR_TESTS         2
-#define WHEEL_DROP_TESTS           2
-#define POWER_PLUG_TESTS           1
-#define MIN_POWER_CHARGED          2     // tenths of volt
-#define MEASURE_CHARGE_TIME       10.0   // seconds
-#define GYRO_CAMERA_MAX_DIFF       0.05  // radians
-#define A_INPUT_MIN_THRESHOLD      2     // analog input minimum threshold, in millivolts
-#define A_INPUT_MAX_THRESHOLD   4090     // analog input maximum threshold, in millivolts
-
 /*****************************************************************************
 ** Implementation
 *****************************************************************************/
@@ -136,8 +126,14 @@ void QNode::sensorsCoreCB(const kobuki_msgs::SensorState::ConstPtr& msg) {
     return;
   }
 
-  if ((current_step == MEASURE_CHARGING) && (msg->charger)) {
-    under_test->device_val[Robot::CHARGING] = msg->battery;
+  if (current_step == MEASURE_CHARGE_AND_PSD) {
+    if (msg->charger)
+      under_test->device_val[Robot::CHARGING] = msg->battery;
+
+    for (unsigned int i = 0; i < msg->bottom.size(); i++)
+      under_test->psd_data[i] = (under_test->psd_data[i] == 0)?msg->bottom[i]
+                               :(under_test->psd_data[i] + msg->bottom[i])/2.0;
+
     return;
   }
 
@@ -309,7 +305,7 @@ void QNode::wDropEventCB(const kobuki_msgs::WheelDropEvent::ConstPtr& msg) {
     log(Info, "%s wheel %s, as expected", msg->wheel?"Right":"Left", msg->state?"dropped":"raised");
     under_test->device_val[dev]++;
 
-    if (under_test->device_val[dev] >= WHEEL_DROP_TESTS*2) {
+    if (under_test->device_val[dev] >= wheel_drop_tests*2) {
       log(Info, "%s wheel drop evaluation completed", msg->wheel?"Right":"Left");
       under_test->device_ok[dev] = true;
 
@@ -341,7 +337,7 @@ void QNode::cliffEventCB(const kobuki_msgs::CliffEvent::ConstPtr& msg) {
         msg->state?"cliff":"no cliff");
     under_test->device_val[dev]++;
 
-    if (under_test->device_val[dev] >= CLIFF_SENSOR_TESTS*2) {
+    if (under_test->device_val[dev] >= cliff_sensor_tests*2) {
       log(Info, "%s cliff sensor evaluation completed",
            dev == Robot::CLIFF_R?"Right":dev == Robot::CLIFF_C?"Center":"Left");
       under_test->device_ok[dev] = true;
@@ -389,7 +385,7 @@ void QNode::powerEventCB(const kobuki_msgs::PowerSystemEvent::ConstPtr& msg) {
         (dev == Robot::PWR_JACK)?"Adapter":"Docking base", msg->event?"plugged":"unplugged");
     under_test->device_val[dev]++;
 
-    if (under_test->device_val[dev] >= POWER_PLUG_TESTS*2) {
+    if (under_test->device_val[dev] >= power_plug_tests*2) {
       log(Info, "%s plugging evaluation completed",
           (dev == Robot::PWR_JACK)?"Adapter":"Docking base");
       under_test->device_ok[dev] = true;
@@ -471,14 +467,14 @@ void QNode::robotEventCB(const kobuki_msgs::RobotStateEvent::ConstPtr& msg) {
     if (under_test != NULL) {
       log(Warn, "New robot connected while %s is still under evaluation; saving...",
            under_test->serial.c_str());
-      saveResults();
+      saveResults();  // TODO if it's the same robot comming back after a cut in the serial, GET_SERIAL_NUMBER will prevent it to be re-tested...  can be problematic if such cuts are common
     }
     else {
       log(Info, "New robot connected");
     }
 
     // Go to the beginning of the test process and create a new robot object
-    current_step = TEST_DIGITAL_IO_PORTS;//TODO INITIALIZATION;
+    current_step = INITIALIZATION;
     under_test = new Robot(evaluated.size());
 
     // Resubscribe to version_info to get robot version number (it's a latched topic)
@@ -612,7 +608,7 @@ bool QNode::testIMU(bool first_call) {
                       std::numeric_limits<double>::quiet_NaN() };
 
   for (unsigned int i = 0; i < 2; i++) {
-    for (unsigned int j = 0; j < 80 && ros::ok(); j++) { // around 30 seconds before timeout
+    for (unsigned int j = 0; j < 30 && ros::ok(); j++) { // around 30 seconds before timeout
       nbSleep(0.2);
       vo_yaw[i] = - imuTester.getYaw();  // We invert, as the camera is looking AT the robot
       if (isnan(vo_yaw[i]) == false) {
@@ -647,7 +643,7 @@ bool QNode::testIMU(bool first_call) {
     ros::spinOnce();
   }
 
-  if (abs(under_test->imu_data[1] - under_test->imu_data[3]) <= GYRO_CAMERA_MAX_DIFF) {
+  if (abs(under_test->imu_data[1] - under_test->imu_data[3]) <= gyro_camera_max_diff) {
     log(Info, "Gyroscope testing successful: diff 1 = %.3f / diff 2 = %.3f",
         under_test->imu_data[1], under_test->imu_data[3]);
     under_test->device_ok[Robot::IMU_DEV] = true;
@@ -663,8 +659,9 @@ bool QNode::testIMU(bool first_call) {
 bool QNode::measureCharge(bool first_call) {
   if (first_call == true) {
     // This should be executed only once
-    showUserMsg(Info, "Charge measurement", "Plug the adaptor to the robot and wait %d seconds",
-                (int)ceil(MEASURE_CHARGE_TIME));
+    showUserMsg(Info, "Charge measurement", "Plug the adaptor to the robot and wait %d seconds\n" \
+                "Do not move it, as we will measure the PSD sensors readings at the same time",
+                (int)ceil(measure_charge_time));
   }
 
   // Wait until charging starts (and a bit more) to take first measure...
@@ -682,27 +679,33 @@ bool QNode::measureCharge(bool first_call) {
   uint8_t v1 = under_test->device_val[Robot::CHARGING];
 
   // ...and (if the 40 seconds timeout didn't happen) take the second
-  nbSleep(MEASURE_CHARGE_TIME);
+  nbSleep(measure_charge_time);
   uint8_t v2 = under_test->device_val[Robot::CHARGING];
 
-  under_test->device_val[Robot::CHARGING] = v2 - v1;
+  under_test->device_val[Robot::CHARGING]  = v1;      // initial
+  under_test->device_val[Robot::CHARGING] <<= 8;
+  under_test->device_val[Robot::CHARGING] |= v2;      // final
+  under_test->device_val[Robot::CHARGING] <<= 8;
+  under_test->device_val[Robot::CHARGING] |= v2 - v1; // difference
 
-  if (under_test->device_val[Robot::CHARGING] >= MIN_POWER_CHARGED) {
+  if ((v2 - v1) >= min_power_charged) {
     log(Info, "Charge measurement: %.1f V in %d seconds",
-        under_test->device_val[Robot::CHARGING]/10.0, (int)round(MEASURE_CHARGE_TIME));
+        (v2 - v1)/10.0, (int)round(measure_charge_time));
     under_test->device_ok[Robot::CHARGING] = true;
   }
   else {
     log(Warn, "Charge measurement: %.1f V in %d seconds",
-        under_test->device_val[Robot::CHARGING]/10.0, (int)round(MEASURE_CHARGE_TIME));
+        (v2 - v1)/10.0, (int)round(measure_charge_time));
   }
 
   return true;
 }
 
 bool QNode::testAnalogIn(bool first_call) {
-  static unsigned int active = std::numeric_limits<unsigned int>::max();
+  // We need to keep track of witch input is currently changing and reuse
+  // the same command to incrementally illuminate I/O test board's LEDs
   static kobuki_msgs::DigitalOutput last_do_cmd;
+  static unsigned short active = std::numeric_limits<unsigned int>::max();
 
   if (first_call == true) {
     // This should be executed only once
@@ -720,11 +723,11 @@ bool QNode::testAnalogIn(bool first_call) {
     under_test->device_val[Robot::A_INPUT] = 0;
   }
 
+  // Update countdown; we use it to switch off LEDs after finishing testing every input
   if ((under_test->device_val[Robot::A_INPUT] & 0xFFFF) > 0) {
     under_test->device_val[Robot::A_INPUT]--;
 
-    if ((under_test->device_val[Robot::A_INPUT] & 0xFFFF) == 0) {
-      // Countdown finished; switch off LEDs
+    if ((under_test->device_val[Robot::A_INPUT] & 0xFFFF) == 0) { // countdown finished
       for (unsigned int i = 0; i < last_do_cmd.values.size(); i++)
         last_do_cmd.values[i] = false;
 
@@ -732,19 +735,21 @@ bool QNode::testAnalogIn(bool first_call) {
     }
   }
 
+  // Verify whether inputs get validated (minimum and maximum values surpass the thresholds)
   for (unsigned int i = 0; i < under_test->analog_in.size(); i++) {
     int MIN_MASK = (int)pow(2, i) << 16;
     int MAX_MASK = (int)pow(2, i) << 24;
 
     if ((! (under_test->device_val[Robot::A_INPUT] & MIN_MASK)) &&
-        (under_test->analog_in[i][AI_MIN] <= A_INPUT_MIN_THRESHOLD)) {
+        (under_test->analog_in[i][AI_MIN] <= ainput_min_threshold)) {
       under_test->device_val[Robot::A_INPUT] |= MIN_MASK;
     }
     if ((! (under_test->device_val[Robot::A_INPUT] & MAX_MASK)) &&
-        (under_test->analog_in[i][AI_MAX] >= A_INPUT_MAX_THRESHOLD)) {
+        (under_test->analog_in[i][AI_MAX] >= ainput_max_threshold)) {
       under_test->device_val[Robot::A_INPUT] |= MAX_MASK;
     }
 
+    // The next 30 lines incrementally illuminate I/O test board's LEDs
     if (abs(under_test->analog_in[i][AI_INC]) > 60) {
       if (active != i) {
         active = i;
@@ -761,7 +766,8 @@ bool QNode::testAnalogIn(bool first_call) {
         active = -1;
       }
 
-      int led = (int)rint((4.0*(A_INPUT_MAX_THRESHOLD - under_test->analog_in[i][AI_VAL]))/(double)A_INPUT_MAX_THRESHOLD);
+      int led = (int)rint((4.0*(ainput_max_threshold - under_test->analog_in[i][AI_VAL]))
+                          / (double)ainput_max_threshold);
 
       if ((led == 1) || (led == 2))
         last_do_cmd.values[led] = true;
@@ -788,9 +794,9 @@ bool QNode::testAnalogIn(bool first_call) {
 
 void QNode::evalMotorsCurrent(bool first_call) {
   under_test->device_ok[Robot::MOTOR_L] =
-    under_test->device_val[Robot::MOTOR_L] <= MOTOR_MAX_CURRENT;
+    under_test->device_val[Robot::MOTOR_L] <= motor_max_current;
   under_test->device_ok[Robot::MOTOR_R] =
-    under_test->device_val[Robot::MOTOR_R] <= MOTOR_MAX_CURRENT;
+    under_test->device_val[Robot::MOTOR_R] <= motor_max_current;
   if (under_test->motors_ok() == true)
     log(Info, "Motors current evaluation completed (%d, %d)",
         under_test->device_val[Robot::MOTOR_L], under_test->device_val[Robot::MOTOR_R]);
@@ -814,8 +820,20 @@ bool QNode::init() {
   if (! ros::master::check()) {
     return false;
   }
+
   ros::start(); // explicitly needed since our nodehandle is going out of scope.
   ros::NodeHandle nh;
+
+  nh.param("kobuki_factory_test/motor_max_current",    motor_max_current,    24);
+  nh.param("kobuki_factory_test/cliff_sensor_tests",   cliff_sensor_tests,   3);
+  nh.param("kobuki_factory_test/wheel_drop_tests",     wheel_drop_tests,     3);
+  nh.param("kobuki_factory_test/power_plug_tests",     power_plug_tests,     3);
+  nh.param("kobuki_factory_test/min_power_charged",    min_power_charged,    5);
+  nh.param("kobuki_factory_test/measure_charge_time",  measure_charge_time,  10.0);
+  nh.param("kobuki_factory_test/gyro_camera_max_diff", gyro_camera_max_diff, 0.05);
+  nh.param("kobuki_factory_test/ainput_min_threshold", ainput_min_threshold, 2);
+  nh.param("kobuki_factory_test/ainput_max_threshold", ainput_max_threshold, 4090);
+
   nh.getParam("kobuki_factory_test/test_result_output_file", out_file);
 
   // Subscribe to kobuki sensors and publish to its actuators
@@ -891,13 +909,13 @@ void QNode::run() {
       case TEST_DC_ADAPTER:
         if (step_changed == true) {
           showUserMsg(Info, "DC adapter plug test", "Plug and unplug adapter to robot %d time(s)",
-                      POWER_PLUG_TESTS);
+                      power_plug_tests);
         }
         break;
       case TEST_DOCKING_BASE:
         if (step_changed == true) {
           showUserMsg(Info, "Docking base plug test", "Plug and unplug robot to its base %d time(s)",
-                      POWER_PLUG_TESTS);
+                      power_plug_tests);
         }
         break;
       case BUTTON_0_PRESSED:
@@ -914,14 +932,12 @@ void QNode::run() {
         break;
       case TEST_CLIFF_SENSORS:
         if (step_changed == true) {
-          showUserMsg(Info, "Cliff sensors test",
-                      "Raise and lower robot %d time(s) to test cliff sensors", CLIFF_SENSOR_TESTS);
+          showUserMsg(Info, "Cliff sensors test", "Raise and lower robot %d time(s)", cliff_sensor_tests);
         }
         break;
       case TEST_WHEEL_DROP_SENSORS:
         if (step_changed == true) {
-          showUserMsg(Info, "Wheel drop sensors test",
-                      "Raise and lower robot %d time(s) to test wheel drop sensors", WHEEL_DROP_TESTS);
+          showUserMsg(Info, "Wheel drop sensors test", "Raise and lower robot %d time(s)", wheel_drop_tests);
         }
         break;
       case CENTER_BUMPER_PRESSED:
@@ -975,14 +991,14 @@ void QNode::run() {
         testIMU(step_changed);
         current_step++;
         break;
-      case MEASURE_CHARGING:
+      case MEASURE_CHARGE_AND_PSD:
         measureCharge(step_changed);
         current_step++;  // important: if we not change state, next call
-        break;        // to spinOnce will overwrite the measured value!
+        break;           // to spinOnce will overwrite the measured value!
       case TEST_DIGITAL_IO_PORTS:
         if (step_changed) {
           showUserMsg(Info, "Digital I/O test",
-                    "Press the four digital input buttons sequentially, from DI-1 to DI-4\n" \
+                    "Press the four digital input buttons, DI-1 to DI-4\n" \
                     "The digital output LED below should switch on and off as the result");
           under_test->device_val[Robot::D_INPUT] = 0;
 
