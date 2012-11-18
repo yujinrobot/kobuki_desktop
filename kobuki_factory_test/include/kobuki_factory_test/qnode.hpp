@@ -122,6 +122,7 @@ public:
 
 Q_SIGNALS:
   void requestMW(QNodeRequest* request);
+  void evalUpdated(Robot* under_eval);
   void loggingUpdated();
   void addLogLine(const QString& str);
   void rosShutdown();
@@ -136,7 +137,7 @@ private:
   bool     timer_active;
   EvalStep current_step;
 
-  Robot *   under_test;
+  Robot *   under_eval;
   RobotList  evaluated;
 
   bool      answer_req;      // user input required

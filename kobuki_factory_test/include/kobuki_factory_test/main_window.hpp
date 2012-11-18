@@ -57,6 +57,8 @@ public Q_SLOTS:
     void viewLogLine(const QString& str);
     void qNodeRequest(QNodeRequest* request);
 
+    void updateEvalState(Robot* robot);
+
 private:
     Ui::MainWindowDesign ui;
     QNode qnode;

@@ -110,6 +110,7 @@ public:
     state(UNKNOWN),
     device_ok(DEVICES_COUNT, false),
     device_val(DEVICES_COUNT, std::numeric_limits<int64>::max()),
+    device_cmp(DEVICES_COUNT, 0.0f),
     imu_data(5), // test 1, diff 1, test 2, diff 2, current value
     psd_data(3), // left, center, right
     analog_in(4, vint16(4)) { // 4 x min/max/prev/inc voltages for analog ports
@@ -147,6 +148,14 @@ public:
   bool w_drop_ok()  { return device_ok[W_DROP_L]  && device_ok[W_DROP_R]; };
   bool cliffs_ok()  { return device_ok[CLIFF_L]   && device_ok[CLIFF_C]   && device_ok[CLIFF_R];  };
   bool pwr_src_ok() { return device_ok[PWR_JACK]  && device_ok[PWR_DOCK]  && device_ok[CHARGING]; };
+
+  float motors_cmp()  { return device_ok[MOTOR_L]   && device_ok[MOTOR_R]; };
+  float ir_dock_cmp() { return device_ok[IR_DOCK_L] && device_ok[IR_DOCK_C] && device_ok[IR_DOCK_R]; };
+  float buttons_cmp() { return device_ok[BUTTON_0]  && device_ok[BUTTON_1]  && device_ok[BUTTON_2]; };
+  float bumpers_cmp() { return device_ok[BUMPER_L]  && device_ok[BUMPER_C]  && device_ok[BUMPER_R]; };
+  float w_drop_cmp()  { return device_ok[W_DROP_L]  && device_ok[W_DROP_R]; };
+  float cliffs_cmp()  { return device_ok[CLIFF_L]   && device_ok[CLIFF_C]   && device_ok[CLIFF_R];  };
+  float pwr_src_cmp() { return device_ok[PWR_JACK]  && device_ok[PWR_DOCK]  && device_ok[CHARGING]; };
 
   std::string& setSerial(const std::vector<uint32>& udid, char separator = '-') {
     char str[64];
@@ -213,6 +222,7 @@ public:
   std::string      diagnostics;
   std::vector<bool>  device_ok;
   std::vector<int64> device_val;
+  std::vector<float> device_cmp;  // completion extent (0..1)
 
   // Some special data that doesn't fit on device_val
   std::vector<double> imu_data;

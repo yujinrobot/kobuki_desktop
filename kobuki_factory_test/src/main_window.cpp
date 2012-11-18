@@ -47,7 +47,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 //    QObject::connect(&qnode, SIGNAL(hideMessage()), this, SLOT(hidePopupMsg()));
     QObject::connect(&qnode, SIGNAL(requestMW(QNodeRequest*)),
                          this, SLOT(qNodeRequest(QNodeRequest*)));
-
+    QObject::connect(&qnode, SIGNAL(evalUpdated(Robot*)),
+                         this, SLOT(updateEvalState(Robot*)));
     /*********************
     ** Logging
     **********************/
@@ -178,6 +179,52 @@ bool MainWindow::event(QEvent* e) {
   return true;
 }
 
+QString& styleSheet(double n, double N) {
+  QString bcrgb;
+  return bcrgb.sprintf("background-color: rgb(%d, %d, %d);", int(((N - n)/N)*255), 0, int((n/N)*255));
+}
+
+QString getStyleSheet(float completed) {
+  QString bcrgb;
+  return bcrgb.sprintf("background-color: rgb(%d, %d, %d);", int((1 - completed)*255), 0, int(completed*255));
+}
+
+//#define EVAL_0  setStyleSheet("background-color: rgb(255, 0, 0);");
+//#define EVAL_1  setStyleSheet("background-color: rgb(255, 110, 20);");
+//#define EVAL_2  setStyleSheet("background-color: rgb(0, 0, 255);");
+
+void MainWindow::updateEvalState(Robot* robot) {
+  // Left column
+  ui.ir_dock_widget->setStyleSheet(getStyleSheet((robot->device_cmp[Robot::IR_DOCK_L] + robot->device_cmp[Robot::IR_DOCK_C] + robot->device_cmp[Robot::IR_DOCK_R])/3.0));
+  ui.imu_dev_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::IMU_DEV]));
+  ui.buttons_widget->setStyleSheet(getStyleSheet((robot->device_cmp[Robot::BUTTON_0] + robot->device_cmp[Robot::BUTTON_1] + robot->device_cmp[Robot::BUTTON_2])/3.0));
+  ui.bumper_l_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::BUMPER_L]));
+  ui.bumper_c_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::BUMPER_C]));
+  ui.bumper_r_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::BUMPER_R]));
+  ui.w_drop_l_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::W_DROP_L]));
+  ui.w_drop_r_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::W_DROP_R]));
+  ui.cliff_l_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::CLIFF_L]));
+  ui.cliff_c_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::CLIFF_C]));
+  ui.cliff_r_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::CLIFF_R]));
+
+  // Right column
+  ui.pwr_jack_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::PWR_JACK]));
+  ui.pwr_dock_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::PWR_DOCK]));
+  ui.charging_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::CHARGING]));
+  ui.ext_pwr_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::EXT_PWR]));
+  ui.a_input_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::A_INPUT]));
+  ui.d_input_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::D_INPUT]));
+  ui.d_output_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::D_OUTPUT]));
+  ui.leds_widget->setStyleSheet(getStyleSheet((robot->device_cmp[Robot::LED_1] + robot->device_cmp[Robot::LED_2])/2.0f));
+  ui.sounds_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::SOUNDS]));
+  ui.motor_l_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::MOTOR_L]));
+  ui.motor_r_widget->setStyleSheet(getStyleSheet(robot->device_cmp[Robot::MOTOR_R]));
+
+  QListWidgetItem* item = new QListWidgetItem();
+  item->setBackground(Qt::darkRed);
+//  ui.devStatesListWidget->addItem(item);
+//  robot->
+}
 
 
 /*****************************************************************************
