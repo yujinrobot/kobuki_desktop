@@ -33,6 +33,11 @@ target_link_libraries(get_serial_number usb)
 rosbuild_add_executable(reset_device src/reset_device.cpp)
 target_link_libraries(reset_device usb)
 
+# ---
+
+rosbuild_add_executable(flasher src/flasher.cpp)
+target_link_libraries(flasher usb ftdi)
+
 #rosbuild_add_executable(xxx src/xxx.cpp)
-#target_link_libraries(xxx ${LIBUSB_LIBRARIES})
+#target_link_libraries(xxx usb)
 
