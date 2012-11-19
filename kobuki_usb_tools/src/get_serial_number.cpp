@@ -43,29 +43,27 @@ int main(int argc, char** argv)
     if( h < 0 ) {
       std::cerr << "failed to open usb device." << std::endl;
       std::cerr << "do with sudo." << std::endl;
-    //std::cout << h << std::endl;
-    //std::cout << (int)dev->descriptor.iSerialNumber << std::endl;
     }
   
     char buff[128];
     int n;
     n = usb_get_string_simple(h, dev->descriptor.iManufacturer, buff, 128);
     if (n < 0) {
-      std::cerr << "something wrong." << std::endl;
+      std::cerr << "something wrong. do with sudo." << std::endl;
       continue;
     }
     std::cout << "  Manufacturer : " << std::string(buff) << std::endl;
   
     n = usb_get_string_simple(h, dev->descriptor.iProduct, buff, 128);
     if (n < 0) {
-      std::cerr << "something wrong." << std::endl;
+      std::cerr << "something wrong. do with sudo." << std::endl;
       continue;
     }
     std::cout << "  Product      : " << std::string(buff) << std::endl;
 
     n = usb_get_string_simple(h, dev->descriptor.iSerialNumber, buff, 128);
     if (n < 0) { 
-      std::cerr << "something wrong." << std::endl;
+      std::cerr << "something wrong. do with sudo." << std::endl;
       continue;
     }
     std::cout << "  Serial Number: " << std::string(buff) << std::endl;
