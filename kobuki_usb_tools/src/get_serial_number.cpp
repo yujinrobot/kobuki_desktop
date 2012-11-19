@@ -1,11 +1,13 @@
 #include <iostream>
+#include <vector>
 #include <usb.h>
 
-static struct usb_device *find_devices(uint16_t vendor, uint16_t product)
+std::vector<struct usb_device *> find_devices(uint16_t vendor, uint16_t product)
 {
   struct usb_bus *bus;
   struct usb_device *dev;
   struct usb_bus *busses;
+  std::vector<struct usb_device *> ret_vec;
 
   usb_init();
   usb_find_busses();
@@ -15,42 +17,58 @@ static struct usb_device *find_devices(uint16_t vendor, uint16_t product)
   for (bus = busses; bus; bus = bus->next)
     for (dev = bus->devices; dev; dev = dev->next)
       if ((dev->descriptor.idVendor == vendor) && (dev->descriptor.idProduct == product))
-        return dev;
+        ret_vec.push_back(dev);
 
-  return NULL;
+  return ret_vec;
 }
 
 int main(int argc, char** argv)
 {
-  std::cout << "hello world." << std::endl;
+  std::vector<struct usb_device *> devices;
 
-  struct usb_device *dev;
-  dev = find_devices(0x0403,0x6001);
-
-  if( dev == NULL ) {
-    std::cout << "failed to find." << std::endl;
+  devices = find_devices(0x0403,0x6001);
+  if (devices.empty()) {
+    std::cout << "not found!!!" << std::endl;
     return -1;
   }
-  std::cout << "found!!!" << std::endl;
+  std::cout << devices.size() << " device(s) found." << std::endl;
 
-  char buff[128];
-//  usb_get_string_descriptor_ascii( dev, dev->descriptor.iSerialNumber, buff, 128);
-  usb_dev_handle *h = usb_open(dev);
-  if( h < 0 ) return -1;
-//  std::cout << h << std::endl;
-//  std::cout << (int)dev->descriptor.iSerialNumber << std::endl;
+  for( unsigned int i=0; i<devices.size(); i++ ) 
+  {
+    std::cout << std::endl;
+    std::cout << "Device #" << i  << std::endl;
 
-  int n = usb_get_string_simple(h, dev->descriptor.iSerialNumber, buff, 128);
-  if( n ) 
-    std::cout << std::string(buff) << std::endl;
+    struct usb_device *dev = devices[i];
+    usb_dev_handle *h = usb_open(dev);
+    if( h < 0 ) {
+      std::cerr << "failed to open usb device." << std::endl;
+      std::cerr << "do with sudo." << std::endl;
+    //std::cout << h << std::endl;
+    //std::cout << (int)dev->descriptor.iSerialNumber << std::endl;
+    }
+  
+    char buff[128];
+    int n;
+    n = usb_get_string_simple(h, dev->descriptor.iManufacturer, buff, 128);
+    if (n < 0) {
+      std::cerr << "something wrong." << std::endl;
+      continue;
+    }
+    std::cout << "  Manufacturer : " << std::string(buff) << std::endl;
+  
+    n = usb_get_string_simple(h, dev->descriptor.iProduct, buff, 128);
+    if (n < 0) {
+      std::cerr << "something wrong." << std::endl;
+      continue;
+    }
+    std::cout << "  Product      : " << std::string(buff) << std::endl;
 
-  n = usb_get_string_simple(h, dev->descriptor.iManufacturer, buff, 128);
-  if( n ) 
-    std::cout << std::string(buff) << std::endl;
-
-  n = usb_get_string_simple(h, dev->descriptor.iProduct, buff, 128);
-  if( n ) 
-    std::cout << std::string(buff) << std::endl;
-
+    n = usb_get_string_simple(h, dev->descriptor.iSerialNumber, buff, 128);
+    if (n < 0) { 
+      std::cerr << "something wrong." << std::endl;
+      continue;
+    }
+    std::cout << "  Serial Number: " << std::string(buff) << std::endl;
+  } 
   return 0;
-}
+}  
