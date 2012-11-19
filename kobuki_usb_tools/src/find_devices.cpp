@@ -1,11 +1,13 @@
 #include <iostream>
+#include <vector>
 #include <usb.h>
 
-static struct usb_device *find_devices(uint16_t vendor, uint16_t product)
+std::vector<struct usb_device *> find_devices(uint16_t vendor, uint16_t product)
 {
   struct usb_bus *bus;
   struct usb_device *dev;
   struct usb_bus *busses;
+  std::vector<struct usb_device *> ret_vec;
 
   usb_init();
   usb_find_busses();
@@ -15,18 +17,20 @@ static struct usb_device *find_devices(uint16_t vendor, uint16_t product)
   for (bus = busses; bus; bus = bus->next)
     for (dev = bus->devices; dev; dev = dev->next)
       if ((dev->descriptor.idVendor == vendor) && (dev->descriptor.idProduct == product))
-        return dev;
+        ret_vec.push_back(dev);
 
-  return NULL;
+  return ret_vec;
 }
 
 int main(int argc, char** argv)
 {
-  std::cout << "hello world." << std::endl;
-  if( find_devices(0x0403,0x6001) == NULL ) {
-    std::cout << "failed to find." << std::endl;
+  std::vector<struct usb_device *> devices;
+
+  devices = find_devices(0x0403,0x6001);
+  if (devices.empty()) {
+    std::cout << "not found!!!" << std::endl;
   } else {
-    std::cout << "found!!!" << std::endl;
+    std::cout << devices.size() << " device(s) found." << std::endl;
   }
   return 0;
 }
