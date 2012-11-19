@@ -9,6 +9,8 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/kobuki_usb_tools</url>
 
+  <depend package="ecl_command_line"/>
+
   <rosdep name="libftdi-dev"/>
   <rosdep name="ftdi-eeprom"/>
 </package>
