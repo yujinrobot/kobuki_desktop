@@ -16,11 +16,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
@@ -29,22 +24,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-find_package(PkgConfig)
-if(PKG_CONFIG_FOUND)
-    PKG_CHECK_MODULES(LIBUSB libusb)
-#    set(ECL_CMAKE_TEMPLATES_PATH ${ECL_CMAKE_PREFIX}/templates)
-else()
-    message(FATAL_ERROR "Ecl cmake modules path not found (missing pkgconfig?).")
-endif()
-
 rosbuild_add_executable(find_devices src/find_devices.cpp)
-target_link_libraries(find_devices ${LIBUSB_LIBRARIES})
+target_link_libraries(find_devices usb) 
 
 rosbuild_add_executable(get_serial_number src/get_serial_number.cpp)
-target_link_libraries(get_serial_number ${LIBUSB_LIBRARIES})
+target_link_libraries(get_serial_number usb)
 
 rosbuild_add_executable(reset_device src/reset_device.cpp)
-target_link_libraries(reset_device ${LIBUSB_LIBRARIES})
+target_link_libraries(reset_device usb)
 
 #rosbuild_add_executable(xxx src/xxx.cpp)
 #target_link_libraries(xxx ${LIBUSB_LIBRARIES})
