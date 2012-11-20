@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     -------- 3 --------*/
   std::cout << "done." << std::endl;
   ret_val = scanner.reset();
-  if (ret_val < 0)   {
+  if (ret_val < 0 && ret_val != -19)   {
     std::cout << "ret_val: " << ret_val << " - "  ;
     std::cout << "someting happen."; 
     std::cout  << std::endl;

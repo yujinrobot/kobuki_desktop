@@ -33,6 +33,7 @@ int main(int argc, char** argv)
   }
   std::cout << devices.size() << " device(s) found." << std::endl;
 
+  int ret_val=0;
   for( unsigned int i=0; i<devices.size(); i++ ) 
   {
     std::cout << std::endl;
@@ -49,24 +50,27 @@ int main(int argc, char** argv)
     int n;
     n = usb_get_string_simple(h, dev->descriptor.iManufacturer, buff, 128);
     if (n < 0) {
-      std::cerr << "something wrong. do with sudo." << std::endl;
+      std::cerr << "something is going wrong. do it again with sudo." << std::endl;
+      ret_val = -1;
       continue;
     }
     std::cout << "  Manufacturer : " << std::string(buff) << std::endl;
   
     n = usb_get_string_simple(h, dev->descriptor.iProduct, buff, 128);
     if (n < 0) {
-      std::cerr << "something wrong. do with sudo." << std::endl;
+      std::cerr << "something is going wrong. do it again with sudo." << std::endl;
+      ret_val = -1;
       continue;
     }
     std::cout << "  Product      : " << std::string(buff) << std::endl;
 
     n = usb_get_string_simple(h, dev->descriptor.iSerialNumber, buff, 128);
     if (n < 0) { 
-      std::cerr << "something wrong. do with sudo." << std::endl;
+      std::cerr << "something is going wrong. do it again with sudo." << std::endl;
+      ret_val = -1;
       continue;
     }
     std::cout << "  Serial Number: " << std::string(buff) << std::endl;
   } 
-  return 0;
+  return ret_val;
 }  

@@ -29,8 +29,9 @@ int main(int argc, char** argv)
   devices = find_devices(0x0403,0x6001);
   if (devices.empty()) {
     std::cout << "not found!!!" << std::endl;
-  } else {
-    std::cout << devices.size() << " device(s) found." << std::endl;
+    return -1;
   }
+
+  std::cout << devices.size() << " device(s) found." << std::endl;
   return 0;
 }
