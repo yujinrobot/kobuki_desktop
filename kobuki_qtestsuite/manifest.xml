@@ -1,8 +1,7 @@
 <package>
-  <catkin/>
-  <description brief="kobuki_qtestsuite">
+  <description brief="Graphical testsuite for kobuki">
 
-     kobuki_qtestsuite
+     An rqt plugin that provides a graphical, interactive testsuite for kobuki.
 
   </description>
   <author>Daniel Stonier</author>
