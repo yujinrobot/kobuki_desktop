@@ -33,8 +33,8 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
-#include <turtlebot_node/TurtlebotSensorState.h>
-
+#include <create_node/TurtlebotSensorState.h>
+#include <LinearMath/btQuaternion.h>
 #include "sensors/SensorManager.hh"
 #include "sensors/RaySensor.hh"
 
@@ -164,7 +164,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
 
   cmd_vel_sub_ = rosnode_->subscribe("/cmd_vel", 1, &GazeboRosKobuki::OnCmdVel, this );
 
-  sensor_state_pub_ = rosnode_->advertise<turtlebot_node::TurtlebotSensorState>("sensor_state", 1);
+  sensor_state_pub_ = rosnode_->advertise<create_node::TurtlebotSensorState>("sensor_state", 1);
   odom_pub_ = rosnode_->advertise<nav_msgs::Odometry>("/odom", 1);
 
   joint_state_pub_ = rosnode_->advertise<sensor_msgs::JointState>("/joint_states", 1);

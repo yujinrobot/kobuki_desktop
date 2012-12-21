@@ -14,7 +14,9 @@
   <depend package="geometry_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
-  <depend package="turtlebot_node"/> <!-- check, if this can be omitted -->
+
+  <!-- remove this once we've rebuilt it for kobuki -->
+  <depend package="create_node"/>
   
   <rosdep name="boost"/>
   <export>

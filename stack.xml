@@ -6,7 +6,31 @@
   <license>BSD</license>  
   <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/kobuki_simulator</url>
-  <depend stack="simulator_gazebo"/>
-  <depend stack="robot_model"/> 
-  <depend stack="kobuki"/> 
+  
+  <!-- shared -->
+  <depend stack="ros"/>
+  <depend stack="ros_comm"/>
+
+  <!-- kobuki_gazebo_plugins -->
+  <depend stack="common_msgs"/> <!-- nav_msgs, geometry_msgs, sensor_msgs -->
+  <depend stack="simulator_gazebo"/> <!-- gazebo -->
+  <depend stack="geometry"/> <!-- tf -->
+  <!-- remove this once we've rebuilt it for kobuki -->
+  <depend stack="turtlebot_create"/>
+  <depend stack="bullet"/>
+
+  <!-- kobuki_gazebo -->
+  <!-- <depend stack="simulator_gazebo"/> --> <!-- gazebo -->
+  <depend stack="diagnostics"/> <!-- diagnostic_aggregator --> 
+  <depend stack="navigation"/> <!-- robot_pose_ekf --> 
+  <depend stack="nodelet_core"/> <!-- nodelet --> 
+  <depend stack="depthimage_to_laserscan"/> <!-- depthimage_to_laserscan --> 
+  <depend stack="robot_model"/> <!-- robot_state_publisher --> 
+  <depend stack="kobuki"/> <!-- kobuki_description --> 
+  
+  <!-- kobuki_qtestsuite -->
+  <!-- <depend stack="kobuki"/> --> <!-- kobuki_testsuite --> 
+  <depend stack="rqt"/> <!-- rqt_lots -->
+  <depend stack="qt_gui_core"/> <!-- qt_gui_py_common -->
+  <!-- <depend stack="common_msgs"/> --> <!-- nav_msgs, geometry_msgs -->
 </stack>
