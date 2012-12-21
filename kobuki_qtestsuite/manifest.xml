@@ -21,4 +21,6 @@
   
   <depend package="geometry_msgs"/>
   <depend package="nav_msgs"/>
+
+  <rosdep name="pyqt4-dev-tools"/> <!-- pyrcc4 -->
 </package>
