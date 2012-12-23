@@ -30,7 +30,8 @@
   
   <!-- kobuki_qtestsuite -->
   <!-- <depend stack="kobuki"/> --> <!-- kobuki_testsuite --> 
-  <depend stack="rqt_core"/> <!-- rqt_lots -->
+  <depend stack="rqt"/> <!-- rqt_gui rqt_gui_py -->
+  <depend stack="rqt_common_plugins"/> <!-- rqt_plot -->
   <depend stack="qt_gui_core"/> <!-- qt_gui_py_common -->
   <!-- <depend stack="common_msgs"/> --> <!-- nav_msgs, geometry_msgs -->
 </stack>
