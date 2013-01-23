@@ -1,0 +1,11 @@
+<library path="src">
+  <class name="KobukiDashboard" type="kobuki_dashboard.dashboard.KobukiDashboard" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      Dashboard for Kobuki
+    </description>
+    <qtgui>
+      <label>Kobuki Dashboard</label>
+      <statustip>Test robot_dashboard.</statustip>
+    </qtgui>
+  </class>
+</library>

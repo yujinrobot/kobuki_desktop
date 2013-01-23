@@ -1,0 +1,22 @@
+<package>
+  <description brief="kobuki_dashboard">
+
+     kobuki_dashboard
+
+  </description>
+  <author>Ze'ev Klapow</author>
+  <license>BSD</license>
+  <review status="experimental" notes=""/>
+  <url>http://ros.org/wiki/kobuki_dashboard</url>
+  <depend package="rospy"/>
+  <depend package="rqt_robot_dashboard"/>
+  <depend package="kobuki_msgs"/>
+  <depend package="linux_hardware" />
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml" />
+  </export>
+
+</package>
+
+
