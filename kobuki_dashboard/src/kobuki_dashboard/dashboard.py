@@ -45,8 +45,8 @@ class KobukiDashboard(Dashboard):
                     if value.key == 'Percent':
                         self._kobuki_bat.update_perc(float(value.value))
                         self._kobuki_bat.update_time(float(value.value))
-                    elif value.key == "State":
-                        if value.value == "Charging":
+                    elif value.key == "Charging State":
+                        if value.value == "Trickle Charging" or value.value == "Full Charging":
                             self._kobuki_bat.set_charging(True)
                         else:
                             self._kobuki_bat.set_charging(False)
