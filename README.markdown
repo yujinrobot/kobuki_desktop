@@ -1,4 +1,4 @@
-kobuki_simulator
+kobuki_desktop
 ================
 
-This is not real!
+Visualisation and simulation tools for Kobuki
