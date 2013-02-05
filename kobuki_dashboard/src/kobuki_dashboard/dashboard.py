@@ -5,7 +5,7 @@ import diagnostic_msgs
 from linux_hardware.msg import LaptopChargeStatus
 
 from rqt_robot_dashboard.dashboard import Dashboard
-from rqt_robot_dashboard.widgets import MonitorDashWidget, ConsoleDashWidget, MenuDashWidget, BatteryDashWidget, IconToolButton, NavViewDashWidget
+from rqt_robot_dashboard.widgets import MonitorDashWidget, ConsoleDashWidget, MenuDashWidget, BatteryDashWidget, IconToolButton
 from QtGui import QMessageBox, QAction
 from python_qt_binding.QtCore import QSize
 
@@ -28,8 +28,7 @@ class KobukiDashboard(Dashboard):
 
     def get_widgets(self):
         leds = [LedWidget('/mobile_base/commands/led1'), LedWidget('/mobile_base/commands/led2')]
-
-        return [[MonitorDashWidget(self.context), ConsoleDashWidget(self.context), self._motor_widget], leds, [self._laptop_bat, self._kobuki_bat], [NavViewDashWidget(self.context)]]
+        return [[MonitorDashWidget(self.context), ConsoleDashWidget(self.context), self._motor_widget], leds, [self._laptop_bat, self._kobuki_bat]]
 
     def dashboard_callback(self, msg):
         self._dashboard_message = msg

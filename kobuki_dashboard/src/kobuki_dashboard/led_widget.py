@@ -23,11 +23,20 @@ class LedWidget(MenuDashWidget):
         self.add_action('Green', partial(self.update_state, 1))
         self.add_action('Orange', partial(self.update_state, 2))
         self.add_action('Red', partial(self.update_state, 3))
+        
+        self.setToolTip("LED: Off")
 
     def update_state(self, state):
         super(LedWidget, self).update_state(state)
-
         self._pub.publish(Led(state))
+        if state is 1:
+            self.setToolTip("LED: Green")
+        elif state is 2:
+            self.setToolTip("LED: Orange")
+        elif state is 3:
+            self.setToolTip("LED: Red")
+        else:
+            self.setToolTip("LED: Off")
 
     def close(self):
         self._pub.unregister()
