@@ -1,11 +1,11 @@
 <stack>
-  <description brief="Kobuki simulator">
-    Software for simulating Kobuki.
+  <description brief="Kobuki Desktop">
+    Meta package for Kobuki-desktop variant of ROS.(Dashboard, testsuite, and simulation)
   </description>
   <author>Maintained by Marcus Liebhardt</author>
   <license>BSD</license>  
   <review status="experimental" notes=""/>
-  <url>http://ros.org/wiki/kobuki_simulator</url>
+  <url>http://ros.org/wiki/kobuki_desktop</url>
   
   <!-- shared -->
   <depend stack="ros"/>
