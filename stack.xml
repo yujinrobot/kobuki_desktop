@@ -38,10 +38,4 @@
   <!-- kobuki_dashboard -->
   <depend stack="rqt_robot_plugins"/> <!-- rqt_robot_dashboard -->
   <depend stack="kobuki_msgs"/> <!-- kobuki_msgs -->
-  <!-- 
-    This needs linux_hardware's messages, which should be moved
-    out into their own stack. Kobuki should be UNDER turtlebot, 
-    not on top. But then who doens't want to be on top? 
-  -->
-  <depend stack="turtlebot"/> <!-- linux_hardware -->
 </stack>
