@@ -8,6 +8,7 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/kobuki_gazebo_plugins</url>
+  <!-- Disabling for now to till gazebo is working 
   <depend package="gazebo"/>
   <depend package="roscpp"/>
   <depend package="nav_msgs"/>
@@ -15,9 +16,10 @@
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
   <depend package="bullet"/>
-
-  <!-- remove this once we've rebuilt it for kobuki -->
+  
+  remove this once we've rebuilt it for kobuki
   <depend package="create_node"/>
+  -->
   
   <rosdep name="boost"/>
   <export>

@@ -9,13 +9,16 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/kobuki_gazebo</url>
  
-  <depend package="gazebo"/> <!-- launch file dependency -->
-  <depend package="diagnostic_aggregator"/> <!-- launch file dependency -->
-  <depend package="robot_state_publisher"/> <!-- launch file dependency -->
-  <depend package="robot_pose_ekf"/> <!-- launch file dependency -->
-  <depend package="nodelet"/> <!-- launch file dependency -->
-  <depend package="depthimage_to_laserscan"/> <!-- launch file dependency -->
-  <depend package="kobuki_description"/> <!-- launch file dependency -->
+  <!-- launch file dependencies -->
+  <!-- Disabling for now to till gazebo is working
+  <depend package="gazebo"/>
+  <depend package="diagnostic_aggregator"/>
+  <depend package="robot_state_publisher"/>
+  <depend package="robot_pose_ekf"/>
+  <depend package="nodelet"/>
+  <depend package="depthimage_to_laserscan"/>
+  <depend package="kobuki_description"/>
+  -->
 </package>
 
 
