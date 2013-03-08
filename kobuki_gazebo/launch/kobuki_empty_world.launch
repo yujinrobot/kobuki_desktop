@@ -1,0 +1,8 @@
+<!-- Launches Kobuki Gazebo simulation in an empty world -->
+<launch>
+  <!-- start Gazebo with an empty world -->
+  <include file="$(find kobuki_gazebo)/launch/empty_world.launch"/>
+  
+  <!-- spawn the robot -->
+  <include file="$(find kobuki_gazebo)/launch/robot.launch"/>
+</launch>

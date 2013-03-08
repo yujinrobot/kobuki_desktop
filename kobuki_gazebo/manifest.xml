@@ -1,24 +1,26 @@
 <package>
-  <description brief="kobuki_gazebo">
+  <description brief="Kobuki simulation for Gazebo">
 
-     kobuki_gazebo
+    Launch files for Kobuki simulation in Gazebo
 
   </description>
   <author>Marcus Liebhardt</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/kobuki_gazebo</url>
  
   <!-- launch file dependencies -->
-  <!-- Disabling for now to till gazebo is working
   <depend package="gazebo"/>
-  <depend package="diagnostic_aggregator"/>
-  <depend package="robot_state_publisher"/>
-  <depend package="robot_pose_ekf"/>
-  <depend package="nodelet"/>
-  <depend package="depthimage_to_laserscan"/>
+  <depend package="gazebo_plugins"/>
   <depend package="kobuki_description"/>
-  -->
+  <depend package="kobuki_gazebo_plugins"/>
+  <depend package="robot_state_publisher"/>
+  
+<!--  <depend package="diagnostic_aggregator"/> -->
+
+<!--   <depend package="robot_pose_ekf"/> -->
+<!--   <depend package="nodelet"/> -->
+<!--   <depend package="depthimage_to_laserscan"/> -->
 </package>
 
 
