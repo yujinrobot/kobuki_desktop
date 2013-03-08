@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Yujin Robot.
+ * Copyright (c) 2013, Yujin Robot.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,106 +25,149 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * @author Marcus Liebhardt
  *
- * This work is based on the Gazebo ROS plugin for the iRobot Create by Nate Koenig.
+ * This work has been inspired by Nate Koenig's Gazebo plugin for the iRobot Create.
  */
 
 #ifndef GAZEBO_ROS_KOBUKI_H
 #define GAZEBO_ROS_KOBUKI_H
 
-#include "physics/physics.h"
-#include "physics/PhysicsTypes.hh"
-#include "sensors/SensorTypes.hh"
-#include "transport/TransportTypes.hh"
-#include "common/Time.hh"
-#include "common/Plugin.hh"
-#include "common/Events.hh"
-
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/TwistWithCovariance.h>
-#include <geometry_msgs/PoseWithCovariance.h>
-
-#include <tf/transform_broadcaster.h>
+#include <string>
+#include <boost/thread.hpp>
+#include <boost/shared_ptr.hpp>
+#include <gazebo.hh>
+#include <physics/physics.hh>
+#include <common/common.hh>
+#include <common/Time.hh>
+#include <sensors/sensors.hh>
 #include <ros/ros.h>
+#include <std_msgs/Float64.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/Twist.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <kobuki_msgs/MotorPower.h>
+#include <kobuki_msgs/CliffEvent.h>
+#include <kobuki_msgs/BumperEvent.h>
 
 namespace gazebo
 {
-  class GazeboRosKobuki : public ModelPlugin
-  {
-    public: 
-      GazeboRosKobuki();
-      virtual ~GazeboRosKobuki();
-          
-      virtual void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf );
 
-      virtual void UpdateChild();
-  
-    private:
+class GazeboRosKobuki : public ModelPlugin
+{
+public:
+  /// Constructor
+  GazeboRosKobuki();
+  /// Destructor
+  ~GazeboRosKobuki();
+  /// Called when plugin is loaded
+  void Load(physics::ModelPtr parent, sdf::ElementPtr sdf);
+  /// Called by the world update start event
+  void OnUpdate();
 
-      void UpdateSensors();
-      void OnContact(const std::string &name, const physics::Contact &contact);
-      void OnCmdVel( const geometry_msgs::TwistConstPtr &msg);
+private:
+  /*
+   * Methods
+   */
+  /// Callback for incoming velocity commands
+  void cmdVelCB(const geometry_msgs::TwistConstPtr &msg);
+  /// Callback for incoming velocity commands
+  void motorPowerCB(const kobuki_msgs::MotorPowerPtr &msg);
+  /// Spin method for the spinner thread
+  void spin();
+  //  void OnContact(const std::string &name, const physics::Contact &contact); necessary?
 
+  /*
+   *  Parameters
+   */
+  /// ROS node handles (relative & private)
+  ros::NodeHandle nh_, nh_priv_;
+  /// node name
+  std::string node_name_;
+  /// extra thread for triggering ROS callbacks
+//  boost::shared_ptr<boost::thread> ros_spinner_thread_; necessary?
+  /// flag for shutting down the spinner thread
+  bool shutdown_requested_;
+  /// pointer to the model
+  physics::ModelPtr model_;
+  /// pointer to simulated world
+  physics::WorldPtr world_;
+  /// pointer to the update event connection (triggers the OnUpdate callback when event update event is received)
+  event::ConnectionPtr update_connection_;
+  /// Simulation time on previous update
+  common::Time prev_update_time_;
+  /// ROS subscriber for motor power commands
+  ros::Subscriber motor_power_sub_;
+  /// Flag indicating if the motors are turned on or not
+  bool motors_enabled_;
+  /// Pointers to Gazebo's joints
+  physics::JointPtr joints_[2];
+  /// Left wheel's joint name
+  std::string left_wheel_joint_name_;
+  /// Right wheel's joint name
+  std::string right_wheel_joint_name_;
+  /// ROS publisher for joint state messages
+  ros::Publisher joint_state_pub_;
+  /// ROS message for joint sates
+  sensor_msgs::JointState joint_state_;
+  /// ROS subscriber for velocity commands
+  ros::Subscriber cmd_vel_sub_;
+  /// Simulation time of the last velocity command (used for time out)
+  common::Time last_cmd_vel_time_;
+  /// Time out for velocity commands in seconds
+  float cmd_vel_timeout_;
+  /// Speeds of the wheels
+  float wheel_speed_cmd_[2];
+  /// Max. torque applied to the wheels
+  float torque_;
+  /// Separation between the wheels
+  float wheel_sep_;
+  /// Diameter of the wheels
+  float wheel_diam_;
+  /// Vector for pose
+  float odom_pose_[3];
+  /// Vector for velocity
+  float odom_vel_[3];
+  /// Pointer to covariance matrix
+  double *pose_cov_[36];
+  /// ROS publisher for odometry messages
+  ros::Publisher odom_pub_;
+  /// ROS message for odometry data
+  nav_msgs::Odometry odom_;
+  /// TF transform publisher for the odom frame
+  tf::TransformBroadcaster tf_broadcaster_;
+  /// TF transform for the odom frame
+  geometry_msgs::TransformStamped odom_tf_;
+  /// Pointer to left cliff sensor
+  sensors::RaySensorPtr cliff_sensor_left_;
+  /// Pointer to frontal cliff sensor
+  sensors::RaySensorPtr cliff_sensor_front_;
+  /// Pointer to left right sensor
+  sensors::RaySensorPtr cliff_sensor_right_;
+  /// ROS publisher for cliff detection events
+  ros::Publisher cliff_event_pub_;
+  /// Kobuki ROS message for cliff event
+  kobuki_msgs::CliffEvent cliff_event_;
+  /// Storage for last cliff sensor state state for checking if something has changed
+  kobuki_msgs::CliffEvent cliff_event_old_;
+  /// measured distance in meter for detecting a cliff
+  float cliff_detection_threshold_;
+  /// Maximum distance to floor
+  int max_floot_dist_;
+  /// Pointer to bumper sensor simulating Kobuki's left, centre and right bumper sensors
+  sensors::ContactSensorPtr bumper_;
+  /// ROS publisher for bumper events
+  ros::Publisher bumper_event_pub_;
+  /// Kobuki ROS message for bumper event
+  kobuki_msgs::BumperEvent bumper_event_;
+  /// Storage for last bumper sensor state state for checking if something has changed
+  kobuki_msgs::BumperEvent bumper_event_old_;
+};
 
-      /// Parameters
-      std::string node_namespace_;
-      std::string left_wheel_joint_name_;
-      std::string right_wheel_joint_name_;
-      std::string base_geom_name_;
+} // namespace gazebo
 
-      /// Separation between the wheels
-      float wheel_sep_;
-
-      /// Diameter of the wheels
-      float wheel_diam_;
-
-      ///Torque applied to the wheels
-      float torque_;
-
-
-      ros::NodeHandle *rosnode_;
-      //ros::Service operating_mode_srv_;
-      //ros::Service digital_output_srv_;
-  
-      ros::Publisher sensor_state_pub_;
-      ros::Publisher odom_pub_;
-      ros::Publisher joint_state_pub_;
-  
-      ros::Subscriber cmd_vel_sub_;
-
-      physics::WorldPtr my_world_;
-      physics::ModelPtr my_parent_;
-
-      /// Speeds of the wheels
-      float *wheel_speed_;
-
-      // Simulation time of the last update
-      common::Time prev_update_time_;
-      common::Time last_cmd_vel_time_;
-
-      float odom_pose_[3];
-      float odom_vel_[3];
-
-      bool set_joints_[2];
-      physics::JointPtr joints_[2];
-      physics::CollisionPtr base_geom_;
-
-      sensors::RaySensorPtr left_cliff_sensor_;
-      sensors::RaySensorPtr right_cliff_sensor_;
-      sensors::RaySensorPtr front_cliff_sensor_;
-
-      tf::TransformBroadcaster transform_broadcaster_;
-      sensor_msgs::JointState js_;
-
-      create_node::TurtlebotSensorState sensor_state_;
-
-      void spin();
-      boost::thread *spinner_thread_;
-
-      event::ConnectionPtr contact_event_;
-
-      // Pointer to the update event connection
-      event::ConnectionPtr updateConnection;
-  };
-}
-#endif
+#endif /* GAZEBO_ROS_KOBUKI_H */

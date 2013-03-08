@@ -1,29 +1,27 @@
 <package>
-  <description brief="kobuki_gazebo_plugins">
+  <description brief="ROS Gazebo plugins for Kobuki">
 
-     kobuki_gazebo_plugins
+     Kobuki-specific ROS plugins for Gazebo
+     The plugins in this package are not intended to be used alone, but through the launchers in kobuki_gazebo.
 
   </description>
   <author>Marcus Liebhardt</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/kobuki_gazebo_plugins</url>
-  <!-- Disabling for now to till gazebo is working 
+
   <depend package="gazebo"/>
   <depend package="roscpp"/>
+  <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="geometry_msgs"/>
-  <depend package="sensor_msgs"/>
+<!--   <depend package="sensor_msgs"/> -->
   <depend package="tf"/>
-  <depend package="bullet"/>
-  
-  remove this once we've rebuilt it for kobuki
-  <depend package="create_node"/>
-  -->
+<!--   <depend package="bullet"/> -->
+  <depend package="kobuki_msgs"/>
   
   <rosdep name="boost"/>
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib" />
     <gazebo plugin_path="${prefix}/lib" />
   </export>
 </package>

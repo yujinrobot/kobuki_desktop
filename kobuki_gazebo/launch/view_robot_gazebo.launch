@@ -1,0 +1,11 @@
+<!--
+  Use this for visualise Kobuki's Gazbeo simulation with RViz
+  Requires Gazebo simulation to be running already, e.g. kobuki_gazebo/kobuki_empty_world.launch
+ -->
+<launch>
+  <!-- maybe move to robot.launch later -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" type="double" value="20.0" />
+  </node>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find kobuki_description)/rviz/model.rviz"/>
+</launch>

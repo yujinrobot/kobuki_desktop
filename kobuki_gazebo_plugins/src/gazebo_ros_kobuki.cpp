@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Yujin Robot.
+ * Copyright (c) 2013, Yujin Robot.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,362 +25,568 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
- * This work is based on the Gazebo ROS plugin for the iRobot Create by Nate Koenig.
  */
 
+/**
+ * @author Marcus Liebhardt
+ *
+ * This work has been inspired by Nate Koenig's Gazebo plugin for the iRobot Create.
+ */
+
+#include <cmath>
+#include <cstring>
 #include <boost/bind.hpp>
-#include <nav_msgs/Odometry.h>
 #include <sensor_msgs/JointState.h>
-#include <geometry_msgs/Twist.h>
-#include <create_node/TurtlebotSensorState.h>
 #include <LinearMath/btQuaternion.h>
-#include "sensors/SensorManager.hh"
-#include "sensors/RaySensor.hh"
+#include <math/gzmath.hh>
+#include "kobuki_gazebo_plugins/gazebo_ros_kobuki.h"
 
-#include <kobuki_gazebo_plugins/gazebo_ros_kobuki.h>
-
-#include <ros/time.h>
-
-using namespace gazebo;
+namespace gazebo
+{
 
 enum {LEFT= 0, RIGHT=1};
 
-GazeboRosKobuki::GazeboRosKobuki()
+GazeboRosKobuki::GazeboRosKobuki() : shutdown_requested_(false)
 {
-  this->spinner_thread_ = new boost::thread( boost::bind( &GazeboRosKobuki::spin, this) );
+  // Start up ROS
+//  int argc = 0;
+//  ros::init(argc, NULL, "gazebo_ros_kobuki_node"); // looks like this is not needed
+// alternative
+//  if (!ros::isInitialized())
+//  {
+//    int argc = 0;
+//    char** argv = NULL;
+//    ros::init(argc, argv, "gazebo_kobuki", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+//  }
+  wheel_speed_cmd_[LEFT] = 0.0;
+  wheel_speed_cmd_[RIGHT] = 0.0;
 
-  wheel_speed_ = new float[2];
-  wheel_speed_[LEFT] = 0.0;
-  wheel_speed_[RIGHT] = 0.0;
-
-  set_joints_[0] = false;
-  set_joints_[1] = false;
-  joints_[0].reset();
-  joints_[1].reset();
+  // using the same values as in kobuki_node
+  double pose_cov[36] = {0.1, 0, 0, 0, 0, 0,
+                          0, 0.1, 0, 0, 0, 0,
+                          0, 0, 1e6, 0, 0, 0,
+                          0, 0, 0, 1e6, 0, 0,
+                          0, 0, 0, 0, 1e6, 0,
+                          0, 0, 0, 0, 0, 0.2};
+  memcpy(&pose_cov, &pose_cov_, sizeof(double[36]));
 }
 
 GazeboRosKobuki::~GazeboRosKobuki()
 {
-  rosnode_->shutdown();
-  this->spinner_thread_->join();
-  delete this->spinner_thread_;
-  delete [] wheel_speed_;
-  delete rosnode_;
-}
-    
-void GazeboRosKobuki::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
-{
-  this->my_world_ = _parent->GetWorld();
+//  rosnode_->shutdown();
+  shutdown_requested_ = true;
+  // Wait for spinner thread to end
+//  ros_spinner_thread_->join();
 
-  this->my_parent_ = _parent;
-  if (!this->my_parent_)
+  //  delete spinner_thread_;
+//  delete rosnode_;
+}
+
+void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
+{
+  model_ = parent;
+  if (!model_)
   {
-    ROS_FATAL("GazeboRosKobuki controller requires a model as its parent");
+    ROS_ERROR_STREAM("Invalid model pointer! [" << node_name_ << "]");
     return;
   }
+  // Get then name of the parent model and use it as node name
+  std::string model_name = sdf->GetParent()->GetValueString("name");
+  gzdbg << "Plugin model name: " << model_name << "\n";
+  nh_ = ros::NodeHandle("");
+  // creating a private name pace until Gazebo implements topic remappings
+  nh_priv_ = ros::NodeHandle("/" + model_name);
+  node_name_ = model_name;
 
-  this->node_namespace_ = "";
-  if (_sdf->HasElement("node_namespace"))
-    this->node_namespace_ = _sdf->GetElement("node_namespace")->GetValueString() + "/";
+  world_ = parent->GetWorld();
 
+// TODO: use when implementing subs
+//  ros_spinner_thread_ = new boost::thread(boost::bind(&GazeboRosKobuki::spin, this));
+//
+//  this->node_namespace_ = "";
+//  if (_sdf->HasElement("node_namespace"))
+//    this->node_namespace_ = _sdf->GetElement("node_namespace")->GetValueString() + "/";
 
-  left_wheel_joint_name_ = "left_wheel_joint";
-  if (_sdf->HasElement("left_wheel_joint"))
-    left_wheel_joint_name_ = _sdf->GetElement("left_wheel_joint")->GetValueString();
+  /*
+   * Prepare receiving motor power commands
+   */
+  motor_power_sub_ = nh_priv_.subscribe("commands/motor_power", 10, &GazeboRosKobuki::motorPowerCB, this);
+  motors_enabled_ = true;
 
-  right_wheel_joint_name_ = "right_wheel_joint";
-  if (_sdf->HasElement("right_wheel_joint"))
-    right_wheel_joint_name_ = _sdf->GetElement("right_wheel_joint")->GetValueString();
-
-  wheel_sep_ = 0.34;
-  if (_sdf->HasElement("wheel_separation"))
-    wheel_sep_ = _sdf->GetElement("wheel_separation")->GetValueDouble();
-
-  wheel_sep_ = 0.34;
-  if (_sdf->HasElement("wheel_separation"))
-    wheel_sep_ = _sdf->GetElement("wheel_separation")->GetValueDouble();
-
-  wheel_diam_ = 0.15;
-  if (_sdf->HasElement("wheel_diameter"))
-    wheel_diam_ = _sdf->GetElement("wheel_diameter")->GetValueDouble();
-
-  torque_ = 10.0;
-  if (_sdf->HasElement("torque"))
-    torque_ = _sdf->GetElement("torque")->GetValueDouble();
-
-  //base_geom_name_ = "base_geom";
-  base_geom_name_ = "base_footprint_geom_base_link";
-  if (_sdf->HasElement("base_geom"))
-    base_geom_name_ = _sdf->GetElement("base_geom")->GetValueString();
-  base_geom_ = my_parent_->GetChildCollision(base_geom_name_);
-
-  if (!base_geom_)
+  /*
+   * Prepare joint state publishing
+   */
+  if (sdf->HasElement("left_wheel_joint_name"))
   {
-    // This is a hack for ROS Diamond back. E-turtle and future releases
-    // will not need this, because it will contain the fixed-joint reduction
-    // in urdf2gazebo
-    base_geom_ = my_parent_->GetChildCollision("base_footprint_geom");
-    if (!base_geom_)
-    {
-      ROS_ERROR("Unable to find geom[%s]",base_geom_name_.c_str());
-      return;
-    }
+    left_wheel_joint_name_ = sdf->GetElement("left_wheel_joint_name")->GetValueString();
   }
-
-  base_geom_->SetContactsEnabled(true);
-  contact_event_ = base_geom_->ConnectContact(boost::bind(&GazeboRosKobuki::OnContact, this, _1, _2));
-
-  // Get then name of the parent model
-  std::string modelName = _sdf->GetParent()->GetValueString("name");
-
-  // Listen to the update event. This event is broadcast every
-  // simulation iteration.
-  this->updateConnection = event::Events::ConnectWorldUpdateStart(
-      boost::bind(&GazeboRosKobuki::UpdateChild, this));
-  gzdbg << "plugin model name: " << modelName << "\n";
-
-  // TODO: Read from SDF (URDF)
-  // ex:  if (_sdf->HasElement("base_geom"))
-  left_cliff_sensor_ = boost::shared_dynamic_cast<sensors::RaySensor>(
-    sensors::SensorManager::Instance()->GetSensor("cliff_sensor_left"));
-  right_cliff_sensor_ = boost::shared_dynamic_cast<sensors::RaySensor>(
-    sensors::SensorManager::Instance()->GetSensor("cliff_sensor_right"));
-  front_cliff_sensor_ = boost::shared_dynamic_cast<sensors::RaySensor>(
-    sensors::SensorManager::Instance()->GetSensor("cliff_sensor_front"));
-
-  left_cliff_sensor_->SetActive(true);
-  right_cliff_sensor_->SetActive(true);
-  front_cliff_sensor_->SetActive(true);
-
-  if (!ros::isInitialized())
+  else
   {
-    int argc = 0;
-    char** argv = NULL;
-    ros::init(argc, argv, "gazebo_kobuki", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+    ROS_ERROR_STREAM("Couldn't find left wheel joint in the model description!"
+                     << " Did you specify the correct joint name?" << " [" << node_name_ <<"]");
+    return;
   }
+  if (sdf->HasElement("right_wheel_joint_name"))
+  {
+    right_wheel_joint_name_ = sdf->GetElement("right_wheel_joint_name")->GetValueString();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find right wheel joint in the model description!"
+                     << " Did you specify the correct joint name?" << " [" << node_name_ <<"]");
+    return;
+  }
+  joints_[LEFT] = parent->GetJoint(left_wheel_joint_name_);
+  joints_[RIGHT] = parent->GetJoint(right_wheel_joint_name_);
+  if (!joints_[LEFT] || !joints_[RIGHT])
+  {
+    ROS_ERROR_STREAM("Couldn't find specified wheel joints in the model! [" << node_name_ <<"]");
+    return;
+  }
+  joint_state_.header.frame_id = "Joint States";
+  joint_state_.name.push_back(left_wheel_joint_name_);
+  joint_state_.position.push_back(0);
+  joint_state_.velocity.push_back(0);
+  joint_state_.effort.push_back(0);
+  joint_state_.name.push_back(right_wheel_joint_name_);
+  joint_state_.position.push_back(0);
+  joint_state_.velocity.push_back(0);
+  joint_state_.effort.push_back(0);
+  joint_state_pub_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 1);
 
-  rosnode_ = new ros::NodeHandle( node_namespace_ );
+  /*
+   * Prepare publishing odometry data
+   */
+  if (sdf->HasElement("wheel_separation"))
+  {
+    wheel_sep_ = sdf->GetElement("wheel_separation")->GetValueDouble();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the wheel separation parameter in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  if (sdf->HasElement("wheel_diameter"))
+  {
+    wheel_diam_ = sdf->GetElement("wheel_diameter")->GetValueDouble();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the wheel diameter parameter in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  if (sdf->HasElement("torque"))
+  {
+    torque_ = sdf->GetElement("torque")->GetValueDouble();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the torque parameter in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  odom_pub_ = nh_.advertise<nav_msgs::Odometry>("odom", 1);
 
-  cmd_vel_sub_ = rosnode_->subscribe("/cmd_vel", 1, &GazeboRosKobuki::OnCmdVel, this );
+  /*
+   * Prepare receiving velocity commands
+   */
+  if (sdf->HasElement("velocity_command_timeout"))
+  {
+    cmd_vel_timeout_ = sdf->GetElement("velocity_command_timeout")->GetValueDouble();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the wheel separation parameter in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  last_cmd_vel_time_ = world_->GetSimTime();
+  cmd_vel_sub_ = nh_priv_.subscribe("commands/velocity", 100, &GazeboRosKobuki::cmdVelCB, this);
 
-  sensor_state_pub_ = rosnode_->advertise<create_node::TurtlebotSensorState>("sensor_state", 1);
-  odom_pub_ = rosnode_->advertise<nav_msgs::Odometry>("/odom", 1);
+  /*
+   * Prepare cliff sensors
+   */
+  std::string cliff_sensor_left_name, cliff_sensor_front_name, cliff_sensor_right_name;
+  if (sdf->HasElement("cliff_sensor_left_name"))
+  {
+    cliff_sensor_left_name = sdf->GetElement("cliff_sensor_left_name")->GetValueString();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the name of left cliff sensor in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  if (sdf->HasElement("cliff_sensor_front_name"))
+  {
+    cliff_sensor_front_name = sdf->GetElement("cliff_sensor_front_name")->GetValueString();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the name of frontal cliff sensor in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  if (sdf->HasElement("cliff_sensor_right_name"))
+  {
+    cliff_sensor_right_name = sdf->GetElement("cliff_sensor_right_name")->GetValueString();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the name of right cliff sensor in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  cliff_sensor_left_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+                       sensors::SensorManager::Instance()->GetSensor(cliff_sensor_left_name));
+  cliff_sensor_front_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_front_name));
+  cliff_sensor_right_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_right_name));
+  if (!cliff_sensor_left_)
+  {
+    ROS_ERROR_STREAM("Couldn't find the left cliff sensor in the model! [" << node_name_ <<"]");
+    return;
+  }
+  if (!cliff_sensor_front_)
+  {
+    ROS_ERROR_STREAM("Couldn't find the frontal cliff sensor in the model! [" << node_name_ <<"]");
+    return;
+  }
+  if (!cliff_sensor_right_)
+  {
+    ROS_ERROR_STREAM("Couldn't find the right cliff sensor in the model! [" << node_name_ <<"]");
+    return;
+  }
+  if (sdf->HasElement("cliff_detection_threshold"))
+  {
+    cliff_detection_threshold_ = sdf->GetElement("cliff_detection_threshold")->GetValueDouble();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the cliff detection threshold parameter in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  cliff_sensor_left_->SetActive(true);
+  cliff_sensor_front_->SetActive(true);
+  cliff_sensor_right_->SetActive(true);
+  cliff_event_pub_ = nh_priv_.advertise<kobuki_msgs::CliffEvent>("events/cliff", 1);
 
-  joint_state_pub_ = rosnode_->advertise<sensor_msgs::JointState>("/joint_states", 1);
+  /*
+   * Prepare bumper
+   */
+  std::string bumper_name;
+  if (sdf->HasElement("bumper_name"))
+  {
+    bumper_name = sdf->GetElement("bumper_name")->GetValueString();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the name of bumper sensor in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  bumper_ = boost::shared_dynamic_cast<sensors::ContactSensor>(
+            sensors::SensorManager::Instance()->GetSensor(bumper_name));
+  bumper_->SetActive(true);
+  bumper_event_pub_ = nh_priv_.advertise<kobuki_msgs::BumperEvent>("events/bumper", 1);
 
-  js_.name.push_back( left_wheel_joint_name_ );
-  js_.position.push_back(0);
-  js_.velocity.push_back(0);
-  js_.effort.push_back(0);
-
-  js_.name.push_back( right_wheel_joint_name_ );
-  js_.position.push_back(0);
-  js_.velocity.push_back(0);
-  js_.effort.push_back(0);
-
-  prev_update_time_ = 0;
-  last_cmd_vel_time_ = 0;
-
-  sensor_state_.bumps_wheeldrops = 0x0;
-
-  //TODO: fix this - what?
-  joints_[LEFT] = my_parent_->GetJoint(left_wheel_joint_name_);
-  joints_[RIGHT] = my_parent_->GetJoint(right_wheel_joint_name_);
-
-  if (joints_[LEFT]) set_joints_[LEFT] = true;
-  if (joints_[RIGHT]) set_joints_[RIGHT] = true;
-
-  //initialize time and odometry position
-  prev_update_time_ = last_cmd_vel_time_ = this->my_world_->GetSimTime();
-  odom_pose_[0] = 0.0;
-  odom_pose_[1] = 0.0;
-  odom_pose_[2] = 0.0;
+  prev_update_time_ = world_->GetSimTime();
+  ROS_INFO_STREAM("GazeboRosKobuki plugin ready to go! [" << node_name_ << "]");
+  update_connection_ = event::Events::ConnectWorldUpdateStart(boost::bind(&GazeboRosKobuki::OnUpdate, this));
 }
 
-
-void GazeboRosKobuki::OnContact(const std::string &name, const physics::Contact &contact)
+void GazeboRosKobuki::motorPowerCB( const kobuki_msgs::MotorPowerPtr &msg)
 {
-  float y_overlap = 0.16495 * sin( 10 * (M_PI/180.0) );
-
-  for (unsigned int j=0; j < (unsigned int)contact.count; j++)
+  if ((msg->state == kobuki_msgs::MotorPower::ON) && (!motors_enabled_))
   {
-    // Make sure the contact is on the front bumper
-    if (contact.positions[j].x > 0.012 && contact.positions[j].z < 0.06 && 
-        contact.positions[j].z > 0.01)
-    {
-      // Right bump sensor
-      if (contact.positions[j].y <= y_overlap)
-        sensor_state_.bumps_wheeldrops |= 0x1; 
-      // Left bump sensor
-      if (contact.positions[j].y >= -y_overlap)
-        sensor_state_.bumps_wheeldrops |= 0x2; 
-    }
+    motors_enabled_ = true;
+    ROS_INFO_STREAM("Motors fired up. [" << node_name_ << "]");
+  }
+  else if ((msg->state == kobuki_msgs::MotorPower::OFF) && (motors_enabled_))
+  {
+    motors_enabled_ = false;
+    ROS_INFO_STREAM("Motors taking a rest. [" << node_name_ << "]");
   }
 }
 
-void GazeboRosKobuki::UpdateChild()
+void GazeboRosKobuki::cmdVelCB( const geometry_msgs::TwistConstPtr &msg)
 {
-  common::Time time_now = this->my_world_->GetSimTime();
+  last_cmd_vel_time_ = world_->GetSimTime();
+  wheel_speed_cmd_[LEFT] = msg->linear.x - msg->angular.z * (wheel_sep_) / 2;
+  wheel_speed_cmd_[RIGHT] = msg->linear.x + msg->angular.z * (wheel_sep_) / 2;
+}
+
+void GazeboRosKobuki::OnUpdate()
+{
+  /*
+   * First process ROS callbacks
+   */
+  ros::spinOnce();
+
+  /*
+   * Update current time and time step
+   */
+  common::Time time_now = world_->GetSimTime();
   common::Time step_time = time_now - prev_update_time_;
   prev_update_time_ = time_now;
 
-  double wd, ws;
-  double d1, d2;
-  double dr, da;
+  /*
+   * Joint states
+   */
+  joint_state_.header.stamp.sec = time_now.sec;
+  joint_state_.header.stamp.nsec = time_now.nsec;
+  joint_state_.position[LEFT] = joints_[LEFT]->GetAngle(0).Radian();
+  joint_state_.velocity[LEFT] = joints_[LEFT]->GetVelocity(0);
+  joint_state_.position[RIGHT] = joints_[RIGHT]->GetAngle(0).Radian();
+  joint_state_.velocity[RIGHT] = joints_[RIGHT]->GetVelocity(0);
+  joint_state_pub_.publish(joint_state_);
 
-  wd = wheel_diam_;
-  ws = wheel_sep_;
-
-  d1 = d2 = 0;
-  dr = da = 0;
+  /*
+   * Odometry
+   */
+  odom_.header.stamp.sec = time_now.sec;
+  odom_.header.stamp.nsec = time_now.nsec;
+  odom_.header.frame_id = "odom";
+  odom_.child_frame_id = "base_footprint";
+  odom_tf_.header = odom_.header;
+  odom_tf_.child_frame_id = odom_.child_frame_id;
 
   // Distance travelled by front wheels
-  if (set_joints_[LEFT])
-    d1 = step_time.Double() * (wd / 2) * joints_[LEFT]->GetVelocity(0);
-  if (set_joints_[RIGHT])
-    d2 = step_time.Double() * (wd / 2) * joints_[RIGHT]->GetVelocity(0);
-
+  double d1, d2;
+  double dr, da;
+  d1 = d2 = 0;
+  dr = da = 0;
+//  if (set_joints_[LEFT])
+  d1 = step_time.Double() * (wheel_diam_ / 2) * joints_[LEFT]->GetVelocity(0);
+//  if (set_joints_[RIGHT])
+  d2 = step_time.Double() * (wheel_diam_ / 2) * joints_[RIGHT]->GetVelocity(0);
   // Can see NaN values here, just zero them out if needed
-  if (isnan(d1)) {
-    ROS_WARN_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d1. Step time: %.2f. WD: %.2f. Velocity: %.2f", step_time.Double(), wd, joints_[LEFT]->GetVelocity(0));
+  if (isnan(d1))
+  {
+    ROS_WARN_STREAM_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d1. Step time: " << step_time.Double()
+                             << ", WD: " << wheel_diam_ << ", velocity: " << joints_[LEFT]->GetVelocity(0));
     d1 = 0;
   }
-
-  if (isnan(d2)) {
-    ROS_WARN_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d2. Step time: %.2f. WD: %.2f. Velocity: %.2f", step_time.Double(), wd, joints_[RIGHT]->GetVelocity(0));
+  if (isnan(d2))
+  {
+    ROS_WARN_STREAM_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d2. Step time: " << step_time.Double()
+                             << ", WD: " << wheel_diam_ << ", velocity: " << joints_[RIGHT]->GetVelocity(0));
     d2 = 0;
   }
-
   dr = (d1 + d2) / 2;
-  da = (d2 - d1) / ws;
+  da = (d2 - d1) / wheel_sep_;
 
   // Compute odometric pose
   odom_pose_[0] += dr * cos( odom_pose_[2] );
   odom_pose_[1] += dr * sin( odom_pose_[2] );
   odom_pose_[2] += da;
-
   // Compute odometric instantaneous velocity
   odom_vel_[0] = dr / step_time.Double();
   odom_vel_[1] = 0.0;
   odom_vel_[2] = da / step_time.Double();
 
-
-  if (set_joints_[LEFT])
-  {
-    joints_[LEFT]->SetVelocity( 0, wheel_speed_[LEFT] / (wd/2.0) );
-    joints_[LEFT]->SetMaxForce( 0, torque_ );
-  }
-  if (set_joints_[RIGHT])
-  {
-    joints_[RIGHT]->SetVelocity( 0, wheel_speed_[RIGHT] / (wd / 2.0) );
-    joints_[RIGHT]->SetMaxForce( 0, torque_ );
-  }
-
-  nav_msgs::Odometry odom;
-  odom.header.stamp.sec = time_now.sec;
-  odom.header.stamp.nsec = time_now.nsec;
-  odom.header.frame_id = "odom";
-  odom.child_frame_id = "base_footprint";
-  odom.pose.pose.position.x = odom_pose_[0];
-  odom.pose.pose.position.y = odom_pose_[1];
-  odom.pose.pose.position.z = 0;
+  odom_.pose.pose.position.x = odom_pose_[0];
+  odom_.pose.pose.position.y = odom_pose_[1];
+  odom_.pose.pose.position.z = 0;
 
   btQuaternion qt;
   qt.setEuler(0,0,odom_pose_[2]);
+  odom_.pose.pose.orientation.x = qt.getX();
+  odom_.pose.pose.orientation.y = qt.getY();
+  odom_.pose.pose.orientation.z = qt.getZ();
+  odom_.pose.pose.orientation.w = qt.getW();
 
-  odom.pose.pose.orientation.x = qt.getX();
-  odom.pose.pose.orientation.y = qt.getY();
-  odom.pose.pose.orientation.z = qt.getZ();
-  odom.pose.pose.orientation.w = qt.getW();
+  memcpy(&odom_.pose.covariance[0], pose_cov_, sizeof(double)*36);
+  memcpy(&odom_.twist.covariance[0], pose_cov_, sizeof(double)*36);
 
-  double pose_cov[36] = { 1e-3, 0, 0, 0, 0, 0,
-                          0, 1e-3, 0, 0, 0, 0,
-                          0, 0, 1e6, 0, 0, 0,
-                          0, 0, 0, 1e6, 0, 0,
-                          0, 0, 0, 0, 1e6, 0,
-                          0, 0, 0, 0, 0, 1e3};
+  odom_.twist.twist.linear.x = 0;
+  odom_.twist.twist.linear.y = 0;
+  odom_.twist.twist.linear.z = 0;
+  odom_.twist.twist.angular.x = 0;
+  odom_.twist.twist.angular.y = 0;
+  odom_.twist.twist.angular.z = 0;
+  odom_pub_.publish(odom_); // publish odom message
+  odom_tf_.transform.translation.x = odom_.pose.pose.position.x;
+  odom_tf_.transform.translation.y = odom_.pose.pose.position.y;
+  odom_tf_.transform.translation.z = odom_.pose.pose.position.z;
+  odom_tf_.transform.rotation = odom_.pose.pose.orientation;
+  tf_broadcaster_.sendTransform(odom_tf_);
 
-  memcpy( &odom.pose.covariance[0], pose_cov, sizeof(double)*36 );
-  memcpy( &odom.twist.covariance[0], pose_cov, sizeof(double)*36 );
 
-  odom.twist.twist.linear.x = 0;
-  odom.twist.twist.linear.y = 0;
-  odom.twist.twist.linear.z = 0;
 
-  odom.twist.twist.angular.x = 0;
-  odom.twist.twist.angular.y = 0;
-  odom.twist.twist.angular.z = 0;
-
-  odom_pub_.publish( odom ); 
-
-  js_.header.stamp.sec = time_now.sec;
-  js_.header.stamp.nsec = time_now.nsec;
-  if (this->set_joints_[LEFT])
+  /*
+   * Propagate velocity commands
+   * TODO: Check how to simulate disabled motors, e.g. set MaxForce to zero, but then damping is important!
+   */
+  if (((time_now - last_cmd_vel_time_).Double() > cmd_vel_timeout_) || !motors_enabled_)
   {
-    js_.position[0] = joints_[LEFT]->GetAngle(0).GetAsRadian();
-    js_.velocity[0] = joints_[LEFT]->GetVelocity(0);
+    wheel_speed_cmd_[LEFT] = 0.0;
+    wheel_speed_cmd_[RIGHT] = 0.0;
   }
+  joints_[LEFT]->SetVelocity(0, wheel_speed_cmd_[LEFT] / (wheel_diam_ / 2.0));
+  joints_[RIGHT]->SetVelocity(0, wheel_speed_cmd_[RIGHT] / (wheel_diam_ / 2.0));
+  joints_[LEFT]->SetMaxForce(0, torque_);
+  joints_[RIGHT]->SetMaxForce(0, torque_);
 
-  if (this->set_joints_[RIGHT])
+  /*
+   * Cliff sensors
+   */
+  // check current state
+  cliff_event_.sensor = 0;
+  cliff_event_.state = kobuki_msgs::CliffEvent::FLOOR;
+  if (cliff_sensor_left_->GetRange(0) >= cliff_detection_threshold_)
   {
-    js_.position[1] = joints_[RIGHT]->GetAngle(0).GetAsRadian();
-    js_.velocity[1] = joints_[RIGHT]->GetVelocity(0);
+    cliff_event_.sensor += kobuki_msgs::CliffEvent::LEFT;
+    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
+    max_floot_dist_ = cliff_sensor_left_->GetRange(0);
   }
-
-  joint_state_pub_.publish( js_ );
-
-  this->UpdateSensors();
-
-  //timeout if didn't receive cmd in a while
-  common::Time time_since_last_cmd = time_now - last_cmd_vel_time_;
-  if (time_since_last_cmd.Double() > 0.6)
+  if (cliff_sensor_front_->GetRange(0) >= cliff_detection_threshold_)
   {
-    wheel_speed_[LEFT] = 0;
-    wheel_speed_[RIGHT] = 0;
+    cliff_event_.sensor += kobuki_msgs::CliffEvent::CENTER;
+    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
+    if (cliff_sensor_front_->GetRange(0) > max_floot_dist_)
+    {
+      max_floot_dist_ = cliff_sensor_front_->GetRange(0);
+    }
   }
+  if (cliff_sensor_right_->GetRange(0) >= cliff_detection_threshold_)
+  {
+    cliff_event_.sensor += kobuki_msgs::CliffEvent::RIGHT;
+    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
+    if (cliff_sensor_right_->GetRange(0) > max_floot_dist_)
+    {
+      max_floot_dist_ = cliff_sensor_right_->GetRange(0);
+    }
+  }
+  // Only publish new message, if something has changed
+  if ((cliff_event_.state == kobuki_msgs::CliffEvent::CLIFF)
+      && (cliff_event_.sensor != cliff_event_old_.sensor))
+  {
+//    max_floot_dist_ = static_cast<int>(0.995f / ( tan( static_cast<float>( m_pk.psd[i]) / 76123.0f )
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, max_floot_dist_)); // convert distance back to an AD reading
+    cliff_event_pub_.publish(cliff_event_);
+    cliff_event_old_ = cliff_event_;
+  }
+  /*
+   * Bumpers
+   */
+  msgs::Contacts contacts;
+  contacts = bumper_->GetContacts();
 
+//  for (int i = 0; i < contacts.contact_size(); ++i)
+//  {
+//    std::cout << "Collision between[" << contacts.contact(i).collision1()
+//              << "] and [" << contacts.contact(i).collision2() << "]\n";
+//
+//    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
+//    {
+//      std::cout << j << "  Position:"
+//                << contacts.contact(i).position(j).x() << " "
+//                << contacts.contact(i).position(j).y() << " "
+//                << contacts.contact(i).position(j).z() << "\n";
+//      std::cout << "   Normal:"
+//                << contacts.contact(i).normal(j).x() << " "
+//                << contacts.contact(i).normal(j).y() << " "
+//                << contacts.contact(i).normal(j).z() << "\n";
+//      std::cout << "   Depth:" << contacts.contact(i).depth(j) << "\n";
+//    }
+//  }
+
+  // In order to simulate the three bumper sensors, a contact is assigned to one of the bumpers
+  // depending on its position. Each sensor covers a range of 60 degrees.
+  // +90 ... +30: left bumper
+  // +30 ... -30: centre bumper
+  // -30 ... -90: right bumper
+  bumper_event_.state = 0;
+  bumper_event_.bumper = 0;
+  // flags used for avoiding multiple triggering of the same bumper due to multiple contacts
+  bool bumper_left_pressed = false;
+  bool bumper_centre_pressed = false;
+  bool bumper_right_pressed = false;
+
+
+  for (int i = 0; i < contacts.contact_size(); ++i)
+  {
+    if ((contacts.contact(i).position(0).z() >= 0.015)
+        && (contacts.contact(i).position(0).z() <= 0.085)) // only consider contacts at the height of the bumper
+    {
+      math::Pose current_pose = model_->GetWorldPose();
+      double robot_heading = current_pose.rot.GetYaw();
+      // using the force normals below, since the contact position is given in world coordinates
+      // negate normal, because it points from contact to robot centre
+      double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
+      double relative_contact_angle = global_contact_angle - robot_heading;
+
+      std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
+                std::cout << "   Position:"
+                          << contacts.contact(i).position(0).x() << " "
+                          << contacts.contact(i).position(0).y() << " "
+                          << contacts.contact(i).position(0).z() << "\n";
+                std::cout << "   Normal:"
+                          << contacts.contact(i).normal(0).x() << " "
+                          << contacts.contact(i).normal(0).y() << " "
+                          << contacts.contact(i).normal(0).z() << "\n";
+//      std::cout << "Current robot heading: " << (robot_heading * (180/M_PI)) << std::endl;
+//      std::cout << "Global contact angle: " << (contact_angle * (180/M_PI)) << std::endl;
+//      std::cout << "Robot contact angle: " << (relative_contact_angle * (180/M_PI)) << std::endl;
+      if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
+      {
+        if (!bumper_left_pressed)
+        {
+          bumper_left_pressed = true;
+          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+          bumper_event_.bumper += kobuki_msgs::BumperEvent::LEFT;
+//          std::cout << "Left bumper pressed." << std::endl;
+//          std::cout << "-----------------------------------------" << std::endl;
+        }
+      }
+      else if ((relative_contact_angle <= (M_PI/6)) && (relative_contact_angle >= (-M_PI/6)))
+      {
+        if (!bumper_centre_pressed)
+        {
+          bumper_centre_pressed = true;
+          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+          bumper_event_.bumper += kobuki_msgs::BumperEvent::CENTER;
+//          std::cout << "Centre bumper pressed." << std::endl;
+//          std::cout << "-----------------------------------------" << std::endl;
+        }
+      }
+      else if ((relative_contact_angle < (-M_PI/6)) && (relative_contact_angle >= (-M_PI/2)))
+      {
+        if (!bumper_right_pressed)
+        {
+          bumper_right_pressed = true;
+          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+          bumper_event_.bumper += kobuki_msgs::BumperEvent::RIGHT;
+//          std::cout << "Right bumper pressed." << std::endl;
+//          std::cout << "-----------------------------------------" << std::endl;
+        }
+      }
+    }
+  }
+  // Only publish new message, if something has changed
+  if ((bumper_event_.state != bumper_event_old_.state)
+      || (bumper_event_.bumper != bumper_event_old_.bumper))
+  {
+    bumper_event_pub_.publish(bumper_event_);
+    bumper_event_old_ = bumper_event_;
+  }
 }
 
-void GazeboRosKobuki::UpdateSensors()
-{
-  if (left_cliff_sensor_->GetRange(0) > 0.02)
-    sensor_state_.cliff_left = true;
-  else
-    sensor_state_.cliff_left = false;
-
-  if (right_cliff_sensor_->GetRange(0) > 0.02)
-    sensor_state_.cliff_right = true;
-  else
-    sensor_state_.cliff_right = false;
-
-  //TODO: TurtlebotSensorState.msg has no front cliff sensor, so we are using on of the existent here
-  if (front_cliff_sensor_->GetRange(0) > 0.02)
-    sensor_state_.cliff_front_right = true;
-  else
-    sensor_state_.cliff_front_right = false;
-
-  sensor_state_pub_.publish(sensor_state_);
-
-  // Reset the bump sensors
-  sensor_state_.bumps_wheeldrops = 0x0;
-}
-
-void GazeboRosKobuki::OnCmdVel( const geometry_msgs::TwistConstPtr &msg)
-{
-  last_cmd_vel_time_ = this->my_world_->GetSimTime();
-  double vr, va;
-  vr = msg->linear.x;
-  va = msg->angular.z;
-
-  wheel_speed_[LEFT] = vr - va * (wheel_sep_) / 2;
-  wheel_speed_[RIGHT] = vr + va * (wheel_sep_) / 2;
-}
 
 void GazeboRosKobuki::spin()
 {
-  while(ros::ok()) ros::spinOnce();
+  while(ros::ok() && !shutdown_requested_)
+  {
+    ros::spinOnce();
+  }
 }
 
+// Register this plugin with the simulator
 GZ_REGISTER_MODEL_PLUGIN(GazeboRosKobuki);
 
+} // namespace gazebo
