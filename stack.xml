@@ -1,6 +1,7 @@
 <stack>
   <description brief="Kobuki Desktop">
-    Meta package for Kobuki-desktop variant of ROS.(Dashboard, testsuite, and simulation)
+    Meta package for Kobuki-desktop variant of ROS.
+    Contains tools for visualisation and simulation.
   </description>
   <author>Maintained by Marcus Liebhardt</author>
   <license>BSD</license>  
@@ -10,7 +11,6 @@
   <!-- shared -->
   <depend stack="ros"/>
   <depend stack="ros_comm"/> <!-- rospy -->
-
  
   <!-- kobuki_qtestsuite -->
   <depend stack="kobuki"/><!-- kobuki_testsuite --> 
@@ -30,12 +30,11 @@
   <!-- <depend stack="bullet"/> -->  
 
   <!-- kobuki_gazebo -->
-  <!-- <depend stack="simulator_gazebo"/> --> <!-- gazebo -->
+  <depend stack="simulator_gazebo"/> <!-- gazebo -->
   <!-- <depend stack="diagnostics"/> --> <!-- diagnostic_aggregator --> 
   <!-- <depend stack="navigation"/> --> <!-- robot_pose_ekf --> 
   <!-- <depend stack="nodelet_core"/> --> <!-- nodelet --> 
   <!-- <depend stack="depthimage_to_laserscan"/> --> <!-- depthimage_to_laserscan --> 
   <!-- <depend stack="robot_model"/> --> <!-- robot_state_publisher --> 
-  <!-- <depend stack="kobuki"/> --> <!-- kobuki_description --> 
-
+  <depend stack="kobuki_description"/> <!-- kobuki_description --> 
 </stack>
