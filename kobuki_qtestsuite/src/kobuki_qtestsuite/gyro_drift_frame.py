@@ -39,7 +39,7 @@ class GyroDriftFrame(QFrame):
         self._laser_scan_angle_topic_name = '/laser_scan_angle'
         self._gyro_scan_angle_topic_name = '/gyro_scan_angle'
         self._error_scan_angle_topic_name = '/error_scan_angle'
-        self._cmd_vel_topic_name = '/cmd_vel'
+        self._cmd_vel_topic_name = '/mobile_base/commands/velocity'
         self._gyro_topic_name = '/mobile_base/sensors/imu_data'
         self._motion = None
         self._scan_to_angle = None
