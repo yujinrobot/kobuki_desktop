@@ -33,7 +33,7 @@ class WanderingFrame(QFrame):
         super(WanderingFrame, self).__init__(parent)
         self._ui = Ui_wandering_frame()
         self.bump_subscriber = rospy.Subscriber('/mobile_base/events/bumper', BumperEvent, self.bumper_event_callback)
-        self._motion = SafeWandering('/cmd_vel','/odom', '/mobile_base/events/bumper', '/mobile_base/events/cliff')
+        self._motion = SafeWandering('/mobile_base/commands/velocity','/odom', '/mobile_base/events/bumper', '/mobile_base/events/cliff')
         self._motion_thread = None
         self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 

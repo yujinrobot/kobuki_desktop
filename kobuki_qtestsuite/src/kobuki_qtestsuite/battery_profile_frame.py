@@ -33,7 +33,7 @@ from full_size_data_plot import FullSizeDataPlot
 class BatteryProfileFrame(QFrame):
     def __init__(self, parent=None):
         super(BatteryProfileFrame, self).__init__(parent)
-        self._cmd_vel_topic_name = '/cmd_vel'
+        self._cmd_vel_topic_name = '/mobile_base/commands/velocity'
         self._battery_topic_name = "/mobile_base/sensors/core/battery"
         self._ui = Ui_battery_profile_frame()
         self._motion = None

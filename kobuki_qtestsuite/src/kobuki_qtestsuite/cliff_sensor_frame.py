@@ -37,7 +37,7 @@ class CliffSensorFrame(QFrame):
     def __init__(self, parent=None):
         super(CliffSensorFrame, self).__init__(parent)
         self._ui = Ui_cliff_sensor_frame()
-        self._motion = TravelForward('/cmd_vel','/odom', '/mobile_base/events/cliff')
+        self._motion = TravelForward('/mobile_base/commands/velocity','/odom', '/mobile_base/events/cliff')
         self._motion_thread = None
         self._distance = 1.2
         self._state = CliffSensorFrame.STATE_FORWARD

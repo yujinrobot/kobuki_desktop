@@ -38,7 +38,7 @@ class LifeFrame(QFrame):
     def __init__(self, parent=None):
         super(LifeFrame, self).__init__(parent)
         self._ui = Ui_life_frame()
-        self._motion = Rotate('/cmd_vel')
+        self._motion = Rotate('/mobile_base/commands/velocity')
         self._motion_thread = None
         self._timer = QTimer()
         #self._timer.setInterval(60000) #60s

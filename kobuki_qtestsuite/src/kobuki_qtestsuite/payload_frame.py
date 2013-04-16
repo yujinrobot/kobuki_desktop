@@ -84,7 +84,7 @@ class PayloadFrame(QFrame):
     def on_start_button_clicked(self):
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        self._motion = Square('/cmd_vel', '/odom', self._gyro_topic_name)
+        self._motion = Square('/mobile_base/commands/velocity', '/odom', self._gyro_topic_name)
         self._motion.init(self._ui.speed_spinbox.value(), self._ui.distance_spinbox.value())
         self._motion_thread = WorkerThread(self._motion.execute, self._run_finished)
         self._motion_thread.start()
