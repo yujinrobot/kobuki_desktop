@@ -1,0 +1,25 @@
+<package>
+  <name>kobuki_dashboard</name>
+  <version>0.1.6</version>
+  <description>
+    The Kobuki dashboard is a RQT-based plug-in for visualising data from Kobuki and giving easy access
+    to basic functionalities.
+  </description>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/kobuki_dashboard</url>
+  <author email="zklapow@gmail.com">Ze'ev Klapow</author>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>rqt_robot_dashboard</build_depend>
+  <build_depend>kobuki_msgs</build_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rqt_robot_dashboard</run_depend>
+  <run_depend>kobuki_msgs</run_depend>
+  
+  <export>
+    <rqt_gui plugin="${prefix}/plugins/plugin.xml"/>
+  </export>
+</package>

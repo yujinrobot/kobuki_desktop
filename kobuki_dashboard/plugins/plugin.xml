@@ -5,7 +5,8 @@
     </description>
     <qtgui>
       <label>Kobuki Dashboard</label>
-      <statustip>Test robot_dashboard.</statustip>
+      <icon type="file">../src/kobuki_dashboard/resources/images/kobuki_icon.png</icon>
+      <statustip>Check what's going on with Kobuki</statustip>
     </qtgui>
   </class>
 </library>
