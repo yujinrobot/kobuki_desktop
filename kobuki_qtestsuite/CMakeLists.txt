@@ -1,48 +1,39 @@
-##############################################################################
-# CMake
-##############################################################################
+cmake_minimum_required(VERSION 2.8.3)
+project(kobuki_qtestsuite)
 
-cmake_minimum_required(VERSION 2.4.6)
+find_package(catkin REQUIRED COMPONENTS rospy
+                                        kobuki_testsuite
+                                        qt_gui_py_common
+                                        rqt_gui
+                                        rqt_gui_py
+                                        rqt_py_common
+                                        rqt_plot
+                                        geometry_msgs
+                                        nav_msgs)
 
-##############################################################################
-# Ros Initialisation
-##############################################################################
+catkin_python_setup()
 
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+catkin_package()
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+#set(DETAIL_DIR ...)
+#set(RESOURCES_DIR ...)
+#
+#add_custom_target(${PROJECT_NAME}
+#        ALL
+#        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
+#        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
+#        COMMAND pyrcc4 -o ${DIR}/text_rc.py ${RESOURCES_DIR}/text.qrc
+#        COMMAND pyuic4 -o ${DIR}/testsuite_ui.py ${UI_DIR}/testsuite.ui
+#        COMMAND pyuic4 -o ${DIR}/configuration_dock_ui.py ${UI_DIR}/configuration_dock.ui
+#        COMMAND pyuic4 -o ${DIR}/battery_profile_frame_ui.py ${UI_DIR}/battery_profile_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/gyro_drift_frame_ui.py ${UI_DIR}/gyro_drift_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/payload_frame_ui.py ${UI_DIR}/payload_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/cliff_sensor_frame_ui.py ${UI_DIR}/cliff_sensor_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/life_frame_ui.py ${UI_DIR}/life_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/wandering_frame_ui.py ${UI_DIR}/wandering_frame.ui
+#        COMMAND pyuic4 -o ${DIR}/climbing_frame_ui.py ${UI_DIR}/climbing_frame.ui
+#        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#    )
 
-rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-##############################################################################
-# Ros Comms
-##############################################################################
-
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-##############################################################################
-# Ros Builds
-##############################################################################
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+install(PROGRAMS scripts/kobuki_qtestsuite
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

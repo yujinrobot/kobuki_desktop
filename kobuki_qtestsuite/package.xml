@@ -1,0 +1,35 @@
+<package>
+  <name>kobuki_qtestsuite</name>
+  <version>0.1.6</version>
+  <description>An rqt plugin that provides a graphical, interactive testsuite for Kobuki.</description>
+  <author email="stonier@yujinrobot.com">Daniel Stonier</author>
+  <maintainer email="stonier@yujinrobot.com">Daniel Stonier</maintainer>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/kobuki_qtestsuite</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>kobuki_testsuite</build_depend>
+  <build_depend>qt_gui_py_common</build_depend>
+  <build_depend>rqt_gui</build_depend>
+  <build_depend>rqt_gui_py</build_depend>
+  <build_depend>rqt_py_common</build_depend>
+  <build_depend>rqt_plot</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>pyqt4-dev-tools</build_depend> <!-- pyrcc4 -->
+  <run_depend>rospy</run_depend>
+  <run_depend>kobuki_testsuite</run_depend>
+  <run_depend>qt_gui_py_common</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_py</run_depend>
+  <run_depend>rqt_py_common</run_depend>
+  <run_depend>rqt_plot</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>pyqt4-dev-tools</run_depend> <!-- pyrcc4 -->
+  
+  <export>
+    <rqt_gui plugin="${prefix}/plugins/testsuite_plugin.xml"/>
+  </export>
+</package>

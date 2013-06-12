@@ -1,7 +1,7 @@
 <library path="../src">
   <class name="Kobuki Test Suite" type="kobuki_qtestsuite.testsuite.KobukiTestSuite" base_class_type="rqt_gui_py::Plugin">
     <description>
-      Plugin for the kobuki testsuite.
+      Plugin for the Kobuki testsuite.
     </description>
     <qtgui>
       <!-- optional grouping...
@@ -17,7 +17,7 @@
       -->
       <label>Kobuki Test Suite</label>
       <icon type="file">../src/kobuki_qtestsuite/resources/images/kobuki_icon.png</icon>
-      <statustip>Test suite for kobuki.</statustip>
+      <statustip>Test suite for Kobuki</statustip>
     </qtgui>
   </class>
 </library>
