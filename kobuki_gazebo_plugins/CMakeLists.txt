@@ -1,34 +1,37 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(kobuki_gazebo_plugins)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+# Find gazebo
+include (FindPkgConfig)
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(GAZEBO gazebo)
+endif()
 
-rosbuild_init()
-rosbuild_genmsg()
+find_package(catkin REQUIRED COMPONENTS gazebo_ros
+                                        geometry_msgs
+                                        kobuki_msgs
+                                        nav_msgs
+                                        roscpp
+                                        std_msgs
+                                        tf)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES gazebo_ros_kobuki
+               CATKIN_DEPENDS gazebo_ros
+                              geometry_msgs
+                              kobuki_msgs
+                              nav_msgs
+                              roscpp
+                              std_msgs
+                              tf)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+include_directories(include
+                    ${catkin_INCLUDE_DIRS}
+                    ${GAZEBO_INCLUDE_DIRS})
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp)
 
-add_definitions(-fPIC)
-rosbuild_add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp)
+target_link_libraries(gazebo_ros_kobuki ${catkin_LIBRARIES})
+
+install(TARGETS gazebo_ros_kobuki
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

@@ -37,7 +37,7 @@
 #include <cstring>
 #include <boost/bind.hpp>
 #include <sensor_msgs/JointState.h>
-#include <LinearMath/btQuaternion.h>
+#include <tf/LinearMath/Quaternion.h>
 #include <math/gzmath.hh>
 #include "kobuki_gazebo_plugins/gazebo_ros_kobuki.h"
 
@@ -48,16 +48,14 @@ enum {LEFT= 0, RIGHT=1};
 
 GazeboRosKobuki::GazeboRosKobuki() : shutdown_requested_(false)
 {
-  // Start up ROS
-//  int argc = 0;
-//  ros::init(argc, NULL, "gazebo_ros_kobuki_node"); // looks like this is not needed
-// alternative
-//  if (!ros::isInitialized())
-//  {
-//    int argc = 0;
-//    char** argv = NULL;
-//    ros::init(argc, argv, "gazebo_kobuki", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
-//  }
+  // Connect with ROS
+  if (!ros::isInitialized())
+  {
+    int argc = 0;
+    char** argv = NULL;
+    ros::init(argc, argv, "gazebo_kobuki", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+  }
+
   wheel_speed_cmd_[LEFT] = 0.0;
   wheel_speed_cmd_[RIGHT] = 0.0;
 
@@ -291,12 +289,17 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   bumper_ = boost::shared_dynamic_cast<sensors::ContactSensor>(
             sensors::SensorManager::Instance()->GetSensor(bumper_name));
+  if (!bumper_)
+  {
+    ROS_ERROR_STREAM("Couldn't find the bumpers in the model! [" << node_name_ <<"]");
+    return;
+  }
   bumper_->SetActive(true);
   bumper_event_pub_ = nh_priv_.advertise<kobuki_msgs::BumperEvent>("events/bumper", 1);
 
   prev_update_time_ = world_->GetSimTime();
   ROS_INFO_STREAM("GazeboRosKobuki plugin ready to go! [" << node_name_ << "]");
-  update_connection_ = event::Events::ConnectWorldUpdateStart(boost::bind(&GazeboRosKobuki::OnUpdate, this));
+  update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboRosKobuki::OnUpdate, this));
 }
 
 void GazeboRosKobuki::motorPowerCB( const kobuki_msgs::MotorPowerPtr &msg)
@@ -393,7 +396,7 @@ void GazeboRosKobuki::OnUpdate()
   odom_.pose.pose.position.y = odom_pose_[1];
   odom_.pose.pose.position.z = 0;
 
-  btQuaternion qt;
+  tf::Quaternion qt;
   qt.setEuler(0,0,odom_pose_[2]);
   odom_.pose.pose.orientation.x = qt.getX();
   odom_.pose.pose.orientation.y = qt.getY();
@@ -415,8 +418,6 @@ void GazeboRosKobuki::OnUpdate()
   odom_tf_.transform.translation.z = odom_.pose.pose.position.z;
   odom_tf_.transform.rotation = odom_.pose.pose.orientation;
   tf_broadcaster_.sendTransform(odom_tf_);
-
-
 
   /*
    * Propagate velocity commands
@@ -476,7 +477,6 @@ void GazeboRosKobuki::OnUpdate()
    */
   msgs::Contacts contacts;
   contacts = bumper_->GetContacts();
-
 //  for (int i = 0; i < contacts.contact_size(); ++i)
 //  {
 //    std::cout << "Collision between[" << contacts.contact(i).collision1()
@@ -521,15 +521,15 @@ void GazeboRosKobuki::OnUpdate()
       double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
 
-      std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
-                std::cout << "   Position:"
-                          << contacts.contact(i).position(0).x() << " "
-                          << contacts.contact(i).position(0).y() << " "
-                          << contacts.contact(i).position(0).z() << "\n";
-                std::cout << "   Normal:"
-                          << contacts.contact(i).normal(0).x() << " "
-                          << contacts.contact(i).normal(0).y() << " "
-                          << contacts.contact(i).normal(0).z() << "\n";
+//      std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
+//                std::cout << "   Position:"
+//                          << contacts.contact(i).position(0).x() << " "
+//                          << contacts.contact(i).position(0).y() << " "
+//                          << contacts.contact(i).position(0).z() << "\n";
+//                std::cout << "   Normal:"
+//                          << contacts.contact(i).normal(0).x() << " "
+//                          << contacts.contact(i).normal(0).y() << " "
+//                          << contacts.contact(i).normal(0).z() << "\n";
 //      std::cout << "Current robot heading: " << (robot_heading * (180/M_PI)) << std::endl;
 //      std::cout << "Global contact angle: " << (contact_angle * (180/M_PI)) << std::endl;
 //      std::cout << "Robot contact angle: " << (relative_contact_angle * (180/M_PI)) << std::endl;
