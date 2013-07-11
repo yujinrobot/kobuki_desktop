@@ -1,6 +1,6 @@
 <package>
   <name>kobuki_gazebo_plugins</name>
-  <version>0.1.6</version>
+  <version>0.2.0</version>
   <description>Kobuki-specific ROS plugins for Gazebo</description>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
@@ -8,6 +8,7 @@
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
   
   <buildtool_depend>catkin</buildtool_depend>
+  
   <build_depend>boost</build_depend>
   <build_depend>gazebo_ros</build_depend>
   <build_depend>geometry_msgs</build_depend>
@@ -25,8 +26,4 @@
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
-  
-<!--   <export> -->
-<!--     <gazebo plugin_path="${prefix}/lib" /> -->
-<!--   </export> -->
 </package>

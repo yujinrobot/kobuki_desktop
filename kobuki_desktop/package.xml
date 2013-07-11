@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>kobuki_desktop</name>
-  <version>0.1.6</version>
+  <version>0.2.0</version>
   <description>Visualisation and simulation tools for Kobuki</description>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>

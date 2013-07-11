@@ -1,6 +1,6 @@
 <package>
   <name>kobuki_gazebo</name>
-  <version>0.1.6</version>
+  <version>0.2.0</version>
   <description>Kobuki simulation for Gazebo</description>
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
@@ -10,7 +10,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- launch file dependencies -->
-  <run_depend>gazebo</run_depend>
+  <run_depend>gazebo_ros</run_depend>
   <run_depend>gazebo_plugins</run_depend>
   <run_depend>kobuki_description</run_depend>
   <run_depend>robot_state_publisher</run_depend>
