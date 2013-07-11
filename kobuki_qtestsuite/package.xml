@@ -1,6 +1,6 @@
 <package>
   <name>kobuki_qtestsuite</name>
-  <version>0.1.6</version>
+  <version>0.2.0</version>
   <description>An rqt plugin that provides a graphical, interactive testsuite for Kobuki.</description>
   <author email="stonier@yujinrobot.com">Daniel Stonier</author>
   <maintainer email="stonier@yujinrobot.com">Daniel Stonier</maintainer>

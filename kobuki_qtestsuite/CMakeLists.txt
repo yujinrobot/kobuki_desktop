@@ -15,25 +15,23 @@ catkin_python_setup()
 
 catkin_package()
 
-#set(DETAIL_DIR ...)
-#set(RESOURCES_DIR ...)
-#
-#add_custom_target(${PROJECT_NAME}
-#        ALL
-#        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
-#        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
-#        COMMAND pyrcc4 -o ${DIR}/text_rc.py ${RESOURCES_DIR}/text.qrc
-#        COMMAND pyuic4 -o ${DIR}/testsuite_ui.py ${UI_DIR}/testsuite.ui
-#        COMMAND pyuic4 -o ${DIR}/configuration_dock_ui.py ${UI_DIR}/configuration_dock.ui
-#        COMMAND pyuic4 -o ${DIR}/battery_profile_frame_ui.py ${UI_DIR}/battery_profile_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/gyro_drift_frame_ui.py ${UI_DIR}/gyro_drift_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/payload_frame_ui.py ${UI_DIR}/payload_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/cliff_sensor_frame_ui.py ${UI_DIR}/cliff_sensor_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/life_frame_ui.py ${UI_DIR}/life_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/wandering_frame_ui.py ${UI_DIR}/wandering_frame.ui
-#        COMMAND pyuic4 -o ${DIR}/climbing_frame_ui.py ${UI_DIR}/climbing_frame.ui
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#    )
+set(DIR src/kobuki_qtestsuite/detail)
+set(UI_DIR src/kobuki_qtestsuite/ui)
+set(RESOURCES_DIR src/kobuki_qtestsuite/resources)
 
-install(PROGRAMS scripts/kobuki_qtestsuite
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_custom_target(${PROJECT_NAME}
+        ALL
+        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
+        COMMAND pyrcc4 -o ${DIR}/common_rc.py ${RESOURCES_DIR}/common.qrc
+        COMMAND pyrcc4 -o ${DIR}/text_rc.py ${RESOURCES_DIR}/text.qrc
+        COMMAND pyuic4 -o ${DIR}/testsuite_ui.py ${UI_DIR}/testsuite.ui
+        COMMAND pyuic4 -o ${DIR}/configuration_dock_ui.py ${UI_DIR}/configuration_dock.ui
+        COMMAND pyuic4 -o ${DIR}/battery_profile_frame_ui.py ${UI_DIR}/battery_profile_frame.ui
+        COMMAND pyuic4 -o ${DIR}/gyro_drift_frame_ui.py ${UI_DIR}/gyro_drift_frame.ui
+        COMMAND pyuic4 -o ${DIR}/payload_frame_ui.py ${UI_DIR}/payload_frame.ui
+        COMMAND pyuic4 -o ${DIR}/cliff_sensor_frame_ui.py ${UI_DIR}/cliff_sensor_frame.ui
+        COMMAND pyuic4 -o ${DIR}/life_frame_ui.py ${UI_DIR}/life_frame.ui
+        COMMAND pyuic4 -o ${DIR}/wandering_frame_ui.py ${UI_DIR}/wandering_frame.ui
+        COMMAND pyuic4 -o ${DIR}/climbing_frame_ui.py ${UI_DIR}/climbing_frame.ui
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+        
