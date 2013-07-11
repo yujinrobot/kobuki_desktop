@@ -5,7 +5,7 @@
     </description>
     <qtgui>
       <label>Kobuki Dashboard</label>
-      <icon type="file">../src/kobuki_dashboard/resources/images/kobuki_icon.png</icon>
+      <icon type="file">images/kobuki_icon.png</icon>
       <statustip>Check what's going on with Kobuki</statustip>
     </qtgui>
   </class>

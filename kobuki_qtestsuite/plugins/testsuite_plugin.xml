@@ -16,7 +16,7 @@
       <icon type="theme">system-run</icon>
       -->
       <label>Kobuki Test Suite</label>
-      <icon type="file">../src/kobuki_qtestsuite/resources/images/kobuki_icon.png</icon>
+      <icon type="file">images/kobuki_icon.png</icon>
       <statustip>Test suite for Kobuki</statustip>
     </qtgui>
   </class>
