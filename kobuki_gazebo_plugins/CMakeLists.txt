@@ -30,7 +30,10 @@ include_directories(include
                     ${GAZEBO_INCLUDE_DIRS})
 
 add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp)
-
+add_dependencies(gazebo_ros_kobuki geometry_msgs_gencpp
+				   kobuki_msgs_gencpp
+				   nav_msgs_gencpp
+				   std_msgs_gencpp)
 target_link_libraries(gazebo_ros_kobuki ${catkin_LIBRARIES})
 
 install(TARGETS gazebo_ros_kobuki
