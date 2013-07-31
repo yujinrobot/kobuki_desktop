@@ -25,6 +25,7 @@ catkin_package(INCLUDE_DIRS include
                               std_msgs
                               tf)
 
+link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${GAZEBO_INCLUDE_DIRS})
