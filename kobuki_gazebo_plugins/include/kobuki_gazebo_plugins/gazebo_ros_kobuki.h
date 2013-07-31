@@ -132,12 +132,16 @@ private:
   float odom_pose_[3];
   /// Vector for velocity
   float odom_vel_[3];
-  /// Pointer to covariance matrix
+  /// Pointer to pose covariance matrix
   double *pose_cov_[36];
+  /// Pointer to twist covariance matrix
+  double *twist_cov_[36];
   /// ROS publisher for odometry messages
   ros::Publisher odom_pub_;
   /// ROS message for odometry data
   nav_msgs::Odometry odom_;
+  /// Flag for (not) publish tf transform for odom -> robot
+  bool publish_tf_;
   /// TF transform publisher for the odom frame
   tf::TransformBroadcaster tf_broadcaster_;
   /// TF transform for the odom frame

@@ -48,25 +48,16 @@ enum {LEFT= 0, RIGHT=1};
 
 GazeboRosKobuki::GazeboRosKobuki() : shutdown_requested_(false)
 {
-  // Connect with ROS
+  // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
   {
-    int argc = 0;
-    char** argv = NULL;
-    ros::init(argc, argv, "gazebo_kobuki", ros::init_options::NoSigintHandler|ros::init_options::AnonymousName);
+    ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
+      << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+    return;
   }
 
   wheel_speed_cmd_[LEFT] = 0.0;
   wheel_speed_cmd_[RIGHT] = 0.0;
-
-  // using the same values as in kobuki_node
-  double pose_cov[36] = {0.1, 0, 0, 0, 0, 0,
-                          0, 0.1, 0, 0, 0, 0,
-                          0, 0, 1e6, 0, 0, 0,
-                          0, 0, 0, 1e6, 0, 0,
-                          0, 0, 0, 0, 1e6, 0,
-                          0, 0, 0, 0, 0, 0.2};
-  memcpy(&pose_cov, &pose_cov_, sizeof(double[36]));
 }
 
 GazeboRosKobuki::~GazeboRosKobuki()
@@ -155,6 +146,25 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   /*
    * Prepare publishing odometry data
    */
+  if (sdf->HasElement("publish_tf"))
+  {
+    publish_tf_ = sdf->GetElement("publish_tf")->GetValueBool();
+    if (publish_tf_)
+    {
+      ROS_INFO_STREAM("Will publish tf." << " [" << node_name_ <<"]");
+    }
+    else
+    {
+      ROS_INFO_STREAM("Won't publish tf." << " [" << node_name_ <<"]");
+    }
+  }
+  else
+  {
+    publish_tf_ = false;
+    ROS_INFO_STREAM("Couldn't find the 'publish tf' parameter in the model description."
+                     << " Won't publish tf." << " [" << node_name_ <<"]");
+    return;
+  }
   if (sdf->HasElement("wheel_separation"))
   {
     wheel_sep_ = sdf->GetElement("wheel_separation")->GetValueDouble();
@@ -340,8 +350,7 @@ void GazeboRosKobuki::OnUpdate()
   /*
    * Joint states
    */
-  joint_state_.header.stamp.sec = time_now.sec;
-  joint_state_.header.stamp.nsec = time_now.nsec;
+  joint_state_.header.stamp = ros::Time::now();
   joint_state_.position[LEFT] = joints_[LEFT]->GetAngle(0).Radian();
   joint_state_.velocity[LEFT] = joints_[LEFT]->GetVelocity(0);
   joint_state_.position[RIGHT] = joints_[RIGHT]->GetAngle(0).Radian();
@@ -351,12 +360,9 @@ void GazeboRosKobuki::OnUpdate()
   /*
    * Odometry
    */
-  odom_.header.stamp.sec = time_now.sec;
-  odom_.header.stamp.nsec = time_now.nsec;
+  odom_.header.stamp = joint_state_.header.stamp;
   odom_.header.frame_id = "odom";
   odom_.child_frame_id = "base_footprint";
-  odom_tf_.header = odom_.header;
-  odom_tf_.child_frame_id = odom_.child_frame_id;
 
   // Distance travelled by front wheels
   double d1, d2;
@@ -403,8 +409,12 @@ void GazeboRosKobuki::OnUpdate()
   odom_.pose.pose.orientation.z = qt.getZ();
   odom_.pose.pose.orientation.w = qt.getW();
 
-  memcpy(&odom_.pose.covariance[0], pose_cov_, sizeof(double)*36);
-  memcpy(&odom_.twist.covariance[0], pose_cov_, sizeof(double)*36);
+  odom_.pose.covariance[0]  = 0.1;
+  odom_.pose.covariance[7]  = 0.1;
+  odom_.pose.covariance[35] = 0.2;
+  odom_.pose.covariance[14] = 1e6;
+  odom_.pose.covariance[21] = 1e6;
+  odom_.pose.covariance[28] = 1e6;
 
   odom_.twist.twist.linear.x = 0;
   odom_.twist.twist.linear.y = 0;
@@ -413,11 +423,17 @@ void GazeboRosKobuki::OnUpdate()
   odom_.twist.twist.angular.y = 0;
   odom_.twist.twist.angular.z = 0;
   odom_pub_.publish(odom_); // publish odom message
-  odom_tf_.transform.translation.x = odom_.pose.pose.position.x;
-  odom_tf_.transform.translation.y = odom_.pose.pose.position.y;
-  odom_tf_.transform.translation.z = odom_.pose.pose.position.z;
-  odom_tf_.transform.rotation = odom_.pose.pose.orientation;
-  tf_broadcaster_.sendTransform(odom_tf_);
+
+  if (publish_tf_)
+  {
+    odom_tf_.header = odom_.header;
+    odom_tf_.child_frame_id = odom_.child_frame_id;
+    odom_tf_.transform.translation.x = odom_.pose.pose.position.x;
+    odom_tf_.transform.translation.y = odom_.pose.pose.position.y;
+    odom_tf_.transform.translation.z = odom_.pose.pose.position.z;
+    odom_tf_.transform.rotation = odom_.pose.pose.orientation;
+    tf_broadcaster_.sendTransform(odom_tf_);
+  }
 
   /*
    * Propagate velocity commands
