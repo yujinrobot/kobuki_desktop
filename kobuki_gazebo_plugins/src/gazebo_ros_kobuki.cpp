@@ -80,7 +80,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     return;
   }
   // Get then name of the parent model and use it as node name
-  std::string model_name = sdf->GetParent()->GetValueString("name");
+  std::string model_name = sdf->GetParent()->Get<std::string>("name");
   gzdbg << "Plugin model name: " << model_name << "\n";
   nh_ = ros::NodeHandle("");
   // creating a private name pace until Gazebo implements topic remappings
@@ -94,7 +94,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 //
 //  this->node_namespace_ = "";
 //  if (_sdf->HasElement("node_namespace"))
-//    this->node_namespace_ = _sdf->GetElement("node_namespace")->GetValueString() + "/";
+//    this->node_namespace_ = _sdf->GetElement("node_namespace")->Get<std::string>() + "/";
 
   /*
    * Prepare receiving motor power commands
@@ -107,7 +107,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
    */
   if (sdf->HasElement("left_wheel_joint_name"))
   {
-    left_wheel_joint_name_ = sdf->GetElement("left_wheel_joint_name")->GetValueString();
+    left_wheel_joint_name_ = sdf->GetElement("left_wheel_joint_name")->Get<std::string>();
   }
   else
   {
@@ -117,7 +117,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("right_wheel_joint_name"))
   {
-    right_wheel_joint_name_ = sdf->GetElement("right_wheel_joint_name")->GetValueString();
+    right_wheel_joint_name_ = sdf->GetElement("right_wheel_joint_name")->Get<std::string>();
   }
   else
   {
@@ -148,7 +148,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
    */
   if (sdf->HasElement("publish_tf"))
   {
-    publish_tf_ = sdf->GetElement("publish_tf")->GetValueBool();
+    publish_tf_ = sdf->GetElement("publish_tf")->Get<bool>();
     if (publish_tf_)
     {
       ROS_INFO_STREAM("Will publish tf." << " [" << node_name_ <<"]");
@@ -167,7 +167,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("wheel_separation"))
   {
-    wheel_sep_ = sdf->GetElement("wheel_separation")->GetValueDouble();
+    wheel_sep_ = sdf->GetElement("wheel_separation")->Get<double>();
   }
   else
   {
@@ -177,7 +177,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("wheel_diameter"))
   {
-    wheel_diam_ = sdf->GetElement("wheel_diameter")->GetValueDouble();
+    wheel_diam_ = sdf->GetElement("wheel_diameter")->Get<double>();
   }
   else
   {
@@ -187,7 +187,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("torque"))
   {
-    torque_ = sdf->GetElement("torque")->GetValueDouble();
+    torque_ = sdf->GetElement("torque")->Get<double>();
   }
   else
   {
@@ -202,7 +202,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
    */
   if (sdf->HasElement("velocity_command_timeout"))
   {
-    cmd_vel_timeout_ = sdf->GetElement("velocity_command_timeout")->GetValueDouble();
+    cmd_vel_timeout_ = sdf->GetElement("velocity_command_timeout")->Get<double>();
   }
   else
   {
@@ -219,7 +219,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   std::string cliff_sensor_left_name, cliff_sensor_front_name, cliff_sensor_right_name;
   if (sdf->HasElement("cliff_sensor_left_name"))
   {
-    cliff_sensor_left_name = sdf->GetElement("cliff_sensor_left_name")->GetValueString();
+    cliff_sensor_left_name = sdf->GetElement("cliff_sensor_left_name")->Get<std::string>();
   }
   else
   {
@@ -229,7 +229,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("cliff_sensor_front_name"))
   {
-    cliff_sensor_front_name = sdf->GetElement("cliff_sensor_front_name")->GetValueString();
+    cliff_sensor_front_name = sdf->GetElement("cliff_sensor_front_name")->Get<std::string>();
   }
   else
   {
@@ -239,7 +239,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("cliff_sensor_right_name"))
   {
-    cliff_sensor_right_name = sdf->GetElement("cliff_sensor_right_name")->GetValueString();
+    cliff_sensor_right_name = sdf->GetElement("cliff_sensor_right_name")->Get<std::string>();
   }
   else
   {
@@ -270,7 +270,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   if (sdf->HasElement("cliff_detection_threshold"))
   {
-    cliff_detection_threshold_ = sdf->GetElement("cliff_detection_threshold")->GetValueDouble();
+    cliff_detection_threshold_ = sdf->GetElement("cliff_detection_threshold")->Get<double>();
   }
   else
   {
@@ -289,7 +289,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   std::string bumper_name;
   if (sdf->HasElement("bumper_name"))
   {
-    bumper_name = sdf->GetElement("bumper_name")->GetValueString();
+    bumper_name = sdf->GetElement("bumper_name")->Get<std::string>();
   }
   else
   {
