@@ -1,1 +1,20 @@
-rqt -s kobuki_qtestsuite
+#!/usr/bin/env python
+#
+# License: BSD
+#   https://raw.github.com/robotics-in-concert/rocon_rqt_plugins/hydro-devel/rocon_gateway_graph/LICENSE
+#
+##############################################################################
+# Imports
+##############################################################################
+
+import sys
+from rqt_gui.main import Main
+
+##############################################################################
+# Main
+##############################################################################
+
+main = Main()
+sys.exit(main.main(sys.argv, standalone='kobuki_qtestsuite'))
+
+#rqt -s kobuki_qtestsuite

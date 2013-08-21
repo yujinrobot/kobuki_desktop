@@ -37,12 +37,20 @@ class ConfigurationDockWidget(QDockWidget):
         odom_topics = [ topic[0] for topic in topic_types if topic[1] == 'nav_msgs/Odometry' ]
         self._ui.odom_topic_combo_box.setItems.emit(sorted(odom_topics))
         #self.odom_subscriber = rospy.Subscriber(str(self.odom_topic_combo_box.currentText()), Odometry, self.odometry_callback)
+        core_sensor_topics = [ topic[0] for topic in topic_types if topic[1] == 'kobuki_msgs/SensorState' ]
+        self._ui.core_topic_combo_box.setItems.emit(sorted(core_sensor_topics))
         
     def cmd_vel_topic_name(self):
         return str(self._ui.cmd_vel_topic_combo_box.currentText())
 
     def odom_topic_name(self):
         return str(self._ui.odom_topic_combo_box.currentText())
+
+    def core_sensors_topic_name(self):
+        return str(self._ui.core_sensor_topic_combo_box.currentText())
+
+    def battery_topic_name(self):
+        return str(self._ui.core_sensor_topic_combo_box.currentText() + '/' + battery)
         
     ##########################################################################
     # Slot Callbacks
@@ -59,3 +67,6 @@ class ConfigurationDockWidget(QDockWidget):
         # Need to redo the subscriber here
         pass
 
+    @Slot(str)
+    def on_core_topic_combo_box_currentIndexChanged(self, topic_name):
+        pass

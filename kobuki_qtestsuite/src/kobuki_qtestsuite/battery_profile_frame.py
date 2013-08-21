@@ -40,8 +40,9 @@ class BatteryProfileFrame(QFrame):
         self.robot_state_subscriber = None
         self._motion_thread = None
 
-    def setupUi(self):
+    def setupUi(self, cmd_vel_topic_name):
         self._ui.setupUi(self)
+        self._cmd_vel_topic_name = cmd_vel_topic_name
         self._plot_layout = QVBoxLayout(self._ui.battery_profile_group_box)
         self._plot_widget = PlotWidget()
         self._plot_widget.setWindowTitle("Battery Profile")
@@ -134,6 +135,17 @@ class BatteryProfileFrame(QFrame):
     def on_angular_speed_spinbox_valueChanged(self, value):
         if self._motion:
             self._motion.init(self._ui.angular_speed_spinbox.value())
+
+    ##########################################################################
+    # External Slot Callbacks
+    ##########################################################################
+    @Slot(str)
+    def on_cmd_vel_topic_combo_box_currentIndexChanged(self, topic_name):
+        '''
+          To be connected to the configuration dock combo box (via the main testsuite frame)
+        '''
+        self._cmd_vel_topic_name = topic_name
+        print("DudetteBattery %s" % topic_name)
 
     ##########################################################################
     # Ros Callbacks

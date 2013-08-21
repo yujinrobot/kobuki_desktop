@@ -51,13 +51,13 @@ class FullSizeDataPlot(MatDataPlot):
         # Set axis bounds
         xmax = 0
         for curve in self._curves.values():
-            data_x, data_y, plot = curve
+            data_x, data_y, plot, min_max_y = curve
             if len(data_x) == 0:
                 continue
             
             xmax = max(xmax, data_x[-1])
-            self._ymin = min(self._ymin, data_y[-1])
-            self._ymax = max(self._ymax, data_y[-1])
+            self._ymin = min(self._ymin, min_max_y[0])
+            self._ymax = max(self._ymax, min_max_y[1] + 1)
             self._canvas.axes.set_xbound(lower=0, upper=xmax)
             
         if self.dynamic_range:
@@ -67,7 +67,7 @@ class FullSizeDataPlot(MatDataPlot):
 
         # Set plot data on current axes
         for curve in self._curves.values():
-            data_x, data_y, plot = curve
+            data_x, data_y, plot, min_max_y = curve
             plot.set_data(numpy.array(data_x), numpy.array(data_y))
 
         self._canvas.draw()

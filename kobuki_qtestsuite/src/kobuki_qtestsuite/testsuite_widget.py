@@ -40,7 +40,7 @@ class TestSuiteWidget(QWidget):
                        ] 
         self._current_tab = self._tabs[self._ui.testsuite_tab_widget.currentIndex()]
         self._ui.configuration_dock.setupUi()
-        self._ui.battery_profile_frame.setupUi()
+        self._ui.battery_profile_frame.setupUi(self._ui.configuration_dock.cmd_vel_topic_name())
         self._ui.gyro_drift_frame.setupUi()
         self._ui.payload_frame.setupUi()
         self._ui.cliff_sensor_frame.setupUi()
@@ -48,6 +48,11 @@ class TestSuiteWidget(QWidget):
         self._ui.wandering_frame.setupUi()
         #self.cmd_vel_publisher = rospy.Publisher(self._ui.configuration_dock.cmd_vel_topic_name(), Twist)
         #self.odom_subscriber = rospy.Subscriber(self._ui.configuration_dock.odom_topic_name(), Odometry, self.odometry_callback)
+        ####################
+        # Slot Callbacks
+        ####################
+        self._ui.configuration_dock._ui.cmd_vel_topic_combo_box.currentIndexChanged[str].connect(
+                    self._ui.battery_profile_frame.on_cmd_vel_topic_combo_box_currentIndexChanged)
     
     def shutdown(self):
         self._ui.battery_profile_frame.shutdown()
@@ -64,6 +69,7 @@ class TestSuiteWidget(QWidget):
     def on_cmd_vel_topic_combo_box_currentIndexChanged(self, topic_name):
         # This is probably a bit broken, need to test with more than just /cmd_vel so
         # there is more than one option.
+        print("Dude")
         self.cmd_vel_publisher = rospy.Publisher(str(self.cmd_vel_topic_combo_box.currentText()), Twist)
 
     @Slot(str)
