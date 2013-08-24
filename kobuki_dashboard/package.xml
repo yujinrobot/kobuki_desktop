@@ -7,14 +7,19 @@
   </description>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
-  <url>http://ros.org/wiki/kobuki_dashboard</url>
+  <url type="website">http://ros.org/wiki/kobuki_dashboard</url>
+  <url type="repository">https://github.com/yujinrobot/kobuki_desktop</url>
+  <url type="bugtracker">https://github.com/yujinrobot/kobuki_desktop/issues</url>
+  
   <author email="zklapow@gmail.com">Ze'ev Klapow</author>
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
   
   <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>rospy</build_depend>
   <build_depend>rqt_robot_dashboard</build_depend>
   <build_depend>kobuki_msgs</build_depend>
+
   <run_depend>rospy</run_depend>
   <run_depend>rqt_robot_dashboard</run_depend>
   <run_depend>kobuki_msgs</run_depend>

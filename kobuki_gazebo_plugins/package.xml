@@ -4,7 +4,9 @@
   <description>Kobuki-specific ROS plugins for Gazebo</description>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
-  <url>http://ros.org/wiki/kobuki_gazebo_plugins</url>
+  <url type="website">http://ros.org/wiki/kobuki_gazebo_plugins</url>
+  <url type="repository">https://github.com/yujinrobot/kobuki_desktop</url>
+  <url type="bugtracker">https://github.com/yujinrobot/kobuki_desktop/issues</url>
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
   
   <buildtool_depend>catkin</buildtool_depend>
