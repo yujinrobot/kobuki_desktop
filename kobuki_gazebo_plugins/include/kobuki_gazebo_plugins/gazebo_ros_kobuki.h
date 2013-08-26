@@ -46,6 +46,7 @@
 #include <physics/physics.hh>
 #include <sensors/sensors.hh>
 #include <ros/ros.h>
+#include <std_msgs/Empty.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
@@ -79,6 +80,8 @@ private:
   void cmdVelCB(const geometry_msgs::TwistConstPtr &msg);
   /// Callback for incoming velocity commands
   void motorPowerCB(const kobuki_msgs::MotorPowerPtr &msg);
+  /// Callback for resetting the odometry data
+  void resetOdomCB(const std_msgs::EmptyConstPtr &msg);
   /// Spin method for the spinner thread
   void spin();
   //  void OnContact(const std::string &name, const physics::Contact &contact); necessary?
@@ -121,19 +124,19 @@ private:
   /// Simulation time of the last velocity command (used for time out)
   common::Time last_cmd_vel_time_;
   /// Time out for velocity commands in seconds
-  float cmd_vel_timeout_;
+  double cmd_vel_timeout_;
   /// Speeds of the wheels
-  float wheel_speed_cmd_[2];
+  double wheel_speed_cmd_[2];
   /// Max. torque applied to the wheels
-  float torque_;
+  double torque_;
   /// Separation between the wheels
-  float wheel_sep_;
+  double wheel_sep_;
   /// Diameter of the wheels
-  float wheel_diam_;
+  double wheel_diam_;
   /// Vector for pose
-  float odom_pose_[3];
+  double odom_pose_[3];
   /// Vector for velocity
-  float odom_vel_[3];
+  double odom_vel_[3];
   /// Pointer to pose covariance matrix
   double *pose_cov_[36];
   /// Pointer to twist covariance matrix
@@ -177,9 +180,11 @@ private:
   /// Storage for the angular velocity reported by the IMU
   math::Vector3 vel_angular_;
   /// ROS publisher for IMU data
-  ros::Publisher  imu_pub_;
+  ros::Publisher imu_pub_;
   /// ROS message for publishing IMU data
   sensor_msgs::Imu imu_msg_;
+  /// ROS subscriber for reseting the odometry data
+  ros::Subscriber odom_reset_sub_;
 };
 
 } // namespace gazebo

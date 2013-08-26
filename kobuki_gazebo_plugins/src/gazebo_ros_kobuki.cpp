@@ -195,7 +195,11 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return;
   }
+  odom_pose_[0] = 0.0;
+  odom_pose_[1] = 0.0;
+  odom_pose_[2] = 0.0;
   odom_pub_ = nh_.advertise<nav_msgs::Odometry>("odom", 1);
+  odom_reset_sub_ = nh_priv_.subscribe("commands/reset_odometry", 10, &GazeboRosKobuki::resetOdomCB, this);
 
   /*
    * Prepare receiving velocity commands
@@ -336,7 +340,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboRosKobuki::OnUpdate, this));
 }
 
-void GazeboRosKobuki::motorPowerCB( const kobuki_msgs::MotorPowerPtr &msg)
+void GazeboRosKobuki::motorPowerCB(const kobuki_msgs::MotorPowerPtr &msg)
 {
   if ((msg->state == kobuki_msgs::MotorPower::ON) && (!motors_enabled_))
   {
@@ -350,11 +354,18 @@ void GazeboRosKobuki::motorPowerCB( const kobuki_msgs::MotorPowerPtr &msg)
   }
 }
 
-void GazeboRosKobuki::cmdVelCB( const geometry_msgs::TwistConstPtr &msg)
+void GazeboRosKobuki::cmdVelCB(const geometry_msgs::TwistConstPtr &msg)
 {
   last_cmd_vel_time_ = world_->GetSimTime();
   wheel_speed_cmd_[LEFT] = msg->linear.x - msg->angular.z * (wheel_sep_) / 2;
   wheel_speed_cmd_[RIGHT] = msg->linear.x + msg->angular.z * (wheel_sep_) / 2;
+}
+
+void GazeboRosKobuki::resetOdomCB(const std_msgs::EmptyConstPtr &msg)
+{
+  odom_pose_[0] = 0.0;
+  odom_pose_[1] = 0.0;
+  odom_pose_[2] = 0.0;
 }
 
 void GazeboRosKobuki::OnUpdate()
@@ -442,12 +453,12 @@ void GazeboRosKobuki::OnUpdate()
   odom_.pose.covariance[21] = 1e6;
   odom_.pose.covariance[28] = 1e6;
 
-  odom_.twist.twist.linear.x = 0;
+  odom_.twist.twist.linear.x = odom_vel_[0];
   odom_.twist.twist.linear.y = 0;
   odom_.twist.twist.linear.z = 0;
   odom_.twist.twist.angular.x = 0;
   odom_.twist.twist.angular.y = 0;
-  odom_.twist.twist.angular.z = 0;
+  odom_.twist.twist.angular.z = odom_vel_[2];
   odom_pub_.publish(odom_); // publish odom message
 
   if (publish_tf_)
