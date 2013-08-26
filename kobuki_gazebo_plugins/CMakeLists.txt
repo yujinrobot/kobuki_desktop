@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS gazebo_ros
                                         kobuki_msgs
                                         nav_msgs
                                         roscpp
+                                        sensor_msgs
                                         std_msgs
                                         tf)
 
@@ -22,6 +23,7 @@ catkin_package(INCLUDE_DIRS include
                               kobuki_msgs
                               nav_msgs
                               roscpp
+                              sensor_msgs
                               std_msgs
                               tf)
 
@@ -32,9 +34,10 @@ include_directories(include
 
 add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp)
 add_dependencies(gazebo_ros_kobuki geometry_msgs_gencpp
-				   kobuki_msgs_gencpp
-				   nav_msgs_gencpp
-				   std_msgs_gencpp)
+                                   kobuki_msgs_gencpp
+                                   nav_msgs_gencpp
+                                   sensor_msgs_gencpp
+                                   std_msgs_gencpp)
 target_link_libraries(gazebo_ros_kobuki ${catkin_LIBRARIES})
 
 install(TARGETS gazebo_ros_kobuki

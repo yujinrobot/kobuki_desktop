@@ -40,12 +40,14 @@
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <gazebo.hh>
-#include <physics/physics.hh>
 #include <common/common.hh>
 #include <common/Time.hh>
+#include <math/gzmath.hh>
+#include <physics/physics.hh>
 #include <sensors/sensors.hh>
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -170,6 +172,14 @@ private:
   kobuki_msgs::BumperEvent bumper_event_;
   /// Storage for last bumper sensor state state for checking if something has changed
   kobuki_msgs::BumperEvent bumper_event_old_;
+  /// Pointer to IMU sensor model
+  sensors::ImuSensorPtr imu_;
+  /// Storage for the angular velocity reported by the IMU
+  math::Vector3 vel_angular_;
+  /// ROS publisher for IMU data
+  ros::Publisher  imu_pub_;
+  /// ROS message for publishing IMU data
+  sensor_msgs::Imu imu_msg_;
 };
 
 } // namespace gazebo

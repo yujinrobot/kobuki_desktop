@@ -307,6 +307,30 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   bumper_->SetActive(true);
   bumper_event_pub_ = nh_priv_.advertise<kobuki_msgs::BumperEvent>("events/bumper", 1);
 
+  /*
+   * Prepare IMU
+   */
+  std::string imu_name;
+  if (sdf->HasElement("imu_name"))
+  {
+  imu_name = sdf->GetElement("imu_name")->Get<std::string>();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Couldn't find the name of IMU sensor in the model description!"
+                     << " Did you specify it?" << " [" << node_name_ <<"]");
+    return;
+  }
+  imu_ = boost::shared_dynamic_cast<sensors::ImuSensor>(
+            sensors::SensorManager::Instance()->GetSensor(imu_name));
+  if (!imu_)
+  {
+    ROS_ERROR_STREAM("Couldn't find the IMU in the model! [" << node_name_ <<"]");
+    return;
+  }
+  imu_->SetActive(true);
+  imu_pub_ = nh_priv_.advertise<sensor_msgs::Imu>("sensors/imu_data", 1);
+
   prev_update_time_ = world_->GetSimTime();
   ROS_INFO_STREAM("GazeboRosKobuki plugin ready to go! [" << node_name_ << "]");
   update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboRosKobuki::OnUpdate, this));
@@ -351,6 +375,7 @@ void GazeboRosKobuki::OnUpdate()
    * Joint states
    */
   joint_state_.header.stamp = ros::Time::now();
+  joint_state_.header.frame_id = "base_link";
   joint_state_.position[LEFT] = joints_[LEFT]->GetAngle(0).Radian();
   joint_state_.velocity[LEFT] = joints_[LEFT]->GetVelocity(0);
   joint_state_.position[RIGHT] = joints_[RIGHT]->GetAngle(0).Radian();
@@ -358,20 +383,18 @@ void GazeboRosKobuki::OnUpdate()
   joint_state_pub_.publish(joint_state_);
 
   /*
-   * Odometry
+   * Odometry (encoders & IMU)
    */
   odom_.header.stamp = joint_state_.header.stamp;
   odom_.header.frame_id = "odom";
   odom_.child_frame_id = "base_footprint";
 
-  // Distance travelled by front wheels
+  // Distance travelled by main wheels
   double d1, d2;
   double dr, da;
   d1 = d2 = 0;
   dr = da = 0;
-//  if (set_joints_[LEFT])
   d1 = step_time.Double() * (wheel_diam_ / 2) * joints_[LEFT]->GetVelocity(0);
-//  if (set_joints_[RIGHT])
   d2 = step_time.Double() * (wheel_diam_ / 2) * joints_[RIGHT]->GetVelocity(0);
   // Can see NaN values here, just zero them out if needed
   if (isnan(d1))
@@ -387,16 +410,19 @@ void GazeboRosKobuki::OnUpdate()
     d2 = 0;
   }
   dr = (d1 + d2) / 2;
-  da = (d2 - d1) / wheel_sep_;
+  da = (d2 - d1) / wheel_sep_; // ignored
+
+  // Just as in the Kobuki driver, the angular velocity is taken directly from the IMU
+  vel_angular_ = imu_->GetAngularVelocity();
 
   // Compute odometric pose
   odom_pose_[0] += dr * cos( odom_pose_[2] );
   odom_pose_[1] += dr * sin( odom_pose_[2] );
-  odom_pose_[2] += da;
+  odom_pose_[2] += vel_angular_.z * step_time.Double();
   // Compute odometric instantaneous velocity
   odom_vel_[0] = dr / step_time.Double();
   odom_vel_[1] = 0.0;
-  odom_vel_[2] = da / step_time.Double();
+  odom_vel_[2] = vel_angular_.z;
 
   odom_.pose.pose.position.x = odom_pose_[0];
   odom_.pose.pose.position.y = odom_pose_[1];
@@ -411,7 +437,7 @@ void GazeboRosKobuki::OnUpdate()
 
   odom_.pose.covariance[0]  = 0.1;
   odom_.pose.covariance[7]  = 0.1;
-  odom_.pose.covariance[35] = 0.2;
+  odom_.pose.covariance[35] = 0.05;
   odom_.pose.covariance[14] = 1e6;
   odom_.pose.covariance[21] = 1e6;
   odom_.pose.covariance[28] = 1e6;
@@ -434,6 +460,30 @@ void GazeboRosKobuki::OnUpdate()
     odom_tf_.transform.rotation = odom_.pose.pose.orientation;
     tf_broadcaster_.sendTransform(odom_tf_);
   }
+
+  /*
+   * Publish IMU data
+   */
+  imu_msg_.header = joint_state_.header;
+  math::Quaternion quat = imu_->GetOrientation();
+  imu_msg_.orientation.x = quat.x;
+  imu_msg_.orientation.y = quat.y;
+  imu_msg_.orientation.z = quat.z;
+  imu_msg_.orientation.w = quat.w;
+  imu_msg_.orientation_covariance[0] = 1e6;
+  imu_msg_.orientation_covariance[4] = 1e6;
+  imu_msg_.orientation_covariance[8] = 0.05;
+  imu_msg_.angular_velocity.x = vel_angular_.x;
+  imu_msg_.angular_velocity.y = vel_angular_.y;
+  imu_msg_.angular_velocity.z = vel_angular_.z;
+  imu_msg_.angular_velocity_covariance[0] = 1e6;
+  imu_msg_.angular_velocity_covariance[4] = 1e6;
+  imu_msg_.angular_velocity_covariance[8] = 0.05;
+  math::Vector3 lin_acc = imu_->GetLinearAcceleration();
+  imu_msg_.linear_acceleration.x = lin_acc.x;
+  imu_msg_.linear_acceleration.y = lin_acc.y;
+  imu_msg_.linear_acceleration.z = lin_acc.z;
+  imu_pub_.publish(imu_msg_); // publish odom message
 
   /*
    * Propagate velocity commands
@@ -493,25 +543,6 @@ void GazeboRosKobuki::OnUpdate()
    */
   msgs::Contacts contacts;
   contacts = bumper_->GetContacts();
-//  for (int i = 0; i < contacts.contact_size(); ++i)
-//  {
-//    std::cout << "Collision between[" << contacts.contact(i).collision1()
-//              << "] and [" << contacts.contact(i).collision2() << "]\n";
-//
-//    for (int j = 0; j < contacts.contact(i).position_size(); ++j)
-//    {
-//      std::cout << j << "  Position:"
-//                << contacts.contact(i).position(j).x() << " "
-//                << contacts.contact(i).position(j).y() << " "
-//                << contacts.contact(i).position(j).z() << "\n";
-//      std::cout << "   Normal:"
-//                << contacts.contact(i).normal(j).x() << " "
-//                << contacts.contact(i).normal(j).y() << " "
-//                << contacts.contact(i).normal(j).z() << "\n";
-//      std::cout << "   Depth:" << contacts.contact(i).depth(j) << "\n";
-//    }
-//  }
-
   // In order to simulate the three bumper sensors, a contact is assigned to one of the bumpers
   // depending on its position. Each sensor covers a range of 60 degrees.
   // +90 ... +30: left bumper
@@ -523,7 +554,6 @@ void GazeboRosKobuki::OnUpdate()
   bool bumper_left_pressed = false;
   bool bumper_centre_pressed = false;
   bool bumper_right_pressed = false;
-
 
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
@@ -537,18 +567,6 @@ void GazeboRosKobuki::OnUpdate()
       double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
 
-//      std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" << std::endl;
-//                std::cout << "   Position:"
-//                          << contacts.contact(i).position(0).x() << " "
-//                          << contacts.contact(i).position(0).y() << " "
-//                          << contacts.contact(i).position(0).z() << "\n";
-//                std::cout << "   Normal:"
-//                          << contacts.contact(i).normal(0).x() << " "
-//                          << contacts.contact(i).normal(0).y() << " "
-//                          << contacts.contact(i).normal(0).z() << "\n";
-//      std::cout << "Current robot heading: " << (robot_heading * (180/M_PI)) << std::endl;
-//      std::cout << "Global contact angle: " << (contact_angle * (180/M_PI)) << std::endl;
-//      std::cout << "Robot contact angle: " << (relative_contact_angle * (180/M_PI)) << std::endl;
       if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
       {
         if (!bumper_left_pressed)
@@ -556,8 +574,6 @@ void GazeboRosKobuki::OnUpdate()
           bumper_left_pressed = true;
           bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
           bumper_event_.bumper += kobuki_msgs::BumperEvent::LEFT;
-//          std::cout << "Left bumper pressed." << std::endl;
-//          std::cout << "-----------------------------------------" << std::endl;
         }
       }
       else if ((relative_contact_angle <= (M_PI/6)) && (relative_contact_angle >= (-M_PI/6)))
@@ -567,8 +583,6 @@ void GazeboRosKobuki::OnUpdate()
           bumper_centre_pressed = true;
           bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
           bumper_event_.bumper += kobuki_msgs::BumperEvent::CENTER;
-//          std::cout << "Centre bumper pressed." << std::endl;
-//          std::cout << "-----------------------------------------" << std::endl;
         }
       }
       else if ((relative_contact_angle < (-M_PI/6)) && (relative_contact_angle >= (-M_PI/2)))
@@ -578,8 +592,6 @@ void GazeboRosKobuki::OnUpdate()
           bumper_right_pressed = true;
           bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
           bumper_event_.bumper += kobuki_msgs::BumperEvent::RIGHT;
-//          std::cout << "Right bumper pressed." << std::endl;
-//          std::cout << "-----------------------------------------" << std::endl;
         }
       }
     }
@@ -592,7 +604,6 @@ void GazeboRosKobuki::OnUpdate()
     bumper_event_old_ = bumper_event_;
   }
 }
-
 
 void GazeboRosKobuki::spin()
 {
