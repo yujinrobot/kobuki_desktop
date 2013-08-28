@@ -540,9 +540,12 @@ void GazeboRosKobuki::OnUpdate()
       max_floot_dist_ = cliff_sensor_right_->GetRange(0);
     }
   }
-  // Only publish new message, if something has changed
+  // Only publish new message, if something has changed, i.e.
+  // the cliff sensors detecting a cliff have changed or
+  // no cliff is detected anymore.
   if ((cliff_event_.state == kobuki_msgs::CliffEvent::CLIFF)
-      && (cliff_event_.sensor != cliff_event_old_.sensor))
+      && (cliff_event_.sensor != cliff_event_old_.sensor)
+      || (cliff_event_.state != cliff_event_old_.state) )
   {
 //    max_floot_dist_ = static_cast<int>(0.995f / ( tan( static_cast<float>( m_pk.psd[i]) / 76123.0f )
     cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, max_floot_dist_)); // convert distance back to an AD reading
