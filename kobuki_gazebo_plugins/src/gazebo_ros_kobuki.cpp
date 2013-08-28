@@ -56,8 +56,12 @@ GazeboRosKobuki::GazeboRosKobuki() : shutdown_requested_(false)
     return;
   }
 
+  // Initialise variables
   wheel_speed_cmd_[LEFT] = 0.0;
   wheel_speed_cmd_[RIGHT] = 0.0;
+  cliff_detected_left_ = false;
+  cliff_detected_center_ = false;
+  cliff_detected_right_ = false;
 }
 
 GazeboRosKobuki::~GazeboRosKobuki()
@@ -220,7 +224,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   /*
    * Prepare cliff sensors
    */
-  std::string cliff_sensor_left_name, cliff_sensor_front_name, cliff_sensor_right_name;
+  std::string cliff_sensor_left_name, cliff_sensor_center_name, cliff_sensor_right_name;
   if (sdf->HasElement("cliff_sensor_left_name"))
   {
     cliff_sensor_left_name = sdf->GetElement("cliff_sensor_left_name")->Get<std::string>();
@@ -231,9 +235,9 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return;
   }
-  if (sdf->HasElement("cliff_sensor_front_name"))
+  if (sdf->HasElement("cliff_sensor_center_name"))
   {
-    cliff_sensor_front_name = sdf->GetElement("cliff_sensor_front_name")->Get<std::string>();
+    cliff_sensor_center_name = sdf->GetElement("cliff_sensor_center_name")->Get<std::string>();
   }
   else
   {
@@ -253,8 +257,8 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
   }
   cliff_sensor_left_ = boost::shared_dynamic_cast<sensors::RaySensor>(
                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_left_name));
-  cliff_sensor_front_ = boost::shared_dynamic_cast<sensors::RaySensor>(
-                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_front_name));
+  cliff_sensor_center_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_center_name));
   cliff_sensor_right_ = boost::shared_dynamic_cast<sensors::RaySensor>(
                         sensors::SensorManager::Instance()->GetSensor(cliff_sensor_right_name));
   if (!cliff_sensor_left_)
@@ -262,9 +266,9 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     ROS_ERROR_STREAM("Couldn't find the left cliff sensor in the model! [" << node_name_ <<"]");
     return;
   }
-  if (!cliff_sensor_front_)
+  if (!cliff_sensor_center_)
   {
-    ROS_ERROR_STREAM("Couldn't find the frontal cliff sensor in the model! [" << node_name_ <<"]");
+    ROS_ERROR_STREAM("Couldn't find the center cliff sensor in the model! [" << node_name_ <<"]");
     return;
   }
   if (!cliff_sensor_right_)
@@ -283,7 +287,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     return;
   }
   cliff_sensor_left_->SetActive(true);
-  cliff_sensor_front_->SetActive(true);
+  cliff_sensor_center_->SetActive(true);
   cliff_sensor_right_->SetActive(true);
   cliff_event_pub_ = nh_priv_.advertise<kobuki_msgs::CliffEvent>("events/cliff", 1);
 
@@ -512,46 +516,72 @@ void GazeboRosKobuki::OnUpdate()
 
   /*
    * Cliff sensors
+   * Check each sensor separately
    */
-  // check current state
-  cliff_event_.sensor = 0;
-  cliff_event_.state = kobuki_msgs::CliffEvent::FLOOR;
-  if (cliff_sensor_left_->GetRange(0) >= cliff_detection_threshold_)
+  // Left cliff sensor
+  if ((cliff_detected_left_ == false) &&
+      (cliff_sensor_left_->GetRange(0) >= cliff_detection_threshold_))
   {
-    cliff_event_.sensor += kobuki_msgs::CliffEvent::LEFT;
+    cliff_detected_left_ = true;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::LEFT;
     cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
-    max_floot_dist_ = cliff_sensor_left_->GetRange(0);
-  }
-  if (cliff_sensor_front_->GetRange(0) >= cliff_detection_threshold_)
-  {
-    cliff_event_.sensor += kobuki_msgs::CliffEvent::CENTER;
-    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
-    if (cliff_sensor_front_->GetRange(0) > max_floot_dist_)
-    {
-      max_floot_dist_ = cliff_sensor_front_->GetRange(0);
-    }
-  }
-  if (cliff_sensor_right_->GetRange(0) >= cliff_detection_threshold_)
-  {
-    cliff_event_.sensor += kobuki_msgs::CliffEvent::RIGHT;
-    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
-    if (cliff_sensor_right_->GetRange(0) > max_floot_dist_)
-    {
-      max_floot_dist_ = cliff_sensor_right_->GetRange(0);
-    }
-  }
-  // Only publish new message, if something has changed, i.e.
-  // the cliff sensors detecting a cliff have changed or
-  // no cliff is detected anymore.
-  if ((cliff_event_.state == kobuki_msgs::CliffEvent::CLIFF)
-      && (cliff_event_.sensor != cliff_event_old_.sensor)
-      || (cliff_event_.state != cliff_event_old_.state) )
-  {
-//    max_floot_dist_ = static_cast<int>(0.995f / ( tan( static_cast<float>( m_pk.psd[i]) / 76123.0f )
-    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, max_floot_dist_)); // convert distance back to an AD reading
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_left_->GetRange(0)));
     cliff_event_pub_.publish(cliff_event_);
-    cliff_event_old_ = cliff_event_;
   }
+  else if ((cliff_detected_left_ == true) &&
+            (cliff_sensor_left_->GetRange(0) < cliff_detection_threshold_))
+  {
+    cliff_detected_left_ = false;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::LEFT;
+    cliff_event_.state = kobuki_msgs::CliffEvent::FLOOR;
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_left_->GetRange(0)));
+    cliff_event_pub_.publish(cliff_event_);
+  }
+  // Centre cliff sensor
+  if ((cliff_detected_center_ == false) &&
+      (cliff_sensor_center_->GetRange(0) >= cliff_detection_threshold_))
+  {
+    cliff_detected_center_ = true;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::CENTER;
+    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_center_->GetRange(0)));
+    cliff_event_pub_.publish(cliff_event_);
+  }
+  else if ((cliff_detected_center_ == true) &&
+            (cliff_sensor_center_->GetRange(0) < cliff_detection_threshold_))
+  {
+    cliff_detected_center_ = false;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::CENTER;
+    cliff_event_.state = kobuki_msgs::CliffEvent::FLOOR;
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_center_->GetRange(0)));
+    cliff_event_pub_.publish(cliff_event_);
+  }
+  // Right cliff sensor
+  if ((cliff_detected_right_ == false) &&
+      (cliff_sensor_right_->GetRange(0) >= cliff_detection_threshold_))
+  {
+    cliff_detected_right_ = true;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::RIGHT;
+    cliff_event_.state = kobuki_msgs::CliffEvent::CLIFF;
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_right_->GetRange(0)));
+    cliff_event_pub_.publish(cliff_event_);
+  }
+  else if ((cliff_detected_right_ == true) &&
+            (cliff_sensor_right_->GetRange(0) < cliff_detection_threshold_))
+  {
+    cliff_detected_right_ = false;
+    cliff_event_.sensor = kobuki_msgs::CliffEvent::RIGHT;
+    cliff_event_.state = kobuki_msgs::CliffEvent::FLOOR;
+    // convert distance back to an AD reading
+    cliff_event_.bottom = (int)(76123.0f * atan2(0.995f, cliff_sensor_right_->GetRange(0)));
+    cliff_event_pub_.publish(cliff_event_);
+  }
+
   /*
    * Bumpers
    */
@@ -574,6 +604,9 @@ void GazeboRosKobuki::OnUpdate()
     if ((contacts.contact(i).position(0).z() >= 0.015)
         && (contacts.contact(i).position(0).z() <= 0.085)) // only consider contacts at the height of the bumper
     {
+      std::cout << "Found collision: x = " << contacts.contact(i).position(0).x()
+                << ", y = " << contacts.contact(i).position(0).y() << ", z = "
+                << contacts.contact(i).position(0).z() << std::endl;
       math::Pose current_pose = model_->GetWorldPose();
       double robot_heading = current_pose.rot.GetYaw();
       // using the force normals below, since the contact position is given in world coordinates

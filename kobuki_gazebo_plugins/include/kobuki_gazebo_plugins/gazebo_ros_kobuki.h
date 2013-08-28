@@ -154,19 +154,23 @@ private:
   /// Pointer to left cliff sensor
   sensors::RaySensorPtr cliff_sensor_left_;
   /// Pointer to frontal cliff sensor
-  sensors::RaySensorPtr cliff_sensor_front_;
+  sensors::RaySensorPtr cliff_sensor_center_;
   /// Pointer to left right sensor
   sensors::RaySensorPtr cliff_sensor_right_;
   /// ROS publisher for cliff detection events
   ros::Publisher cliff_event_pub_;
   /// Kobuki ROS message for cliff event
   kobuki_msgs::CliffEvent cliff_event_;
-  /// Storage for last cliff sensor state state for checking if something has changed
-  kobuki_msgs::CliffEvent cliff_event_old_;
+  /// Cliff flag for the left sensor
+  bool cliff_detected_left_;
+  /// Cliff flag for the center sensor
+  bool cliff_detected_center_;
+  /// Cliff flag for the right sensor
+  bool cliff_detected_right_;
   /// measured distance in meter for detecting a cliff
   float cliff_detection_threshold_;
   /// Maximum distance to floor
-  int max_floot_dist_;
+  int floot_dist_;
   /// Pointer to bumper sensor simulating Kobuki's left, centre and right bumper sensors
   sensors::ContactSensorPtr bumper_;
   /// ROS publisher for bumper events
