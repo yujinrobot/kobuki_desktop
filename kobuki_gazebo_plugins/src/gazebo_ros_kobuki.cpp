@@ -585,70 +585,90 @@ void GazeboRosKobuki::OnUpdate()
   /*
    * Bumpers
    */
-  msgs::Contacts contacts;
-  contacts = bumper_->GetContacts();
   // In order to simulate the three bumper sensors, a contact is assigned to one of the bumpers
   // depending on its position. Each sensor covers a range of 60 degrees.
   // +90 ... +30: left bumper
   // +30 ... -30: centre bumper
   // -30 ... -90: right bumper
-  bumper_event_.state = 0;
-  bumper_event_.bumper = 0;
-  // flags used for avoiding multiple triggering of the same bumper due to multiple contacts
-  bool bumper_left_pressed = false;
-  bool bumper_centre_pressed = false;
-  bool bumper_right_pressed = false;
+
+  // reset flags
+  bumper_left_is_pressed_ = false;
+  bumper_center_is_pressed_ = false;
+  bumper_right_is_pressed_ = false;
+
+  // parse contacts
+  msgs::Contacts contacts;
+  contacts = bumper_->GetContacts();
 
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
     if ((contacts.contact(i).position(0).z() >= 0.015)
         && (contacts.contact(i).position(0).z() <= 0.085)) // only consider contacts at the height of the bumper
     {
-      std::cout << "Found collision: x = " << contacts.contact(i).position(0).x()
-                << ", y = " << contacts.contact(i).position(0).y() << ", z = "
-                << contacts.contact(i).position(0).z() << std::endl;
       math::Pose current_pose = model_->GetWorldPose();
       double robot_heading = current_pose.rot.GetYaw();
       // using the force normals below, since the contact position is given in world coordinates
-      // negate normal, because it points from contact to robot centre
+      // also negating the normal, because it points from contact to robot centre
       double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
 
       if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
       {
-        if (!bumper_left_pressed)
-        {
-          bumper_left_pressed = true;
-          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
-          bumper_event_.bumper += kobuki_msgs::BumperEvent::LEFT;
-        }
+        bumper_left_is_pressed_ = true;
       }
       else if ((relative_contact_angle <= (M_PI/6)) && (relative_contact_angle >= (-M_PI/6)))
       {
-        if (!bumper_centre_pressed)
-        {
-          bumper_centre_pressed = true;
-          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
-          bumper_event_.bumper += kobuki_msgs::BumperEvent::CENTER;
-        }
+        bumper_center_is_pressed_ = true;
       }
       else if ((relative_contact_angle < (-M_PI/6)) && (relative_contact_angle >= (-M_PI/2)))
       {
-        if (!bumper_right_pressed)
-        {
-          bumper_right_pressed = true;
-          bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
-          bumper_event_.bumper += kobuki_msgs::BumperEvent::RIGHT;
-        }
+        bumper_right_is_pressed_ = true;
       }
     }
   }
-  // Only publish new message, if something has changed
-  if ((bumper_event_.state != bumper_event_old_.state)
-      || (bumper_event_.bumper != bumper_event_old_.bumper))
+
+  // check for bumper state change
+  if (bumper_left_is_pressed_ && !bumper_left_was_pressed_)
   {
+    bumper_left_was_pressed_ = true;
+    bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::LEFT;
     bumper_event_pub_.publish(bumper_event_);
-    bumper_event_old_ = bumper_event_;
+  }
+  else if (!bumper_left_is_pressed_ && bumper_left_was_pressed_)
+  {
+    bumper_left_was_pressed_ = false;
+    bumper_event_.state = kobuki_msgs::BumperEvent::RELEASED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::LEFT;
+    bumper_event_pub_.publish(bumper_event_);
+  }
+  if (bumper_center_is_pressed_ && !bumper_center_was_pressed_)
+  {
+    bumper_center_was_pressed_ = true;
+    bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::CENTER;
+    bumper_event_pub_.publish(bumper_event_);
+  }
+  else if (!bumper_center_is_pressed_ && bumper_center_was_pressed_)
+  {
+    bumper_center_was_pressed_ = false;
+    bumper_event_.state = kobuki_msgs::BumperEvent::RELEASED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::CENTER;
+    bumper_event_pub_.publish(bumper_event_);
+  }
+  if (bumper_right_is_pressed_ && !bumper_right_was_pressed_)
+  {
+    bumper_right_was_pressed_ = true;
+    bumper_event_.state = kobuki_msgs::BumperEvent::PRESSED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::RIGHT;
+    bumper_event_pub_.publish(bumper_event_);
+  }
+  else if (!bumper_right_is_pressed_ && bumper_right_was_pressed_)
+  {
+    bumper_right_was_pressed_ = false;
+    bumper_event_.state = kobuki_msgs::BumperEvent::RELEASED;
+    bumper_event_.bumper = kobuki_msgs::BumperEvent::RIGHT;
+    bumper_event_pub_.publish(bumper_event_);
   }
 }
 

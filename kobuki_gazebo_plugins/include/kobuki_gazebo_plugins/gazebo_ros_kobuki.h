@@ -177,8 +177,18 @@ private:
   ros::Publisher bumper_event_pub_;
   /// Kobuki ROS message for bumper event
   kobuki_msgs::BumperEvent bumper_event_;
-  /// Storage for last bumper sensor state state for checking if something has changed
-  kobuki_msgs::BumperEvent bumper_event_old_;
+  /// Flag for left bumper's last state
+  bool bumper_left_was_pressed_;
+  /// Flag for center bumper's last state
+  bool bumper_center_was_pressed_;
+  /// Flag for right bumper's last state
+  bool bumper_right_was_pressed_;
+  /// Flag for left bumper's current state
+  bool bumper_left_is_pressed_;
+  /// Flag for left bumper's current state
+  bool bumper_center_is_pressed_;
+  /// Flag for left bumper's current state
+  bool bumper_right_is_pressed_;
   /// Pointer to IMU sensor model
   sensors::ImuSensorPtr imu_;
   /// Storage for the angular velocity reported by the IMU
