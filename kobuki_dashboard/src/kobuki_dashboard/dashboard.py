@@ -4,10 +4,11 @@ import rospy
 import diagnostic_msgs
 
 from rqt_robot_dashboard.dashboard import Dashboard
-from rqt_robot_dashboard.widgets import MonitorDashWidget, ConsoleDashWidget, MenuDashWidget, BatteryDashWidget, IconToolButton
+from rqt_robot_dashboard.widgets import MonitorDashWidget, ConsoleDashWidget, MenuDashWidget, IconToolButton
 from QtGui import QMessageBox, QAction
 from python_qt_binding.QtCore import QSize
 
+from .battery_widget import BatteryWidget
 from .led_widget import LedWidget
 from .motor_widget import MotorWidget
 
@@ -19,8 +20,8 @@ class KobukiDashboard(Dashboard):
         self._last_dashboard_message_time = 0.0
 
         self._motor_widget = MotorWidget('/mobile_base/commands/motor_power')
-        self._laptop_bat = BatteryDashWidget("Laptop")
-        self._kobuki_bat = BatteryDashWidget("Kobuki")
+        self._laptop_bat = BatteryWidget("Laptop")
+        self._kobuki_bat = BatteryWidget("Kobuki")
 
         self._dashboard_agg_sub = rospy.Subscriber('diagnostics_agg', diagnostic_msgs.msg.DiagnosticArray, self.dashboard_callback)
 
