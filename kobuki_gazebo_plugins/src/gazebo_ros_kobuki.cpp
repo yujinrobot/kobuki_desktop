@@ -93,13 +93,6 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
   world_ = parent->GetWorld();
 
-// TODO: use when implementing subs
-//  ros_spinner_thread_ = new boost::thread(boost::bind(&GazeboRosKobuki::spin, this));
-//
-//  this->node_namespace_ = "";
-//  if (_sdf->HasElement("node_namespace"))
-//    this->node_namespace_ = _sdf->GetElement("node_namespace")->Get<std::string>() + "/";
-
   /*
    * Prepare receiving motor power commands
    */
@@ -599,14 +592,15 @@ void GazeboRosKobuki::OnUpdate()
   // parse contacts
   msgs::Contacts contacts;
   contacts = bumper_->GetContacts();
+  math::Pose current_pose = model_->GetWorldPose();
+  double robot_heading = current_pose.rot.GetYaw();
 
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
-    if ((contacts.contact(i).position(0).z() >= 0.015)
-        && (contacts.contact(i).position(0).z() <= 0.085)) // only consider contacts at the height of the bumper
+    double rel_contact_pos =  contacts.contact(i).position(0).z() - current_pose.pos.z;
+    if ((rel_contact_pos >= 0.015)
+        && (rel_contact_pos <= 0.085)) // only consider contacts at the height of the bumper
     {
-      math::Pose current_pose = model_->GetWorldPose();
-      double robot_heading = current_pose.rot.GetYaw();
       // using the force normals below, since the contact position is given in world coordinates
       // also negating the normal, because it points from contact to robot centre
       double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
