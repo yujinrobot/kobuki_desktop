@@ -11,8 +11,9 @@
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <run_depend>kobuki_gazebo</run_depend>
   <run_depend>kobuki_dashboard</run_depend>
+  <run_depend>kobuki_gazebo</run_depend>
+  <run_depend>kobuki_gazebo_plugins</run_depend>
   <run_depend>kobuki_qtestsuite</run_depend>
 
   <export>
