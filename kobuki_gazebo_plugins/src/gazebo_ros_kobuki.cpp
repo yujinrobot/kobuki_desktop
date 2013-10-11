@@ -38,7 +38,7 @@
 #include <boost/bind.hpp>
 #include <sensor_msgs/JointState.h>
 #include <tf/LinearMath/Quaternion.h>
-#include <math/gzmath.hh>
+#include <gazebo/math/gzmath.hh>
 #include "kobuki_gazebo_plugins/gazebo_ros_kobuki.h"
 
 namespace gazebo
