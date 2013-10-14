@@ -2,6 +2,10 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.1 (2013-10-14)
+------------------
+* fixes gazebo header paths (refs `#22 <https://github.com/yujinrobot/kobuki_desktop/issues/22>`_)
+
 0.3.0 (2013-08-30)
 ------------------
 * fixes bumper & cliff event publishing

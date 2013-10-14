@@ -2,6 +2,9 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.1 (2013-10-14)
+------------------
+
 0.3.0 (2013-08-30)
 ------------------
 * adds own battery widget to make use of the coloured battery status versions
