@@ -4,17 +4,16 @@
       Plugin for the Kobuki testsuite.
     </description>
     <qtgui>
-      <!-- optional grouping...
       <group>
-        <label>Kobuki Test Suite</label>
-        <icon type="file">../src/kobuki_qtestsuite/resources/images/kobuki_icon.png</icon>
+        <label>Robot</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to specific robots.</statustip>
       </group>
       <group>
-        <label>Subgroup</group>
+        <label>Kobuki</label>
+        <icon type="file">images/kobuki_icon.png</icon>
+        <statustip>Plugins related to the Kobuki robot.</statustip>
       </group>
-      <label>Climbing</label>
-      <icon type="theme">system-run</icon>
-      -->
       <label>Kobuki Test Suite</label>
       <icon type="file">images/kobuki_icon.png</icon>
       <statustip>Test suite for Kobuki</statustip>
