@@ -4,6 +4,16 @@
       Dashboard for Kobuki
     </description>
     <qtgui>
+      <group>
+        <label>Robot</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to specific robots.</statustip>
+      </group>
+      <group>
+        <label>Kobuki</label>
+        <icon type="file">images/kobuki_icon.png</icon>
+        <statustip>Plugins related to the Kobuki robot.</statustip>
+      </group>
       <label>Kobuki Dashboard</label>
       <icon type="file">images/kobuki_icon.png</icon>
       <statustip>Check what's going on with Kobuki</statustip>
