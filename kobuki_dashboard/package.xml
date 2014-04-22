@@ -11,8 +11,8 @@
   <url type="repository">https://github.com/yujinrobot/kobuki_desktop</url>
   <url type="bugtracker">https://github.com/yujinrobot/kobuki_desktop/issues</url>
   
-  <author email="zklapow@gmail.com">Ze'ev Klapow</author>
-  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author>Ze'ev Klapow</author>
+  <author>Marcus Liebhardt</author>
   
   <buildtool_depend>catkin</buildtool_depend>
 

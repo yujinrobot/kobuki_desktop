@@ -3,7 +3,7 @@
   <name>kobuki_rviz_launchers</name>
   <version>0.0.0</version>
   <description>The kobuki_rviz_launchers package</description>
-  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
   <url type="bugtracker">https://github.com/yujinrobot/kobuki_desktop/issues</url>
