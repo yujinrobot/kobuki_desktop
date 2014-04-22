@@ -248,11 +248,11 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return;
   }
-  cliff_sensor_left_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+  cliff_sensor_left_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_left_name));
-  cliff_sensor_center_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+  cliff_sensor_center_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
                         sensors::SensorManager::Instance()->GetSensor(cliff_sensor_center_name));
-  cliff_sensor_right_ = boost::shared_dynamic_cast<sensors::RaySensor>(
+  cliff_sensor_right_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
                         sensors::SensorManager::Instance()->GetSensor(cliff_sensor_right_name));
   if (!cliff_sensor_left_)
   {
@@ -298,7 +298,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return;
   }
-  bumper_ = boost::shared_dynamic_cast<sensors::ContactSensor>(
+  bumper_ = boost::dynamic_pointer_cast<sensors::ContactSensor>(
             sensors::SensorManager::Instance()->GetSensor(bumper_name));
   if (!bumper_)
   {
@@ -322,7 +322,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return;
   }
-  imu_ = boost::shared_dynamic_cast<sensors::ImuSensor>(
+  imu_ = boost::dynamic_pointer_cast<sensors::ImuSensor>(
             sensors::SensorManager::Instance()->GetSensor(imu_name));
   if (!imu_)
   {

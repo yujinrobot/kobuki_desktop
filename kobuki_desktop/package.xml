@@ -3,19 +3,20 @@
   <name>kobuki_desktop</name>
   <version>0.3.1</version>
   <description>Visualisation and simulation tools for Kobuki</description>
+  <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/kobuki_desktop</url>
   <url type="repository">https://github.com/yujinrobot/kobuki_desktop</url>
   <url type="bugtracker">https://github.com/yujinrobot/kobuki_desktop/issues</url>
-  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>kobuki_dashboard</run_depend>
   <run_depend>kobuki_gazebo</run_depend>
   <run_depend>kobuki_gazebo_plugins</run_depend>
   <run_depend>kobuki_qtestsuite</run_depend>
-
+  <run_depend>kobuki_rviz_launchers</run_depend>
+  
   <export>
     <metapackage/>
   </export>

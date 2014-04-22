@@ -2,7 +2,7 @@
   <name>kobuki_qtestsuite</name>
   <version>0.3.1</version>
   <description>An rqt plugin that provides a graphical, interactive testsuite for Kobuki.</description>
-  <author email="stonier@yujinrobot.com">Daniel Stonier</author>
+  <author>Daniel Stonier</author>
   <maintainer email="stonier@yujinrobot.com">Daniel Stonier</maintainer>
   <license>BSD</license>
   <url type="website">http://ros.org/wiki/kobuki_qtestsuite</url>
