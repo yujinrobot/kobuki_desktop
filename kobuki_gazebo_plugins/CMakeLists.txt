@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kobuki_gazebo_plugins)
 
-# Find gazebo
-include (FindPkgConfig)
-if (PKG_CONFIG_FOUND)
-  pkg_check_modules(GAZEBO gazebo)
-endif()
+find_package(gazebo REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS gazebo_ros
                                         geometry_msgs
@@ -38,7 +34,9 @@ add_dependencies(gazebo_ros_kobuki geometry_msgs_gencpp
                                    nav_msgs_gencpp
                                    sensor_msgs_gencpp
                                    std_msgs_gencpp)
-target_link_libraries(gazebo_ros_kobuki ${catkin_LIBRARIES})
+target_link_libraries(gazebo_ros_kobuki
+                      ${catkin_LIBRARIES}
+                      ${GAZEBO_LIBRARIES})
 
 install(TARGETS gazebo_ros_kobuki
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
