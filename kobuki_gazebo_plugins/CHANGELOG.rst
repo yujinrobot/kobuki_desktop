@@ -2,8 +2,8 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.3 (2014-08-05)
+------------------
 * Fix compilation on OS X.
   - without this linking fails on OS X (10.9)
   - prefer find_package over pkg-config, since pkg-config does not link
