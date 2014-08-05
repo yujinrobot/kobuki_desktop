@@ -2,6 +2,14 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix compilation on OS X.
+  - without this linking fails on OS X (10.9)
+  - prefer find_package over pkg-config, since pkg-config does not link
+  transitive dependencies (see https://bitbucket.org/osrf/gazebo/issue/1202)
+* Contributors: Nikolaus Demmel
+
 0.3.2 (2014-04-23)
 ------------------
 * removes email addresses from authors

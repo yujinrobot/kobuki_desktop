@@ -2,6 +2,9 @@
 Changelog for package kobuki_rviz_launchers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.3.2 (2014-04-23)
 ------------------
 * removes email addresses from authors
