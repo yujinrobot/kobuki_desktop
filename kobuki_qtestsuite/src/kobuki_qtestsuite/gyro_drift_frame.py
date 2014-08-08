@@ -26,7 +26,7 @@ import detail.common_rc
 import detail.text_rc
 from detail.gyro_drift_frame_ui import Ui_gyro_drift_frame
 from full_size_data_plot import FullSizeDataPlot
-from rqt_plot.mat_data_plot import MatDataPlot
+from rqt_plot.data_plot import DataPlot
 
 ##############################################################################
 # Classes
@@ -51,11 +51,11 @@ class GyroDriftFrame(QFrame):
         self._plot_widget = PlotWidget()
         self._plot_widget.setWindowTitle("Error")
         self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
+        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
         self._plot_widget.data_plot.dynamic_range = True
         self._plot_widget_live = PlotWidget()
         self._plot_widget_live.setWindowTitle("Live Graphs")
-        self._plot_widget_live.switch_data_plot_widget(MatDataPlot(self._plot_widget_live))
+        self._plot_widget_live.switch_data_plot_widget(DataPlot(self._plot_widget_live))
         self._plot_layout.addWidget(self._plot_widget_live)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)

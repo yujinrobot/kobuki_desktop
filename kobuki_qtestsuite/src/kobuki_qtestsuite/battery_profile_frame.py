@@ -25,6 +25,7 @@ import detail.common_rc
 import detail.text_rc
 from detail.battery_profile_frame_ui import Ui_battery_profile_frame
 from full_size_data_plot import FullSizeDataPlot
+from rqt_plot.data_plot import DataPlot
 
 ##############################################################################
 # Classes
@@ -48,7 +49,7 @@ class BatteryProfileFrame(QFrame):
         self._plot_widget.setWindowTitle("Battery Profile")
         self._plot_widget.topic_edit.setText(self._battery_topic_name)
         self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
+        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
 

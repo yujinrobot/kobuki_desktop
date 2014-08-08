@@ -8,7 +8,7 @@ from python_qt_binding.QtCore import QSize
 
 class LedWidget(MenuDashWidget):
     def __init__(self, topic):
-        self._pub = rospy.Publisher(topic, Led) 
+        self._pub = rospy.Publisher(topic, Led, queue_size=5)
 
         self._off_icon = ['bg-grey.svg', 'ic-led.svg']
         self._green_icon = ['bg-green.svg', 'ic-led.svg']

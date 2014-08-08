@@ -8,7 +8,7 @@ from python_qt_binding.QtCore import QSize
 
 class MotorWidget(IconToolButton):
     def __init__(self, topic):
-        self._pub = rospy.Publisher(topic, MotorPower) 
+        self._pub = rospy.Publisher(topic, MotorPower, queue_size=5)
 
         self._off_icon = ['bg-red.svg', 'ic-motors.svg']
         self._on_icon = ['bg-green.svg', 'ic-motors.svg']
