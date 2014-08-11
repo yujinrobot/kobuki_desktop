@@ -2,8 +2,8 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2014-08-11)
+------------------
 * cherry-picking `#30 <https://github.com/yujinrobot/kobuki_desktop/issues/30>`_
 * trivial update.
 * removes email addresses from authors
