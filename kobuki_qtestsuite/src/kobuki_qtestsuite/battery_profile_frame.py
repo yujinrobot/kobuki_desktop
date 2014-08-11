@@ -49,7 +49,11 @@ class BatteryProfileFrame(QFrame):
         self._plot_widget.setWindowTitle("Battery Profile")
         self._plot_widget.topic_edit.setText(self._battery_topic_name)
         self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
+
+        self._data_plot = DataPlot(self._plot_widget)
+        self._data_plot.set_autoscale(y=False)
+        self._data_plot.set_ylim([0, 180])
+        self._plot_widget.switch_data_plot_widget(self._data_plot)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
 
