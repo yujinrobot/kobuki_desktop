@@ -2,6 +2,13 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* now it uses dataplot class instead of mat dataplot. It still shows weird scaling though..
+* removes email addresses from authors
+* add robot groups for rqt plugins
+* Contributors: Dirk Thomas, Jihoon Lee, Marcus Liebhardt
+
 0.3.1 (2013-10-14)
 ------------------
 

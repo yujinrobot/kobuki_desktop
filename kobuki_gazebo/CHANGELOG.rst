@@ -2,6 +2,11 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removes email addresses from authors
+* Contributors: Marcus Liebhardt
+
 0.3.1 (2013-10-14)
 ------------------
 * Rename cmd_vel_mux as yocs_cmd_vel_mux.
