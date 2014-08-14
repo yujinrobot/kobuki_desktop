@@ -11,13 +11,13 @@ import operator
 import numpy
 
 #from rqt_plot.qwt_data_plot import QwtDataPlot
-from rqt_plot.mat_data_plot import MatDataPlot
+from rqt_plot.data_plot import DataPlot
 
 ##############################################################################
 # Classes
 ##############################################################################
 
-class FullSizeDataPlot(MatDataPlot):
+class FullSizeDataPlot(DataPlot):
     def __init__(self, parent=None):
         super(FullSizeDataPlot, self).__init__(parent)
         self.max_range = 180

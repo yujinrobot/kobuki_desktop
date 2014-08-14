@@ -25,8 +25,7 @@ from rqt_plot.plot_widget import PlotWidget
 import detail.common_rc
 import detail.text_rc
 from detail.gyro_drift_frame_ui import Ui_gyro_drift_frame
-from full_size_data_plot import FullSizeDataPlot
-from rqt_plot.mat_data_plot import MatDataPlot
+from rqt_plot.data_plot import DataPlot
 
 ##############################################################################
 # Classes
@@ -51,11 +50,11 @@ class GyroDriftFrame(QFrame):
         self._plot_widget = PlotWidget()
         self._plot_widget.setWindowTitle("Error")
         self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(FullSizeDataPlot(self._plot_widget))
+        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
         self._plot_widget.data_plot.dynamic_range = True
         self._plot_widget_live = PlotWidget()
         self._plot_widget_live.setWindowTitle("Live Graphs")
-        self._plot_widget_live.switch_data_plot_widget(MatDataPlot(self._plot_widget_live))
+        self._plot_widget_live.switch_data_plot_widget(DataPlot(self._plot_widget_live))
         self._plot_layout.addWidget(self._plot_widget_live)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
@@ -105,7 +104,6 @@ class GyroDriftFrame(QFrame):
             self._motion = DriftEstimation(self._laser_scan_angle_topic_name, self._gyro_scan_angle_topic_name, self._error_scan_angle_topic_name, self._cmd_vel_topic_name,self._gyro_topic_name)
             self._motion.init(self._ui.angular_speed_spinbox.value())
         rospy.sleep(0.5)
-        self._plot_widget.data_plot.reset()
         self._plot_widget._start_time = rospy.get_time()
         self._plot_widget.enable_timer(True)
         try:
