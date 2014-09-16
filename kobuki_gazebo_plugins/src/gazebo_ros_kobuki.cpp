@@ -109,9 +109,10 @@ void GazeboRosKobuki::OnUpdate()
 
 void GazeboRosKobuki::spin()
 {
+  ros::Rate r(10);
   while(ros::ok() && !shutdown_requested_)
   {
-    ros::spinOnce();
+    r.sleep();
   }
 }
 
