@@ -36,7 +36,10 @@
 #ifndef GAZEBO_ROS_KOBUKI_H
 #define GAZEBO_ROS_KOBUKI_H
 
+#include <cmath>
+#include <cstring>
 #include <string>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <gazebo/gazebo.hh>
@@ -50,20 +53,15 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/JointState.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/LinearMath/Quaternion.h>
 #include <kobuki_msgs/MotorPower.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
-
-#include <cmath>
-#include <cstring>
-#include <boost/bind.hpp>
-#include <sensor_msgs/JointState.h>
-#include <tf/LinearMath/Quaternion.h>
-#include <gazebo/math/gzmath.hh>
 
 namespace gazebo
 {
