@@ -2,8 +2,8 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.1 (2014-09-19)
+------------------
 * kobuki_gazebo_plugins: makes bump detection more reliable
 * remove duplicated spinonce
 * renamed updater to updates and loader to loads. reorder headers
