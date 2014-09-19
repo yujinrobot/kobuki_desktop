@@ -2,6 +2,14 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* kobuki_gazebo_plugins: makes bump detection more reliable
+* remove duplicated spinonce
+* renamed updater to updates and loader to loads. reorder headers
+* tf_prefix added. base_prefix added
+* Contributors: Jihoon Lee, Marcus Liebhardt
+
 0.4.0 (2014-08-11)
 ------------------
 * cherry-picking `#30 <https://github.com/yujinrobot/kobuki_desktop/issues/30>`_

@@ -2,6 +2,9 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.0 (2014-08-11)
 ------------------
 * now it uses dataplot class instead of mat dataplot. It still shows weird scaling though..

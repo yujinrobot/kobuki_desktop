@@ -2,6 +2,9 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.0 (2014-08-11)
 ------------------
 * removes email addresses from authors
