@@ -4,6 +4,7 @@ project(kobuki_gazebo_plugins)
 find_package(gazebo REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS gazebo_ros
+                                        gazebo_plugins
                                         geometry_msgs
                                         kobuki_msgs
                                         nav_msgs
@@ -15,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS gazebo_ros
 catkin_package(INCLUDE_DIRS include
                LIBRARIES gazebo_ros_kobuki
                CATKIN_DEPENDS gazebo_ros
+                              gazebo_plugins
                               geometry_msgs
                               kobuki_msgs
                               nav_msgs
@@ -28,7 +30,9 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${GAZEBO_INCLUDE_DIRS})
 
-add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp)
+add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp 
+                              src/gazebo_ros_kobuki_updates.cpp 
+                              src/gazebo_ros_kobuki_loads.cpp)
 add_dependencies(gazebo_ros_kobuki geometry_msgs_gencpp
                                    kobuki_msgs_gencpp
                                    nav_msgs_gencpp

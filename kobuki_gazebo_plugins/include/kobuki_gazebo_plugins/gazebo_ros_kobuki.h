@@ -36,7 +36,10 @@
 #ifndef GAZEBO_ROS_KOBUKI_H
 #define GAZEBO_ROS_KOBUKI_H
 
+#include <cmath>
+#include <cstring>
 #include <string>
+#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <gazebo/gazebo.hh>
@@ -45,20 +48,25 @@
 #include <gazebo/math/gzmath.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/sensors.hh>
+#include <gazebo_plugins/gazebo_ros_utils.h>
 #include <ros/ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float64.h>
 #include <sensor_msgs/Imu.h>
+#include <sensor_msgs/JointState.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/LinearMath/Quaternion.h>
 #include <kobuki_msgs/MotorPower.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
 
 namespace gazebo
 {
+
+enum {LEFT= 0, RIGHT=1};
 
 class GazeboRosKobuki : public ModelPlugin
 {
@@ -86,6 +94,28 @@ private:
   void spin();
   //  void OnContact(const std::string &name, const physics::Contact &contact); necessary?
 
+  
+  // internal functions for load
+  void prepareMotorPower();
+  bool prepareJointState();
+  void preparePublishTf();
+  bool prepareWheelAndTorque();
+  void prepareOdom();
+  bool prepareVelocityCommand();
+  bool prepareCliffSensor();
+  bool prepareBumper();
+  bool prepareIMU();
+  void setupRosApi(std::string& model_name);
+
+  // internal functions for update
+  void updateJointState();
+  void updateOdometry(common::Time& step_time);
+  void updateIMU();
+  void propagateVelocityCommands();
+  void updateCliffSensor();
+  void updateBumper();
+
+
   /*
    *  Parameters
    */
@@ -93,12 +123,18 @@ private:
   ros::NodeHandle nh_, nh_priv_;
   /// node name
   std::string node_name_;
+
+  /// TF Prefix
+  std::string tf_prefix_;
   /// extra thread for triggering ROS callbacks
 //  boost::shared_ptr<boost::thread> ros_spinner_thread_; necessary?
   /// flag for shutting down the spinner thread
   bool shutdown_requested_;
   /// pointer to the model
   physics::ModelPtr model_;
+  /// pointer to the gazebo ros node
+  GazeboRosPtr gazebo_ros_;
+  sdf::ElementPtr sdf_;
   /// pointer to simulated world
   physics::WorldPtr world_;
   /// pointer to the update event connection (triggers the OnUpdate callback when event update event is received)
@@ -199,6 +235,9 @@ private:
   sensor_msgs::Imu imu_msg_;
   /// ROS subscriber for reseting the odometry data
   ros::Subscriber odom_reset_sub_;
+
+
+
 };
 
 } // namespace gazebo
