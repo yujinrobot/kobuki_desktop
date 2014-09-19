@@ -277,8 +277,10 @@ void GazeboRosKobuki::updateBumper()
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
     double rel_contact_pos =  contacts.contact(i).position(0).z() - current_pose.pos.z;
-    if ((rel_contact_pos >= 0.015)
-        && (rel_contact_pos <= 0.085)) // only consider contacts at the height of the bumper
+    // Actually, only contacts at the height of the bumper should be considered, but since we use a simplified collision model
+    // contacts further below and above need to be consider as well to identify "bumps" reliably.
+    if ((rel_contact_pos >= 0.01)
+        && (rel_contact_pos <= 0.13))
     {
       // using the force normals below, since the contact position is given in world coordinates
       // also negating the normal, because it points from contact to robot centre
