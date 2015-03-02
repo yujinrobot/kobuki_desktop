@@ -295,7 +295,7 @@ bool GazeboRosKobuki::prepareIMU()
     return false;
   }
   imu_ = boost::dynamic_pointer_cast<sensors::ImuSensor>(
-            sensors::SensorManager::Instance()->GetSensor(imu_name));
+            sensors::get_sensor(world_->GetName()+"::"+node_name_+"::base_footprint::"+imu_name));
   if (!imu_)
   {
     ROS_ERROR_STREAM("Couldn't find the IMU in the model! [" << node_name_ <<"]");
