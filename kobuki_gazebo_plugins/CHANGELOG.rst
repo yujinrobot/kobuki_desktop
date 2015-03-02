@@ -2,8 +2,8 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.2 (2015-03-02)
+------------------
 * kobuki_gazebo_plugins: Resolve IMU sensor using fully scoped name
   This ensures uniqueness among multiple models in which the sensor has the
   same name. In this case, our specific motivation is the Kobuki Gazebo
