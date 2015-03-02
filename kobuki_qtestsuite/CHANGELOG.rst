@@ -2,6 +2,9 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.1 (2014-09-19)
 ------------------
 

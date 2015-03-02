@@ -2,6 +2,15 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* kobuki_gazebo_plugins: Resolve IMU sensor using fully scoped name
+  This ensures uniqueness among multiple models in which the sensor has the
+  same name. In this case, our specific motivation is the Kobuki Gazebo
+  plugin being spawned multiple times using kobuki_gazebo.urdf.xacro in the
+  package kobuki_description.
+* Contributors: Scott Livingston
+
 0.4.1 (2014-09-19)
 ------------------
 * kobuki_gazebo_plugins: makes bump detection more reliable
