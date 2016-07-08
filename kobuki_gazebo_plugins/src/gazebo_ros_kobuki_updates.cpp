@@ -73,13 +73,13 @@ void GazeboRosKobuki::updateOdometry(common::Time& step_time)
   d1 = step_time.Double() * (wheel_diam_ / 2) * joints_[LEFT]->GetVelocity(0);
   d2 = step_time.Double() * (wheel_diam_ / 2) * joints_[RIGHT]->GetVelocity(0);
   // Can see NaN values here, just zero them out if needed
-  if (isnan(d1))
+  if (std::isnan(d1))
   {
     ROS_WARN_STREAM_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d1. Step time: " << step_time.Double()
                              << ", WD: " << wheel_diam_ << ", velocity: " << joints_[LEFT]->GetVelocity(0));
     d1 = 0;
   }
-  if (isnan(d2))
+  if (std::isnan(d2))
   {
     ROS_WARN_STREAM_THROTTLE(0.1, "Gazebo ROS Kobuki plugin: NaN in d2. Step time: " << step_time.Double()
                              << ", WD: " << wheel_diam_ << ", velocity: " << joints_[RIGHT]->GetVelocity(0));
