@@ -178,8 +178,8 @@ void GazeboRosKobuki::propagateVelocityCommands()
   }
   joints_[LEFT]->SetVelocity(0, wheel_speed_cmd_[LEFT] / (wheel_diam_ / 2.0));
   joints_[RIGHT]->SetVelocity(0, wheel_speed_cmd_[RIGHT] / (wheel_diam_ / 2.0));
-  joints_[LEFT]->SetMaxForce(0, torque_);
-  joints_[RIGHT]->SetMaxForce(0, torque_);
+  joints_[LEFT]->SetParam("fmax", 0, torque_);
+  joints_[RIGHT]->SetParam("fmax", 0, torque_);
 }
 
 /*
