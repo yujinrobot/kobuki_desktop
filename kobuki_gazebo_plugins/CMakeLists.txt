@@ -3,6 +3,7 @@ project(kobuki_gazebo_plugins)
 
 find_package(gazebo REQUIRED)
 
+
 find_package(catkin REQUIRED COMPONENTS gazebo_ros
                                         gazebo_plugins
                                         geometry_msgs
@@ -24,6 +25,8 @@ catkin_package(INCLUDE_DIRS include
                               sensor_msgs
                               std_msgs
                               tf)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -std=c++11")
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(include

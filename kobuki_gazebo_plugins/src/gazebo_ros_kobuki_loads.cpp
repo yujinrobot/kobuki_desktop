@@ -212,11 +212,11 @@ bool GazeboRosKobuki::prepareCliffSensor()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  cliff_sensor_left_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
+  cliff_sensor_left_ = std::dynamic_pointer_cast<sensors::RaySensor>(
                        sensors::SensorManager::Instance()->GetSensor(cliff_sensor_left_name));
-  cliff_sensor_center_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
+  cliff_sensor_center_ = std::dynamic_pointer_cast<sensors::RaySensor>(
                         sensors::SensorManager::Instance()->GetSensor(cliff_sensor_center_name));
-  cliff_sensor_right_ = boost::dynamic_pointer_cast<sensors::RaySensor>(
+  cliff_sensor_right_ = std::dynamic_pointer_cast<sensors::RaySensor>(
                         sensors::SensorManager::Instance()->GetSensor(cliff_sensor_right_name));
   if (!cliff_sensor_left_)
   {
@@ -267,7 +267,7 @@ bool GazeboRosKobuki::prepareBumper()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  bumper_ = boost::dynamic_pointer_cast<sensors::ContactSensor>(
+  bumper_ = std::dynamic_pointer_cast<sensors::ContactSensor>(
             sensors::SensorManager::Instance()->GetSensor(bumper_name));
   if (!bumper_)
   {
@@ -294,7 +294,7 @@ bool GazeboRosKobuki::prepareIMU()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  imu_ = boost::dynamic_pointer_cast<sensors::ImuSensor>(
+  imu_ = std::dynamic_pointer_cast<sensors::ImuSensor>(
             sensors::get_sensor(world_->GetName()+"::"+node_name_+"::base_footprint::"+imu_name));
   if (!imu_)
   {
