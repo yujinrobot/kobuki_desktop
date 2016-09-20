@@ -2,6 +2,10 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.1 (2016-09-20)
+------------------
+* bugfix for ros logging.
+
 0.4.2 (2015-03-02)
 ------------------
 * kobuki_gazebo_plugins: Resolve IMU sensor using fully scoped name
