@@ -335,9 +335,9 @@ void GazeboRosKobuki::setupRosApi(std::string& model_name)
   ROS_INFO("%s: Try to subscribe to %s!", gazebo_ros_->info(), odom_reset_topic.c_str());
 
   // cmd_vel
-  std::string cmd_vel = base_prefix + "/commands/velocity";
-  cmd_vel_sub_ = gazebo_ros_->node()->subscribe(cmd_vel, 100, &GazeboRosKobuki::cmdVelCB, this);
-  ROS_INFO("%s: Try to subscribe to %s!", gazebo_ros_->info(), motor_power_topic.c_str());
+  std::string cmd_vel_topic = base_prefix + "/commands/velocity";
+  cmd_vel_sub_ = gazebo_ros_->node()->subscribe(cmd_vel_topic, 100, &GazeboRosKobuki::cmdVelCB, this);
+  ROS_INFO("%s: Try to subscribe to %s!", gazebo_ros_->info(), cmd_vel_topic.c_str());
 
   // cliff
   std::string cliff_topic = base_prefix + "/events/cliff";
