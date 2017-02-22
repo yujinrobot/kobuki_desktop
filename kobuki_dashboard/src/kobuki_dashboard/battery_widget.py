@@ -1,6 +1,6 @@
 import rospy
 from rqt_robot_dashboard.widgets import BatteryDashWidget
-from python_qt_binding.QtGui import QToolButton
+from QtWidgets import QToolButton
 
 class BatteryWidget(BatteryDashWidget):
     def __init__(self, name):
@@ -19,4 +19,3 @@ class BatteryWidget(BatteryDashWidget):
         charge_icons.append(['ic-battery-charge-80-green.svg'])
         charge_icons.append(['ic-battery-charge-100-green.svg'])
         super(BatteryWidget, self).__init__(name=name, icons=icons, charge_icons=charge_icons)
-

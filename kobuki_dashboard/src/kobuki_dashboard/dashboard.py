@@ -5,7 +5,7 @@ import diagnostic_msgs
 
 from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.widgets import MonitorDashWidget, ConsoleDashWidget, MenuDashWidget, IconToolButton
-from QtGui import QMessageBox, QAction
+from QtWidgets import QMessageBox, QAction
 from python_qt_binding.QtCore import QSize
 
 from .battery_widget import BatteryWidget
@@ -32,7 +32,7 @@ class KobukiDashboard(Dashboard):
     def dashboard_callback(self, msg):
         self._dashboard_message = msg
         self._last_dashboard_message_time = rospy.get_time()
-        
+
         laptop_battery_status = {}
         for status in msg.status:
             if status.name == "/Kobuki/Motor State":
