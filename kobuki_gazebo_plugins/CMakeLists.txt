@@ -36,11 +36,7 @@ include_directories(include
 add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp 
                               src/gazebo_ros_kobuki_updates.cpp 
                               src/gazebo_ros_kobuki_loads.cpp)
-add_dependencies(gazebo_ros_kobuki geometry_msgs_gencpp
-                                   kobuki_msgs_gencpp
-                                   nav_msgs_gencpp
-                                   sensor_msgs_gencpp
-                                   std_msgs_gencpp)
+add_dependencies(gazebo_ros_kobuki ${catkin_EXPORTED_TARGETS})
 target_link_libraries(gazebo_ros_kobuki
                       ${catkin_LIBRARIES}
                       ${GAZEBO_LIBRARIES})
