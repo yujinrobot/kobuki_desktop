@@ -1,6 +1,10 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package kobuki_dashboard
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=========
+Changelog
+=========
+
+0.5.3 (2017-02-23)
+------------------
+* add_dependencies with catkin_EXPORTED_TARGETS, not xyz_gencpp targets which might not be there
 
 0.5.1 (2016-09-20)
 ------------------
