@@ -11,7 +11,10 @@ import os
 import numpy
 import operator
 from python_qt_binding.QtCore import Signal, Slot, pyqtSlot
-from python_qt_binding.QtGui import QFrame, QVBoxLayout
+try:  # indigo
+    from python_qt_binding.QtGui import QFrame, QVBoxLayout
+except ImportError:  # kinetic+ (pyqt5)
+    from python_qt_binding.QtWidgets import QFrame, QVBoxLayout
 import math
 
 import roslib

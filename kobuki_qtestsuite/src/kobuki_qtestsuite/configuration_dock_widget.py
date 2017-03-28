@@ -12,7 +12,10 @@ roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 
 from python_qt_binding.QtCore import Signal,Slot
-from python_qt_binding.QtGui import QDockWidget
+try:  # indigo
+    from python_qt_binding.QtGui import QDockWidget
+except ImportError:  # kinetic+ (pyqt5)
+    from python_qt_binding.QtWidgets import QDockWidget
 from rqt_py_common.extended_combo_box import ExtendedComboBox
 
 # Local resource imports
