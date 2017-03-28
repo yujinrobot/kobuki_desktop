@@ -14,9 +14,11 @@ import rospy
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding.QtGui import QWidget
+try:  # indigo
+    from python_qt_binding.QtGui import QFrame, QWidget
+except ImportError:  # kinetic+ (pyqt5)
+    from python_qt_binding.QtWidgets import QFrame, QWidget
 from python_qt_binding.QtCore import Signal,Slot
-from python_qt_binding.QtGui import QFrame
 from rqt_py_common.extended_combo_box import ExtendedComboBox
 from geometry_msgs.msg import Twist
 
