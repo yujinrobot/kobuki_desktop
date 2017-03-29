@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -11,11 +11,12 @@ import os
 import numpy
 import operator
 from python_qt_binding.QtCore import Signal, Slot, pyqtSlot
-from python_qt_binding.QtGui import QFrame, QVBoxLayout
+try:  # indigo
+    from python_qt_binding.QtGui import QFrame, QVBoxLayout
+except ImportError:  # kinetic+ (pyqt5)
+    from python_qt_binding.QtWidgets import QFrame, QVBoxLayout
 import math
 
-import roslib
-roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from qt_gui_py_common.worker_thread import WorkerThread
 from kobuki_testsuite import Square
@@ -52,15 +53,15 @@ class PayloadFrame(QFrame):
     ##########################################################################
     # Widget Management
     ##########################################################################
-        
+
     def hibernate(self):
         '''
-          This gets called when the frame goes out of focus (tab switch). 
+          This gets called when the frame goes out of focus (tab switch).
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
         self._stop()
-    
+
     def restore(self):
         '''
           Restore the frame after a hibernate.
@@ -76,7 +77,7 @@ class PayloadFrame(QFrame):
         self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
@@ -92,7 +93,7 @@ class PayloadFrame(QFrame):
     @Slot()
     def on_stop_button_clicked(self):
         self._stop()
-        
+
     def _stop(self):
         if self._motion:
             self._motion.stop()
@@ -103,7 +104,7 @@ class PayloadFrame(QFrame):
             self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     @pyqtSlot(float)
     def on_speed_spinbox_valueChanged(self, value):
         if self._motion:

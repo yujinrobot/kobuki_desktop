@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -9,11 +9,12 @@
 
 import os
 from python_qt_binding.QtCore import Signal, Slot, pyqtSlot
-from python_qt_binding.QtGui import QFrame
+try:  # indigo
+    from python_qt_binding.QtGui import QFrame
+except ImportError:  # kinetic+ (pyqt5)
+    from python_qt_binding.QtWidgets import QFrame
 import math
 
-import roslib
-roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from kobuki_testsuite import SafeWandering
 from kobuki_msgs.msg import BumperEvent
@@ -54,15 +55,15 @@ class WanderingFrame(QFrame):
     ##########################################################################
     # Widget Management
     ##########################################################################
-        
+
     def hibernate(self):
         '''
-          This gets called when the frame goes out of focus (tab switch). 
+          This gets called when the frame goes out of focus (tab switch).
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
         pass
-    
+
     def restore(self):
         '''
           Restore the frame after a hibernate.
@@ -82,7 +83,7 @@ class WanderingFrame(QFrame):
     def _run_finished(self):
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
@@ -96,7 +97,7 @@ class WanderingFrame(QFrame):
     @Slot()
     def on_stop_button_clicked(self):
         self.stop()
-        
+
     @pyqtSlot(float)
     def on_speed_spinbox_valueChanged(self, value):
         # could use value, but easy to set like this
@@ -118,4 +119,4 @@ class WanderingFrame(QFrame):
                 self._ui.right_bump_counter_lcd.display(self._ui.right_bump_counter_lcd.intValue()+1)
             else:
                 self._ui.centre_bump_counter_lcd.display(self._ui.centre_bump_counter_lcd.intValue()+1)
-        
+

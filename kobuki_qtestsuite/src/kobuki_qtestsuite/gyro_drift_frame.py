@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -46,19 +46,12 @@ class GyroDriftFrame(QFrame):
         self._motion = None
         self._scan_to_angle = None
         self._motion_thread = None
+        self._plot_widget = None
+        self._plot_widget_live = None
 
     def setupUi(self):
         self._ui.setupUi(self)
         self._plot_layout = QVBoxLayout(self._ui.scan_angle_group_box)
-        self._plot_widget = PlotWidget()
-        self._plot_widget.setWindowTitle("Error")
-        self._plot_layout.addWidget(self._plot_widget)
-        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
-        self._plot_widget.data_plot.dynamic_range = True
-        self._plot_widget_live = PlotWidget()
-        self._plot_widget_live.setWindowTitle("Live Graphs")
-        self._plot_widget_live.switch_data_plot_widget(DataPlot(self._plot_widget_live))
-        self._plot_layout.addWidget(self._plot_widget_live)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
 
@@ -72,28 +65,42 @@ class GyroDriftFrame(QFrame):
     ##########################################################################
     # Widget Management
     ##########################################################################
-        
+
     def _pause_plots(self):
         '''
          Pause plots, more importantly, pause greedy plot rendering
         '''
-        self._plot_widget.enable_timer(False)
-        self._plot_widget_live.enable_timer(False)
+        if self._plot_widget:
+            self._plot_widget.enable_timer(False)
+        if self._plot_widget_live:
+            self._plot_widget_live.enable_timer(False)
 
     def hibernate(self):
         '''
-          This gets called when the frame goes out of focus (tab switch). 
+          This gets called when the frame goes out of focus (tab switch).
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
         self._stop()
-    
+        self._plot_layout.removeWidget(self._plot_widget)
+        self._plot_layout.removeWidget(self._plot_widget_live)
+        self._plot_widget = None
+        self._plot_widget_live = None
+
     def restore(self):
         '''
           Restore the frame after a hibernate.
         '''
-        pass
-    
+        self._plot_widget = PlotWidget()
+        self._plot_widget.setWindowTitle("Error")
+        self._plot_layout.addWidget(self._plot_widget)
+        self._plot_widget.switch_data_plot_widget(DataPlot(self._plot_widget))
+        self._plot_widget.data_plot.dynamic_range = True
+        self._plot_widget_live = PlotWidget()
+        self._plot_widget_live.setWindowTitle("Live Graphs")
+        self._plot_widget_live.switch_data_plot_widget(DataPlot(self._plot_widget_live))
+        self._plot_layout.addWidget(self._plot_widget_live)
+
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
@@ -126,7 +133,7 @@ class GyroDriftFrame(QFrame):
     @Slot()
     def on_stop_button_clicked(self):
         self._stop()
-        
+
     def _stop(self):
         self._pause_plots()
         if self._scan_to_angle:
@@ -142,7 +149,7 @@ class GyroDriftFrame(QFrame):
             self._motion = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
         if self._motion:

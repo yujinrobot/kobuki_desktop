@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -11,15 +11,13 @@ import os
 import numpy
 import operator
 #import python_qt_binding.QtCore
-from python_qt_binding.QtCore import QObject, SIGNAL, SLOT, Signal, Slot, pyqtSlot, QTimer
+from python_qt_binding.QtCore import QObject, Signal, Slot, pyqtSlot, QTimer
 try:  # indigo
     from python_qt_binding.QtGui import QFrame, QVBoxLayout
 except ImportError:  # kinetic+ (pyqt5)
     from python_qt_binding.QtWidgets import QFrame, QVBoxLayout
 import math
 
-import roslib
-roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from qt_gui_py_common.worker_thread import WorkerThread
 from kobuki_testsuite import Rotate
@@ -37,7 +35,7 @@ class LifeFrame(QFrame):
     STATE_STOPPED = "stopped"
     STATE_RUN = "running"
     STATE_IDLE = "idle"
-    
+
     def __init__(self, parent=None):
         super(LifeFrame, self).__init__(parent)
         self._ui = Ui_life_frame()
@@ -46,7 +44,7 @@ class LifeFrame(QFrame):
         self._timer = QTimer()
         #self._timer.setInterval(60000) #60s
         self._timer.setInterval(250) #60s
-        QObject.connect(self._timer, SIGNAL('timeout()'), self, SLOT('update_progress_callback()'))
+        self._timer.timeout.connect(self.update_progress_callback)
         self._state = LifeFrame.STATE_STOPPED
         self._is_alive = False # Used to indicate whether the frame is alive or not (see hibernate/restore methods)
 
@@ -66,15 +64,15 @@ class LifeFrame(QFrame):
     ##########################################################################
     # Widget Management
     ##########################################################################
-        
+
     def hibernate(self):
         '''
-          This gets called when the frame goes out of focus (tab switch). 
+          This gets called when the frame goes out of focus (tab switch).
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
         pass
-    
+
     def restore(self):
         '''
           Restore the frame after a hibernate.
@@ -98,7 +96,7 @@ class LifeFrame(QFrame):
         self._motion.stop()
         if self._motion_thread:
             self._motion_thread.wait()
-        
+
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
@@ -108,14 +106,14 @@ class LifeFrame(QFrame):
         self._ui.stop_button.setEnabled(True)
         self._timer.start()
         self.start()
-        
+
     @Slot()
     def on_stop_button_clicked(self):
         self.stop()
         self._timer.stop()
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
         self._motion.init(self._ui.angular_speed_spinbox.value())

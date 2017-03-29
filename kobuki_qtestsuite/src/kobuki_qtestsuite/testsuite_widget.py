@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -31,16 +31,16 @@ class TestSuiteWidget(QWidget):
         super(TestSuiteWidget, self).__init__(parent)
         self._ui = Ui_testsuite_widget()
         self._tabs = []
-        
+
     def setupUi(self):
         self._ui.setupUi(self)
-        self._tabs = [self._ui.battery_profile_frame, 
-                      self._ui.gyro_drift_frame, 
-                      self._ui.payload_frame, 
+        self._tabs = [self._ui.battery_profile_frame,
+                      self._ui.gyro_drift_frame,
+                      self._ui.payload_frame,
                       self._ui.cliff_sensor_frame,
                       self._ui.life_frame,
                       self._ui.wandering_frame
-                       ] 
+                       ]
         self._current_tab = self._tabs[self._ui.testsuite_tab_widget.currentIndex()]
         self._ui.configuration_dock.setupUi()
         self._ui.battery_profile_frame.setupUi(self._ui.configuration_dock.cmd_vel_topic_name())
@@ -56,15 +56,15 @@ class TestSuiteWidget(QWidget):
         ####################
         self._ui.configuration_dock._ui.cmd_vel_topic_combo_box.currentIndexChanged[str].connect(
                     self._ui.battery_profile_frame.on_cmd_vel_topic_combo_box_currentIndexChanged)
-    
+
     def shutdown(self):
         self._ui.battery_profile_frame.shutdown()
         self._ui.gyro_drift_frame.shutdown()
-        self._ui.wandering_frame.shutdown()
         self._ui.payload_frame.shutdown()
         self._ui.cliff_sensor_frame.shutdown()
         self._ui.life_frame.shutdown()
-        
+        self._ui.wandering_frame.shutdown()
+
     ##########################################################################
     # Slot Callbacks
     ##########################################################################
@@ -79,7 +79,7 @@ class TestSuiteWidget(QWidget):
     def on_odom_topic_combo_box_currentIndexChanged(self, topic_name):
         # Need to redo the subscriber here
         pass
-    
+
     @Slot(int)
     def on_testsuite_tab_widget_currentChanged(self, index):
         self._current_tab.hibernate()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#       
+#
 # License: BSD
-#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE 
+#   https://raw.github.com/yujinrobot/kobuki_desktop/master/kobuki_qtestsuite/LICENSE
 #
 ##############################################################################
 # Imports
@@ -15,8 +15,6 @@ except ImportError:  # kinetic+ (pyqt5)
     from python_qt_binding.QtWidgets import QFrame, QVBoxLayout
 import math
 
-import roslib
-roslib.load_manifest('kobuki_qtestsuite')
 import rospy
 from qt_gui_py_common.worker_thread import WorkerThread
 from rqt_plot.plot_widget import PlotWidget
@@ -43,22 +41,15 @@ class BatteryProfileFrame(QFrame):
         self._motion = None
         self.robot_state_subscriber = None
         self._motion_thread = None
+        self._plot_widget = None
 
     def setupUi(self, cmd_vel_topic_name):
         self._ui.setupUi(self)
         self._cmd_vel_topic_name = cmd_vel_topic_name
         self._plot_layout = QVBoxLayout(self._ui.battery_profile_group_box)
-        self._plot_widget = PlotWidget()
-        self._plot_widget.setWindowTitle("Battery Profile")
-        self._plot_widget.topic_edit.setText(self._battery_topic_name)
-        self._plot_layout.addWidget(self._plot_widget)
-
-        self._data_plot = DataPlot(self._plot_widget)
-        self._data_plot.set_autoscale(y=False)
-        self._data_plot.set_ylim([0, 180])
-        self._plot_widget.switch_data_plot_widget(self._data_plot)
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
+        self.restore()
 
     def shutdown(self):
         '''
@@ -70,20 +61,30 @@ class BatteryProfileFrame(QFrame):
     ##########################################################################
     # Widget Management
     ##########################################################################
-        
+
     def hibernate(self):
         '''
-          This gets called when the frame goes out of focus (tab switch). 
+          This gets called when the frame goes out of focus (tab switch).
           Disable everything to avoid running N tabs in parallel when in
           reality we are only running one.
         '''
         self._stop()
-    
+        self._plot_layout.removeWidget(self._plot_widget)
+        self._plot_widget = None
+
     def restore(self):
         '''
           Restore the frame after a hibernate.
         '''
-        pass
+        self._plot_widget = PlotWidget()
+        self._plot_widget.setWindowTitle("Battery Profile")
+        self._plot_widget.topic_edit.setText(self._battery_topic_name)
+        self._plot_layout.addWidget(self._plot_widget)
+
+        self._data_plot = DataPlot(self._plot_widget)
+        self._data_plot.set_autoscale(y=False)
+        self._data_plot.set_ylim([0, 180])
+        self._plot_widget.switch_data_plot_widget(self._data_plot)
 
 
     ##########################################################################
@@ -93,7 +94,7 @@ class BatteryProfileFrame(QFrame):
     def _run_finished(self):
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     ##########################################################################
     # Qt Callbacks
     ##########################################################################
@@ -101,7 +102,7 @@ class BatteryProfileFrame(QFrame):
     def on_start_button_clicked(self):
         self._ui.start_button.setEnabled(False)
         self._ui.stop_button.setEnabled(True)
-        if not self._motion: 
+        if not self._motion:
             self._motion = Rotate(self._cmd_vel_topic_name)
             self._motion.init(self._ui.angular_speed_spinbox.value())
         if not self.robot_state_subscriber:
@@ -123,9 +124,10 @@ class BatteryProfileFrame(QFrame):
           Hardcore stoppage - straight to zero.
         '''
         self._stop()
-        
+
     def _stop(self):
-        self._plot_widget.enable_timer(False) # pause plot rendering
+        if self._plot_widget:
+            self._plot_widget.enable_timer(False) # pause plot rendering
         if self._motion_thread:
             self._motion.stop()
             self._motion_thread.wait()
@@ -138,7 +140,7 @@ class BatteryProfileFrame(QFrame):
             self.robot_state_subscriber = None
         self._ui.start_button.setEnabled(True)
         self._ui.stop_button.setEnabled(False)
-        
+
     @pyqtSlot(float)
     def on_angular_speed_spinbox_valueChanged(self, value):
         if self._motion:
