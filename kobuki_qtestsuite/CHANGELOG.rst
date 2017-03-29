@@ -2,11 +2,10 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.4.2 (2015-03-02)
+0.5.4 (2017-03-28)
 ------------------
-
-0.4.1 (2014-09-19)
-------------------
+* refactoring for pyqt5 QtGui -> QWidget
+* workaround for the multi matplotlib crash bug
 
 0.4.0 (2014-08-11)
 ------------------
