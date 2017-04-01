@@ -40,10 +40,10 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     ROS_ERROR_STREAM("Invalid model pointer! [" << node_name_ << "]");
     return;
   }
- 
+
   gazebo_ros_ = GazeboRosPtr(new GazeboRos(model_, sdf, "Kobuki"));
   sdf_ = sdf;
- 
+
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
   {
@@ -51,13 +51,13 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
       << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
     return;
   }
- 
+
   // Get then name of the parent model and use it as node name
   std::string model_name = sdf->GetParent()->Get<std::string>("name");
   gzdbg << "Plugin model name: " << model_name << "\n";
   node_name_ = model_name;
   world_ = parent->GetWorld();
- 
+
   prepareMotorPower();
   preparePublishTf();
 
@@ -65,7 +65,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     return;
   if(prepareWheelAndTorque() == false)
     return;
-  
+
   prepareOdom();
 
   if(prepareVelocityCommand() == false)
@@ -81,7 +81,8 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
   prev_update_time_ = world_->GetSimTime();
   ROS_INFO_STREAM("GazeboRosKobuki plugin ready to go! [" << node_name_ << "]");
-  update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboRosKobuki::OnUpdate, this));
+  update_connection_ = event::Events::ConnectWorldUpdateEnd(boost::bind(&GazeboRosKobuki::OnUpdate, this));
+
 }
 
 
