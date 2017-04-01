@@ -86,7 +86,7 @@ bool GazeboRosKobuki::prepareJointState()
   joint_state_.position.push_back(0);
   joint_state_.velocity.push_back(0);
   joint_state_.effort.push_back(0);
-  
+
   return true;
 }
 
@@ -329,7 +329,7 @@ void GazeboRosKobuki::setupRosApi(std::string& model_name)
   motor_power_sub_ = gazebo_ros_->node()->subscribe(motor_power_topic, 10, &GazeboRosKobuki::motorPowerCB, this);
   ROS_INFO("%s: Try to subscribe to %s!", gazebo_ros_->info(), motor_power_topic.c_str());
 
-  
+
   std::string odom_reset_topic = base_prefix + "/commands/reset_odometry";
   odom_reset_sub_ = gazebo_ros_->node()->subscribe(odom_reset_topic, 10, &GazeboRosKobuki::resetOdomCB, this);
   ROS_INFO("%s: Try to subscribe to %s!", gazebo_ros_->info(), odom_reset_topic.c_str());
@@ -343,7 +343,7 @@ void GazeboRosKobuki::setupRosApi(std::string& model_name)
   std::string cliff_topic = base_prefix + "/events/cliff";
   cliff_event_pub_ = gazebo_ros_->node()->advertise<kobuki_msgs::CliffEvent>(cliff_topic, 1);
   ROS_INFO("%s: Advertise Cliff[%s]!", gazebo_ros_->info(), cliff_topic.c_str());
-  
+
   // bumper
   std::string bumper_topic = base_prefix + "/events/bumper";
   bumper_event_pub_ = gazebo_ros_->node()->advertise<kobuki_msgs::BumperEvent>(bumper_topic, 1);

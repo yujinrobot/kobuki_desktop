@@ -265,13 +265,13 @@ void GazeboRosKobuki::updateBumper()
   bumper_left_is_pressed_ = false;
   bumper_center_is_pressed_ = false;
   bumper_right_is_pressed_ = false;
-                                                                                                                        
+
   // parse contacts
   msgs::Contacts contacts;
   contacts = bumper_->Contacts();
   math::Pose current_pose = model_->GetWorldPose();
   double robot_heading = current_pose.rot.GetYaw();
-                                                                                                                        
+
   for (int i = 0; i < contacts.contact_size(); ++i)
   {
     double rel_contact_pos =  contacts.contact(i).position(0).z() - current_pose.pos.z;
@@ -284,7 +284,7 @@ void GazeboRosKobuki::updateBumper()
       // also negating the normal, because it points from contact to robot centre
       double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
-                                                                                                                        
+
       if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
       {
         bumper_left_is_pressed_ = true;
@@ -299,7 +299,7 @@ void GazeboRosKobuki::updateBumper()
       }
     }
   }
-                                                                                                                        
+
   // check for bumper state change
   if (bumper_left_is_pressed_ && !bumper_left_was_pressed_)
   {
