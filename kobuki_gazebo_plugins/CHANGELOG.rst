@@ -2,6 +2,10 @@
 Changelog
 =========
 
+0.5.6 (2017-04-01)
+------------------
+* update at the end of the event loop so the bumper sensor can be caught
+
 0.5.3 (2017-02-23)
 ------------------
 * add_dependencies with catkin_EXPORTED_TARGETS, not xyz_gencpp targets which might not be there
