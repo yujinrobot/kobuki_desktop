@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>kobuki_rviz_launchers</name>
-  <version>0.5.6</version>
+  <version>0.5.7</version>
   <description>The kobuki_rviz_launchers package</description>
   <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>

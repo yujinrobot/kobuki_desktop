@@ -2,6 +2,10 @@
 Changelog for package kobuki_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.7 (2017-05-14)
+------------------
+* bugfix for pyqt4->pyqt5 pyrrc tools rosdep
+
 0.5.4 (2017-03-28)
 ------------------
 * refactoring for pyqt5 QtGui -> QWidget
