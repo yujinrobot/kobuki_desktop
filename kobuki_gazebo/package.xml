@@ -1,6 +1,6 @@
 <package>
   <name>kobuki_gazebo</name>
-  <version>0.5.6</version>
+  <version>0.5.7</version>
   <description>Kobuki simulation for Gazebo</description>
   <author>Marcus Liebhardt</author>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
