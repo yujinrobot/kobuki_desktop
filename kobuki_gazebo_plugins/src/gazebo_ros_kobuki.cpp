@@ -4,7 +4,6 @@
 #include <boost/bind.hpp>
 #include <sensor_msgs/JointState.h>
 #include <tf/LinearMath/Quaternion.h>
-#include <gazebo/math/gzmath.hh>
 #include "kobuki_gazebo_plugins/gazebo_ros_kobuki.h"
 
 namespace gazebo
@@ -14,6 +13,8 @@ namespace gazebo
 GazeboRosKobuki::GazeboRosKobuki() : shutdown_requested_(false)
 {
   // Initialise variables
+  wheel_position_[LEFT] = 0.0;
+  wheel_position_[RIGHT] = 0.0;
   wheel_speed_cmd_[LEFT] = 0.0;
   wheel_speed_cmd_[RIGHT] = 0.0;
   cliff_detected_left_ = false;
@@ -79,7 +80,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
   setupRosApi(model_name);
 
-  prev_update_time_ = world_->GetSimTime();
+  prev_update_time_ = world_->SimTime();
   ROS_INFO_STREAM("GazeboRosKobuki plugin ready to go! [" << node_name_ << "]");
   update_connection_ = event::Events::ConnectWorldUpdateEnd(boost::bind(&GazeboRosKobuki::OnUpdate, this));
 
@@ -96,7 +97,7 @@ void GazeboRosKobuki::OnUpdate()
   /*
    * Update current time and time step
    */
-  common::Time time_now = world_->GetSimTime();
+  common::Time time_now = world_->SimTime();
   common::Time step_time = time_now - prev_update_time_;
   prev_update_time_ = time_now;
 
@@ -133,7 +134,7 @@ void GazeboRosKobuki::motorPowerCB(const kobuki_msgs::MotorPowerPtr &msg)
 
 void GazeboRosKobuki::cmdVelCB(const geometry_msgs::TwistConstPtr &msg)
 {
-  last_cmd_vel_time_ = world_->GetSimTime();
+  last_cmd_vel_time_ = world_->SimTime();
   wheel_speed_cmd_[LEFT] = msg->linear.x - msg->angular.z * (wheel_sep_) / 2;
   wheel_speed_cmd_[RIGHT] = msg->linear.x + msg->angular.z * (wheel_sep_) / 2;
 }

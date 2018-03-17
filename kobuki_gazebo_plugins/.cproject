@@ -21,6 +21,19 @@
 							<builder arguments="VERBOSE=1 -j8 -C ${CKX_WORKSPACE}/build/${ProjName}" buildPath="${workspace_loc:/kobuki_gazebo_plugins}" command="make" id="cdt.managedbuild.target.gnu.builder.base.1135077290" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1170120805" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.28810386" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option id="gnu.cpp.compiler.option.include.paths.334356583" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/include/gazebo-9"/>
+									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/navigation/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/src/ork_core/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/src/yujin_ocs/yocs_math_toolkit/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/thorp/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/move_group_interface/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/planning_scene_interface/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2116270962" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1736919230" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">

@@ -42,10 +42,10 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
+#include <ignition/math/Vector3.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Time.hh>
-#include <gazebo/math/gzmath.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo_plugins/gazebo_ros_utils.h>
@@ -62,6 +62,8 @@
 #include <kobuki_msgs/MotorPower.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
+
+using namespace ignition;
 
 namespace gazebo
 {
@@ -94,7 +96,7 @@ private:
   void spin();
   //  void OnContact(const std::string &name, const physics::Contact &contact); necessary?
 
-  
+
   // internal functions for load
   void prepareMotorPower();
   bool prepareJointState();
@@ -161,6 +163,8 @@ private:
   common::Time last_cmd_vel_time_;
   /// Time out for velocity commands in seconds
   double cmd_vel_timeout_;
+  /// Angles of the wheels
+  double wheel_position_[2];
   /// Speeds of the wheels
   double wheel_speed_cmd_[2];
   /// Max. torque applied to the wheels
@@ -228,7 +232,7 @@ private:
   /// Pointer to IMU sensor model
   sensors::ImuSensorPtr imu_;
   /// Storage for the angular velocity reported by the IMU
-  math::Vector3 vel_angular_;
+  math::Vector3d vel_angular_;
   /// ROS publisher for IMU data
   ros::Publisher imu_pub_;
   /// ROS message for publishing IMU data
