@@ -172,7 +172,11 @@ bool GazeboRosKobuki::prepareVelocityCommand()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  last_cmd_vel_time_ = world_->GetSimTime();
+  #if GAZEBO_MAJOR_VERSION >= 9
+    last_cmd_vel_time_ = world_->SimTime();
+  #else
+    last_cmd_vel_time_ = world_->GetSimTime();
+  #endif
   return true;
 }
 
@@ -294,8 +298,14 @@ bool GazeboRosKobuki::prepareIMU()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  imu_ = std::dynamic_pointer_cast<sensors::ImuSensor>(
+  #if GAZEBO_MAJOR_VERSION >= 9
+    imu_ = std::dynamic_pointer_cast<sensors::ImuSensor>(
+            sensors::get_sensor(world_->Name()+"::"+node_name_+"::base_footprint::"+imu_name));
+  #else
+    imu_ = std::dynamic_pointer_cast<sensors::ImuSensor>(
             sensors::get_sensor(world_->GetName()+"::"+node_name_+"::base_footprint::"+imu_name));
+
+  #endif
   if (!imu_)
   {
     ROS_ERROR_STREAM("Couldn't find the IMU in the model! [" << node_name_ <<"]");

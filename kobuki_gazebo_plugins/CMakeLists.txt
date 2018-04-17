@@ -33,8 +33,8 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${GAZEBO_INCLUDE_DIRS})
 
-add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp 
-                              src/gazebo_ros_kobuki_updates.cpp 
+add_library(gazebo_ros_kobuki src/gazebo_ros_kobuki.cpp
+                              src/gazebo_ros_kobuki_updates.cpp
                               src/gazebo_ros_kobuki_loads.cpp)
 add_dependencies(gazebo_ros_kobuki ${catkin_EXPORTED_TARGETS})
 target_link_libraries(gazebo_ros_kobuki
