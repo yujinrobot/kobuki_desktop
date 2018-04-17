@@ -45,7 +45,13 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Time.hh>
-#include <gazebo/math/gzmath.hh>
+#if GAZEBO_MAJOR_VERSION >= 9
+  // #include <ignition/math.hh>
+  #include <ignition/math/Vector3.hh>
+  #include <ignition/math/Quaternion.hh>
+#else
+  #include <gazebo/math/gzmath.hh>
+#endif
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo_plugins/gazebo_ros_utils.h>
@@ -94,7 +100,7 @@ private:
   void spin();
   //  void OnContact(const std::string &name, const physics::Contact &contact); necessary?
 
-  
+
   // internal functions for load
   void prepareMotorPower();
   bool prepareJointState();
@@ -228,7 +234,13 @@ private:
   /// Pointer to IMU sensor model
   sensors::ImuSensorPtr imu_;
   /// Storage for the angular velocity reported by the IMU
-  math::Vector3 vel_angular_;
+
+  #if GAZEBO_MAJOR_VERSION >= 9
+    ignition::math::Vector3d vel_angular_;
+  #else
+    math::Vector3 vel_angular_;
+  #endif
+
   /// ROS publisher for IMU data
   ros::Publisher imu_pub_;
   /// ROS message for publishing IMU data
