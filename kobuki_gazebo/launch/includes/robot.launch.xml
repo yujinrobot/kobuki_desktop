@@ -4,7 +4,7 @@
 <launch>
   <arg name="robot_name" value="mobile_base"/>
   <param name="robot_description"
-        command="$(find xacro)/xacro --inorder '$(find kobuki_description)/urdf/kobuki_standalone.urdf.xacro'"/>
+        command="$(find xacro)/xacro --inorder &quot;$(find kobuki_description)/urdf/kobuki_standalone.urdf.xacro&quot;"/>
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_$(arg robot_name)"
         args="-x 0.0 -y 0.0 -z 1.5 -unpause -urdf -param robot_description -model $(arg robot_name)" respawn="false">
   </node>
