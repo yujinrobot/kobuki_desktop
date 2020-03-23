@@ -49,6 +49,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
   gazebo_ros_ = GazeboRosPtr(new GazeboRos(model_, sdf, "Kobuki"));
   sdf_ = sdf;
+  gazebo_ros_->getParameter(this->update_rate_, "update_rate", 0.0);
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -114,7 +115,18 @@ void GazeboRosKobuki::OnUpdate()
     time_now = world_->GetSimTime();
   #endif
 
+  if (time_now < prev_update_time_) {
+      ROS_WARN_NAMED("gazebo_ros_kobuki", "Negative update time difference detected.");
+      prev_update_time_ = time_now;
+  }
+
   common::Time step_time = time_now - prev_update_time_;
+
+  // rate control
+  if (this->update_rate_ > 0 && step_time.Double() < (1.0 / this->update_rate_)) {
+    return;
+  }
+
   prev_update_time_ = time_now;
 
   updateJointState();
