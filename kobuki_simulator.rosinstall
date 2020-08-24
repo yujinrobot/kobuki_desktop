@@ -1,21 +1,8 @@
 # Rosinstaller for the Kobuki simulator
-- git:
-    local-name: kobuki
-    uri: 'https://github.com/yujinrobot/kobuki.git'
-    version: devel
-- git:
-    local-name: kobuki_core
-    uri: 'https://github.com/yujinrobot/kobuki_core'
-    version: devel
-- git:
-    local-name: kobuki_desktop
-    uri: 'https://github.com/yujinrobot/kobuki_desktop.git'
-    version: devel
-- git:
-    local-name: kobuki_msgs
-    uri: 'https://github.com/yujinrobot/kobuki_msgs'
-    version: devel
-- git: 
-    local-name: yujin_ocs
-    uri: 'http://github.com/yujinrobot/yujin_ocs.git'
-    version: devel
+
+- git: {local-name: yocs_msgs, version: release/0.7-melodic, uri: 'https://github.com/yujinrobot/yocs_msgs.git'}
+- git: {local-name: yujin_ocs, version: release/0.8-melodic, uri: 'https://github.com/yujinrobot/yujin_ocs.git'}
+- git: {local-name: kobuki, version: melodic, uri: 'https://github.com/yujinrobot/kobuki.git'}
+- git: {local-name: kobuki_core, version: melodic, uri: 'https://github.com/yujinrobot/kobuki_core.git'}
+- git: {local-name: kobuki_msgs, version: melodic, uri: 'https://github.com/yujinrobot/kobuki_msgs.git'}
+- git: {local-name: kobuki_desktop, version: melodic, uri: 'https://github.com/yujinrobot/kobuki_desktop.git'}
