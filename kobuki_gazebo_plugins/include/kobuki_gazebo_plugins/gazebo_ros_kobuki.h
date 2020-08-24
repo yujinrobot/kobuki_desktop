@@ -145,6 +145,8 @@ private:
   physics::WorldPtr world_;
   /// pointer to the update event connection (triggers the OnUpdate callback when event update event is received)
   event::ConnectionPtr update_connection_;
+  /// rate control
+  double update_rate_;
   /// Simulation time on previous update
   common::Time prev_update_time_;
   /// ROS subscriber for motor power commands
