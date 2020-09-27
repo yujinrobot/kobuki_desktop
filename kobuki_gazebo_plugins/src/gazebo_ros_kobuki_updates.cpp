@@ -222,7 +222,13 @@ void GazeboRosKobuki::updateIMU()
  */
 void GazeboRosKobuki::propagateVelocityCommands()
 {
-  if (((prev_update_time_- last_cmd_vel_time_).Double() > cmd_vel_timeout_) || !motors_enabled_)
+  common::Time time_now;
+  #if GAZEBO_MAJOR_VERSION >= 9
+    time_now = world_->SimTime();
+  #else
+    time_now = world_->GetSimTime();
+  #endif
+  if (((time_now - last_cmd_vel_time_).Double() > cmd_vel_timeout_) || !motors_enabled_)
   {
     wheel_speed_cmd_[LEFT] = 0.0;
     wheel_speed_cmd_[RIGHT] = 0.0;

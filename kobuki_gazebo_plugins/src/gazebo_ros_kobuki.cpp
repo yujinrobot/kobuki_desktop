@@ -116,13 +116,16 @@ void GazeboRosKobuki::OnUpdate()
   #endif
 
   if (time_now < prev_update_time_) {
-      ROS_WARN_NAMED("gazebo_ros_kobuki", "Negative update time difference detected.");
-      prev_update_time_ = time_now;
+    ROS_WARN_NAMED("gazebo_ros_kobuki", "Negative update time difference detected.");
+    prev_update_time_ = time_now;
   }
 
   common::Time step_time = time_now - prev_update_time_;
 
-  // rate control
+  // propagate wheel velocity commands at the full simulation rate
+  propagateVelocityCommands();
+
+  // publish rate control
   if (this->update_rate_ > 0 && step_time.Double() < (1.0 / this->update_rate_)) {
     return;
   }
@@ -132,7 +135,6 @@ void GazeboRosKobuki::OnUpdate()
   updateJointState();
   updateOdometry(step_time);
   updateIMU();
-  propagateVelocityCommands();
   updateCliffSensor();
   updateBumper();
 }
