@@ -68,6 +68,7 @@
 #include <kobuki_msgs/MotorPower.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
+#include <kobuki_msgs/WheelDropEvent.h>
 #include <kobuki_msgs/SensorState.h>
 
 namespace gazebo
@@ -111,6 +112,7 @@ private:
   bool prepareVelocityCommand();
   bool prepareCliffSensor();
   bool prepareBumper();
+  bool prepareWheelDropSensors();
   bool prepareIMU();
   void setupRosApi(std::string& model_name);
 
@@ -121,6 +123,7 @@ private:
   void propagateVelocityCommands();
   void updateCliffSensor();
   void updateBumper();
+  void updateWheelDrop();
   void pubSensorState();
 
   /*
@@ -234,6 +237,16 @@ private:
   bool bumper_center_is_pressed_;
   /// Flag for left bumper's current state
   bool bumper_right_is_pressed_;
+  /// Pointers to wheel contact sensors used to simulate Kobuki's wheel drop sensors
+  sensors::ContactSensorPtr wheel_left_drop_;
+  sensors::ContactSensorPtr wheel_right_drop_;
+  /// ROS publisher for wheel drop events
+  ros::Publisher wheel_drop_main_pub_;
+  /// Kobuki ROS message for wheel drop event
+  kobuki_msgs::WheelDropEvent wheel_drop_main_event_;
+  /// Wheel drop sensor flags
+  bool wheel_left_raised_flag_ = false, wheel_left_lowered_flag_ = false;
+  bool wheel_right_raised_flag_ = false, wheel_right_lowered_flag_ = false;
   /// Pointer to IMU sensor model
   sensors::ImuSensorPtr imu_;
   /// Storage for the angular velocity reported by the IMU
