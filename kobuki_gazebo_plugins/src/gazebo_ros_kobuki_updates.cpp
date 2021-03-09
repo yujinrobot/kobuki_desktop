@@ -344,14 +344,16 @@ void GazeboRosKobuki::updateBumper()
     #else
       rel_contact_pos =  contacts.contact(i).position(0).z() - current_pose.pos.z;
     #endif
-    // Actually, only contacts at the height of the bumper should be considered, but since we use a simplified collision model
-    // contacts further below and above need to be consider as well to identify "bumps" reliably.
-    if ((rel_contact_pos >= 0.01)
-        && (rel_contact_pos <= 0.13))
+    // Actually, only contacts at the height of the bumper should be considered, but since we use a simplified
+    // collision model contacts further below and above need to be consider as well to identify "bumps" reliably.
+    if (rel_contact_pos >= 0.01 && rel_contact_pos <= 0.13)
     {
+      // contact normal goes from second to first colliding model, so we need to invert if the robot is the first
+      double normal_sign = contacts.contact(i).collision1().find(bumper_->ParentName()) == 0 ? -1.0 : +1.0;
       // using the force normals below, since the contact position is given in world coordinates
       // also negating the normal, because it points from contact to robot centre
-      double global_contact_angle = std::atan2(-contacts.contact(i).normal(0).y(), -contacts.contact(i).normal(0).x());
+      double global_contact_angle = std::atan2(normal_sign * contacts.contact(i).normal(0).y(),
+                                               normal_sign * contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
 
       if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
