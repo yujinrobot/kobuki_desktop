@@ -137,6 +137,7 @@ void GazeboRosKobuki::OnUpdate()
   updateIMU();
   updateCliffSensor();
   updateBumper();
+  pubSensorState();
 }
 
 void GazeboRosKobuki::spin()

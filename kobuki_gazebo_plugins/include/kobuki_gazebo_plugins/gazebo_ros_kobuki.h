@@ -68,6 +68,7 @@
 #include <kobuki_msgs/MotorPower.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
+#include <kobuki_msgs/SensorState.h>
 
 namespace gazebo
 {
@@ -120,7 +121,7 @@ private:
   void propagateVelocityCommands();
   void updateCliffSensor();
   void updateBumper();
-
+  void pubSensorState();
 
   /*
    *  Parameters
@@ -250,8 +251,8 @@ private:
   /// ROS subscriber for reseting the odometry data
   ros::Subscriber odom_reset_sub_;
 
-
-
+  /// ROS publisher for Kobuki sensor state
+  ros::Publisher sensor_state_pub_;
 };
 
 } // namespace gazebo
