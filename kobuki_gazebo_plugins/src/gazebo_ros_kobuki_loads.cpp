@@ -363,5 +363,10 @@ void GazeboRosKobuki::setupRosApi(std::string& model_name)
   std::string imu_topic = base_prefix + "/sensors/imu_data";
   imu_pub_ = gazebo_ros_->node()->advertise<sensor_msgs::Imu>(imu_topic, 1);
   ROS_INFO("%s: Advertise IMU[%s]!", gazebo_ros_->info(), imu_topic.c_str());
+
+  // sensor state
+  std::string core_topic = base_prefix + "/sensors/core";
+  sensor_state_pub_ = gazebo_ros_->node()->advertise<kobuki_msgs::SensorState>(core_topic, 1);
+  ROS_INFO("%s: Advertise Core[%s]!", gazebo_ros_->info(), core_topic.c_str());
 }
 }
