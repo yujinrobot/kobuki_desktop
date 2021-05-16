@@ -81,7 +81,7 @@ void GazeboRosKobuki::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     return;
   if(prepareBumper() == false)
     return;
-  if(prepareWheelDropSensors() == false)
+  if(prepareWheelDrop() == false)
     return;
   if(prepareIMU() == false)
     return;

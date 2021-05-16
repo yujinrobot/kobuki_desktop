@@ -417,52 +417,47 @@ void GazeboRosKobuki::updateBumper()
 }
 
 /*
- * Main wheel drop sensors
+ * Wheel drop sensors
+ * Contacts between the wheels and the base are not reported by Gazebo.
+ * This means that ANY contacts that the wheels have are either with the main surface or with a colliding object.
+ * This functions ignores the second case
  */
-/// Contacts between the wheels and the base are not reported by Gazebo.
-/// This means that ANY contacts that the wheels have are either with the main surface or with a colliding object.
-/// This functions ignores the second case
 void GazeboRosKobuki::updateWheelDrop()
 {
-    msgs::Contacts contacts_left = wheel_left_drop_->Contacts();
-    msgs::Contacts contacts_right = wheel_right_drop_->Contacts();
+  msgs::Contacts contacts_left = wheel_drop_left_->Contacts();
+  msgs::Contacts contacts_right = wheel_drop_right_->Contacts();
 
+  /// Left wheel drop sensor
+  if (contacts_left.contact_size() > 0 && wheel_left_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_left_dropped_flag_ = false;
+  }
+  else if (contacts_left.contact_size() == 0 && !wheel_left_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_left_dropped_flag_ = true;
+  }
 
-    ///Left wheel drop sensor
-    if (contacts_left.contact_size() > 0 && !wheel_left_raised_flag_)
-    {
-        wheel_drop_main_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
-        wheel_drop_main_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
-        wheel_drop_main_pub_.publish(wheel_drop_main_event_);
-        wheel_left_raised_flag_ = true;
-        wheel_left_lowered_flag_ = false;
-    }
-    else if (contacts_left.contact_size() == 0 && !wheel_left_lowered_flag_)
-    {
-        wheel_drop_main_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
-        wheel_drop_main_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
-        wheel_drop_main_pub_.publish(wheel_drop_main_event_);
-        wheel_left_lowered_flag_ = true;
-        wheel_left_raised_flag_ = false;
-    }
-
-    ///Right wheel drop sensor
-    if (contacts_right.contact_size() > 0 && !wheel_right_raised_flag_)
-    {
-        wheel_drop_main_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
-        wheel_drop_main_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
-        wheel_drop_main_pub_.publish(wheel_drop_main_event_);
-        wheel_right_raised_flag_ = true;
-        wheel_right_lowered_flag_ = false;
-    }
-    else if (contacts_right.contact_size() == 0 && !wheel_right_lowered_flag_)
-    {
-        wheel_drop_main_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
-        wheel_drop_main_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
-        wheel_drop_main_pub_.publish(wheel_drop_main_event_);
-        wheel_right_lowered_flag_ = true;
-        wheel_right_raised_flag_ = false;
-    }
+  /// Right wheel drop sensor
+  if (contacts_right.contact_size() > 0 && wheel_right_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_right_dropped_flag_ = false;
+  }
+  else if (contacts_right.contact_size() == 0 && !wheel_right_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_right_dropped_flag_ = true;
+  }
 }
 
 /**

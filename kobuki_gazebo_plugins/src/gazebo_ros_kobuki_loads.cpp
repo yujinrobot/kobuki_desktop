@@ -285,15 +285,15 @@ bool GazeboRosKobuki::prepareBumper()
 /*
  * Prepare main wheel drop sensors
  */
-bool GazeboRosKobuki::prepareWheelDropSensors()
+bool GazeboRosKobuki::prepareWheelDrop()
 {
   std::string wheel_left_name;
   std::string wheel_right_name;
 
-  if (sdf_->HasElement("wheel_left_sensor_name") && sdf_->HasElement("wheel_right_sensor_name"))
+  if (sdf_->HasElement("wheel_drop_left_sensor_name") && sdf_->HasElement("wheel_drop_right_sensor_name"))
   {
-    wheel_left_name = sdf_->GetElement("wheel_left_sensor_name")->Get<std::string>();
-    wheel_right_name = sdf_->GetElement("wheel_right_sensor_name")->Get<std::string>();
+    wheel_left_name = sdf_->GetElement("wheel_drop_left_sensor_name")->Get<std::string>();
+    wheel_right_name = sdf_->GetElement("wheel_drop_right_sensor_name")->Get<std::string>();
   }
   else
   {
@@ -301,18 +301,18 @@ bool GazeboRosKobuki::prepareWheelDropSensors()
                      << " Did you specify it?" << " [" << node_name_ <<"]");
     return false;
   }
-  wheel_left_drop_ = std::dynamic_pointer_cast<sensors::ContactSensor>(
+  wheel_drop_left_ = std::dynamic_pointer_cast<sensors::ContactSensor>(
             sensors::SensorManager::Instance()->GetSensor(wheel_left_name));
-  wheel_right_drop_ = std::dynamic_pointer_cast<sensors::ContactSensor>(
+  wheel_drop_right_ = std::dynamic_pointer_cast<sensors::ContactSensor>(
             sensors::SensorManager::Instance()->GetSensor(wheel_right_name));
-  if (!wheel_left_drop_ || !wheel_right_drop_)
+  if (!wheel_drop_left_ || !wheel_drop_right_)
   {
     ROS_ERROR_STREAM("Couldn't find one of the wheel drop sensors in the model! [" << node_name_ <<"]");
     return false;
   }
 
-  wheel_left_drop_->SetActive(true);
-  wheel_right_drop_->SetActive(true);
+  wheel_drop_left_->SetActive(true);
+  wheel_drop_right_->SetActive(true);
   return true;
 }
 
@@ -393,7 +393,7 @@ void GazeboRosKobuki::setupRosApi(std::string& model_name)
   bumper_event_pub_ = gazebo_ros_->node()->advertise<kobuki_msgs::BumperEvent>(bumper_topic, 1);
   ROS_INFO("%s: Advertise Bumper[%s]!", gazebo_ros_->info(), bumper_topic.c_str());
 
-  // wheel_drop_main
+  // wheel drop sensors
   std::string wheel_drop_main_topic = base_prefix + "/events/wheel_drop";
   wheel_drop_main_pub_ = gazebo_ros_->node()->advertise<kobuki_msgs::WheelDropEvent>(wheel_drop_main_topic, 1);
   ROS_INFO("%s: Advertise Wheel Drop[%s]!", gazebo_ros_->info(), wheel_drop_main_topic.c_str());
