@@ -462,8 +462,9 @@ void GazeboRosKobuki::updateWheelDrop()
 
 /**
  * Core sensor state: msg concentrating all the low-level information reported by Kobuki base.
- * We provide only bumper and cliff sensors so we can integrate their readings on the costmaps
- * with the https://github.com/yujinrobot/kobuki/tree/melodic/kobuki_bumper2pc nodelet.
+ * We provide only bumper and cliff sensors (so we can integrate their readings on the costmaps
+ * with the https://github.com/yujinrobot/kobuki/tree/melodic/kobuki_bumper2pc nodelet) and
+ * wheel-drop sensors (mostly for completeness).
  */
 void GazeboRosKobuki::pubSensorState()
 {
@@ -483,6 +484,11 @@ void GazeboRosKobuki::pubSensorState()
     state.cliff |= kobuki_msgs::SensorState::CLIFF_CENTRE;
   if (cliff_detected_right_)
     state.cliff |= kobuki_msgs::SensorState::CLIFF_RIGHT;
+
+  if (wheel_left_dropped_flag_)
+    state.wheel_drop |= kobuki_msgs::SensorState::WHEEL_DROP_LEFT;
+  if (wheel_right_dropped_flag_)
+    state.wheel_drop |= kobuki_msgs::SensorState::WHEEL_DROP_RIGHT;
 
   sensor_state_pub_.publish(state);
 }
