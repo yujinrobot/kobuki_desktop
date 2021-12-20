@@ -355,7 +355,8 @@ void GazeboRosKobuki::updateBumper()
       double global_contact_angle = std::atan2(normal_sign * contacts.contact(i).normal(0).y(),
                                                normal_sign * contacts.contact(i).normal(0).x());
       double relative_contact_angle = global_contact_angle - robot_heading;
-
+      while (relative_contact_angle < -M_PI) relative_contact_angle += 2*M_PI;
+      while (relative_contact_angle > M_PI) relative_contact_angle -= 2*M_PI;
       if ((relative_contact_angle <= (M_PI/2)) && (relative_contact_angle > (M_PI/6)))
       {
         bumper_left_is_pressed_ = true;
