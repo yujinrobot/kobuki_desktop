@@ -416,10 +416,55 @@ void GazeboRosKobuki::updateBumper()
   }
 }
 
+/*
+ * Wheel drop sensors
+ * Contacts between the wheels and the base are not reported by Gazebo.
+ * This means that ANY contacts that the wheels have are either with the main surface or with a colliding object.
+ * This functions ignores the second case
+ */
+void GazeboRosKobuki::updateWheelDrop()
+{
+  msgs::Contacts contacts_left = wheel_drop_left_->Contacts();
+  msgs::Contacts contacts_right = wheel_drop_right_->Contacts();
+
+  /// Left wheel drop sensor
+  if (contacts_left.contact_size() > 0 && wheel_left_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_left_dropped_flag_ = false;
+  }
+  else if (contacts_left.contact_size() == 0 && !wheel_left_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::LEFT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_left_dropped_flag_ = true;
+  }
+
+  /// Right wheel drop sensor
+  if (contacts_right.contact_size() > 0 && wheel_right_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::RAISED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_right_dropped_flag_ = false;
+  }
+  else if (contacts_right.contact_size() == 0 && !wheel_right_dropped_flag_)
+  {
+    wheel_drop_event_.wheel = kobuki_msgs::WheelDropEvent::RIGHT;
+    wheel_drop_event_.state = kobuki_msgs::WheelDropEvent::DROPPED;
+    wheel_drop_main_pub_.publish(wheel_drop_event_);
+    wheel_right_dropped_flag_ = true;
+  }
+}
+
 /**
  * Core sensor state: msg concentrating all the low-level information reported by Kobuki base.
- * We provide only bumper and cliff sensors so we can integrate their readings on the costmaps
- * with the https://github.com/yujinrobot/kobuki/tree/melodic/kobuki_bumper2pc nodelet.
+ * We provide only bumper and cliff sensors (so we can integrate their readings on the costmaps
+ * with the https://github.com/yujinrobot/kobuki/tree/melodic/kobuki_bumper2pc nodelet) and
+ * wheel-drop sensors (mostly for completeness).
  */
 void GazeboRosKobuki::pubSensorState()
 {
@@ -440,6 +485,12 @@ void GazeboRosKobuki::pubSensorState()
   if (cliff_detected_right_)
     state.cliff |= kobuki_msgs::SensorState::CLIFF_RIGHT;
 
+  if (wheel_left_dropped_flag_)
+    state.wheel_drop |= kobuki_msgs::SensorState::WHEEL_DROP_LEFT;
+  if (wheel_right_dropped_flag_)
+    state.wheel_drop |= kobuki_msgs::SensorState::WHEEL_DROP_RIGHT;
+
   sensor_state_pub_.publish(state);
 }
-}
+
+} // gazebo namespace
