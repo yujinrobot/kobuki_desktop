@@ -147,7 +147,8 @@ void GazeboRosKobuki::updateOdometry(common::Time& step_time)
   odom_.twist.twist.angular.z = odom_vel_[2];
   odom_pub_.publish(odom_); // publish odom message
 
-  if (publish_tf_)
+  // As of ROS Noetic, TF2 will issue warnings whenever we try to publish with the same time stamp.
+  if (publish_tf_ && odom_.header.stamp > last_published_tf_stamp_)
   {
     odom_tf_.header = odom_.header;
     odom_tf_.child_frame_id = odom_.child_frame_id;
@@ -157,6 +158,9 @@ void GazeboRosKobuki::updateOdometry(common::Time& step_time)
     odom_tf_.transform.rotation = odom_.pose.pose.orientation;
     tf_broadcaster_.sendTransform(odom_tf_);
   }
+
+  // Retain the last published stamp for detecting repeatedtransforms in future cycles
+  last_published_tf_stamp_ = odom_.header.stamp;
 }
 
 /*

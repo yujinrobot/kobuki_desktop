@@ -197,6 +197,8 @@ private:
   bool publish_tf_;
   /// TF transform publisher for the odom frame
   tf::TransformBroadcaster tf_broadcaster_;
+  /// The time of the most recent published state
+  ros::Time last_published_tf_stamp_;
   /// TF transform for the odom frame
   geometry_msgs::TransformStamped odom_tf_;
   /// Pointer to left cliff sensor
